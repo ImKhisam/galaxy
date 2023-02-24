@@ -98,12 +98,12 @@ ul.mainmenu {
 	padding: 0;
 	height: 60px;
 	color: #fdc073;
-	font-size: 20px;
+	font-size: 14px;
 	overflow: hidden;
 }
 ul.mainmenu li {
 	float: left;
-	margin: 18px 40px 0 30px;
+	margin: 18px 15px 0 15px;
 }
 ul.mainmenu li.logo {margin: 0;}
 ul.mainmenu li.last {float: right;}

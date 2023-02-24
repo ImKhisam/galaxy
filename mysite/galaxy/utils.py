@@ -13,6 +13,9 @@ menu = [{'title': "Home", 'url_name': 'personal_acc'},
 
 
 class DataMixin:
+    def check_access(self):
+        return self.request.user.is_confirmed
+
     def get_user_context(self, **kwargs):
         context = kwargs
         user_menu = menu.copy()
@@ -27,7 +30,4 @@ class DataMixin:
         return context
 
 
-class AccessMixin:
-    def check_access(self):
-        return self.request.user.is_confirmed
 
