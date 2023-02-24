@@ -21,7 +21,7 @@
             {% endfor %}
         {% endif %}
         {% if request.user.is_authenticated %}
-		<li class="last">{{user.username}} | <a href="{% url 'logout' %}">Log out</a></li>
+		<li class="last"><a href="{{ user.get_absolute_url }}">{{user.username}}</a> | <a href="{% url 'logout' %}">Log out</a></li>
 		{% else %}
 		<li class="last"><a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a></li>
 		{% endif %}

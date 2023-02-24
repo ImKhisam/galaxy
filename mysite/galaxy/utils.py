@@ -2,6 +2,7 @@
 from .models import *
 
 menu = [{'title': "Home", 'url_name': 'personal_acc'},
+            #{'title': "PK", 'url_name': 'personal_acc'},
             {'title': "ОГЭ", 'url_name': 'oge'},
             {'title': "ЕГЭ", 'url_name': 'ege'},
             {'title': "Develop your skills", 'url_name': 'dev_skills'},

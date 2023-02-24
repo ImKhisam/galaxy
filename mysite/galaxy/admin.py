@@ -10,9 +10,8 @@ class CustomUserAdmin(UserAdmin):
     add_form = RegisterUserForm
     form = CustomUserChangeForm
     model = CustomUser
-    list_display = ['email', 'username', 'is_confirmed']
+    list_display = ('email', 'username', 'is_confirmed')
     list_editable = ('is_confirmed',)
-    #prepopulated_fields = {"slug": ("username")}
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

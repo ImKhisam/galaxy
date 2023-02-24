@@ -29,7 +29,7 @@ class RegisterUser(DataMixin, CreateView):
     def form_valid(self, form):
         user = form.save()              # сохраняем форму в бд
         login(self.request, user)       # при успешной регистрации сразу логинит
-        return redirect('home')
+        return redirect('personal_acc', acc_slug=self.request.user.slug)
 
 
 class LoginUser(DataMixin, LoginView):
@@ -43,16 +43,18 @@ class LoginUser(DataMixin, LoginView):
         return dict(list(context.items()) + list(c_def.items()))
 
     def get_success_url(self):          # при успешном логине перенаправляет
-        return reverse_lazy('personal_acc')
+        return reverse_lazy('personal_acc', kwargs={'acc_slug': self.request.user.slug})
 
 
 def logout_user(request):
     logout(request)             # станд функция выхода
     return redirect('home')
 
-class Personal_Acc(DataMixin,TemplateView):
-    #model = CustomUser
+class Personal_Acc(DataMixin, DetailView):
+    model = CustomUser
     template_name = "galaxy/personal_acc.html"
+    slug_url_kwarg = 'acc_slug'
+    #context_object_name = 'acc'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
