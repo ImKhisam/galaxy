@@ -1,3 +1,9 @@
 from django.contrib import admin
+from .models import BrittishBulldog
 
-# Register your models here.
+
+class BrittishBulldogAdmin(admin.ModelAdmin):
+    list_display = ('classes', 'year')
+
+
+admin.site.register(BrittishBulldog, BrittishBulldogAdmin)

@@ -1,0 +1,11 @@
+{% extends 'galaxy/base.html' %}
+
+{% block content %}
+
+{% for year in years %}
+    <li>
+      <p><a href="{{ year.get_absolute_url }}">{{ year.year }}</a></p>
+    </li>
+{% endfor %}
+
+{% endblock %}
