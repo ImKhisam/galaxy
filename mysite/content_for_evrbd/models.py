@@ -11,7 +11,7 @@ def content_file_name(instance, filename):
 class BrittishBulldog(models.Model):
     classes = models.CharField(max_length=255, verbose_name='Class')
     year = models.CharField(max_length=255, verbose_name='Year')
-    content = models.ImageField(upload_to=content_file_name)
+    content = models.FileField(upload_to=content_file_name)
 
     def __str__(self):
         return self.classes

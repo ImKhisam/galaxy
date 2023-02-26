@@ -1,9 +1,10 @@
-import os
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView, ListView, DetailView
 from django.http import FileResponse, Http404
 
+
 from .models import *
+from pathlib import Path
 
 
 class BB_years(ListView):
@@ -40,7 +41,7 @@ class Show_doc(DetailView):
     model = BrittishBulldog
     template_name = "content_for_evrbd/show_doc.html"
     #slug_url_kwarg = 'bb_slug'
-    pk_url_kwarg = 'class_id'
+    pk_url_kwarg = 'classes_id'
     context_object_name = 'file'
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -49,11 +50,18 @@ class Show_doc(DetailView):
         return context
 
 
-#def pdf_view(request, pdf_slug):
-#    module_dir = os.path.dirname(__file__)
-#    filepath = os.path.join(module_dir, 'media/2015.pdf')
-#
-#    try:
-#        return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
-#    except FileNotFoundError:
-#        raise Http404()
+def pdf_view(request, classes_id):
+    module_dir = Path(__file__).resolve().parent.parent
+    media = module_dir / 'media/'
+
+    object = get_object_or_404(BrittishBulldog, id=classes_id)
+
+    filepath = os.path.join(media, str(object.content))
+
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    print(filepath)
+
+    try:
+        return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
+    except FileNotFoundError:
+        raise Http404()

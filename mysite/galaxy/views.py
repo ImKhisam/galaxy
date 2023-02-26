@@ -39,7 +39,7 @@ class LoginUser(DataMixin, LoginView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Registration')
+        c_def = self.get_user_context(title='Login')
         return dict(list(context.items()) + list(c_def.items()))
 
     def get_success_url(self):          # при успешном логине перенаправляет

@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
     slug = AutoSlugField(populate_from='username')
 
     def __str__(self):
-        return self.title
+        return self.username
 
     def get_absolute_url(self):
         return reverse('personal_acc', kwargs={'acc_slug': self.slug})
