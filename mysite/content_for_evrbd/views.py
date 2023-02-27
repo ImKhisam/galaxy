@@ -5,6 +5,7 @@ from django.http import FileResponse, Http404
 
 from .models import *
 from pathlib import Path
+from django.conf import settings
 
 
 class BB_years(ListView):
@@ -51,15 +52,9 @@ class Show_doc(DetailView):
 
 
 def pdf_view(request, classes_id):
-    module_dir = Path(__file__).resolve().parent.parent
-    media = module_dir / 'media/'
-
-    object = get_object_or_404(BrittishBulldog, id=classes_id)
-
-    filepath = os.path.join(media, str(object.content))
-
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    print(filepath)
+    media = settings.MEDIA_ROOT                                     # importing from settings
+    object = get_object_or_404(BrittishBulldog, id=classes_id)      # get path from db
+    filepath = os.path.join(media, str(object.content))             # uniting path
 
     try:
         return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
