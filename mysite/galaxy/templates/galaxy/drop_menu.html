@@ -1,0 +1,19 @@
+<ul class="dropdown-menu">
+
+        {% for key, value in menu_dict.items %}
+             <li>
+                <a class="dropdown-item" href="#">
+                    {{key.year}} &raquo;
+                </a>
+                 <ul class="dropdown-menu dropdown-submenu">
+                 {% for classes in value %}
+                        <li>
+                            <a class="dropdown-item" href="#">{{ classes.classes }}</a>
+                        </li>
+                 {% endfor %}
+                 </ul>
+             </li>
+        {% endfor %}
+
+</ul>
+

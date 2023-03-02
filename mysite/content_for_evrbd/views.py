@@ -4,7 +4,6 @@ from django.http import FileResponse, Http404
 
 
 from .models import *
-from pathlib import Path
 from django.conf import settings
 
 
@@ -19,7 +18,7 @@ class BB_years(ListView):
         return context
 
     def get_queryset(self):
-        print(BrittishBulldog.objects.values('year').distinct('year'))
+        #print(BrittishBulldog.objects.values('year').distinct('year'))
         #BrittishBulldog.objects.values('year').distinct('year')   # return <QuerySet [{'year': '2021-2022'}, {'year': '2022-2023'}]>
         return BrittishBulldog.objects.distinct('year')
 
@@ -38,17 +37,17 @@ class BB_year(ListView):
         return BrittishBulldog.objects.filter(year=self.kwargs['bb_slug'])
 
 
-class Show_doc(DetailView):
-    model = BrittishBulldog
-    template_name = "content_for_evrbd/show_doc.html"
-    #slug_url_kwarg = 'bb_slug'
-    pk_url_kwarg = 'classes_id'
-    context_object_name = 'file'
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
-        return context
+#class Show_doc(DetailView):
+#    model = BrittishBulldog
+#    template_name = "content_for_evrbd/show_doc.html"
+#    #slug_url_kwarg = 'bb_slug'
+#    pk_url_kwarg = 'classes_id'
+#    context_object_name = 'file'
+#
+#    def get_context_data(self, *, object_list=None, **kwargs):
+#        context = super().get_context_data(**kwargs)
+#        context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
+#        return context
 
 
 def pdf_view(request, classes_id):

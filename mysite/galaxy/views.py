@@ -138,3 +138,13 @@ class Fun_room(DataMixin, TemplateView):
 
 def julik(request):
     return render(request, 'galaxy/julik.html')
+
+
+
+class Test(DataMixin, TemplateView):
+    template_name = "galaxy/test.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='test')
+        return dict(list(context.items()) + list(c_def.items()))
