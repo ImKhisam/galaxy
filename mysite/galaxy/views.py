@@ -111,15 +111,6 @@ class Olymp(LoginRequiredMixin, DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-#class BB(DataMixin, TemplateView):
-#    template_name = "galaxy/zaglushka.html"
-#
-#    def get_context_data(self, *, object_list=None, **kwargs):
-#        context = super().get_context_data(**kwargs)
-#        c_def = self.get_user_context(title='BB')
-#        return dict(list(context.items()) + list(c_def.items()))
-
-
 class Idioms(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
@@ -131,12 +122,12 @@ class Idioms(LoginRequiredMixin, DataMixin, TemplateView):
 
 class Fun_room(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
-    login_url = reverse_lazy('julik')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         c_def = self.get_user_context(title='fun_room')
         return dict(list(context.items()) + list(c_def.items()))
+
 
 def julik(request):
     return render(request, 'galaxy/julik.html')

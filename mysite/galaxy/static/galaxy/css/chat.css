@@ -43,7 +43,7 @@ nav ul ul {
 nav ul ul li {
   margin: 0;
   width: 200px;
-  width: max-content;
+  width: inherit;
   min-width: unset !important;
 }
 

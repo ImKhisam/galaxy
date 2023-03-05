@@ -2,7 +2,16 @@
     <li><a href="#">{{key.year}}</a>
     <ul  class="dropdown">
         {% for classes in value %}
-        <li><a href="{% url 'show_doc' classes.id %}">{{ classes.classes }}</a></li>
+        {% if classes.audio %}
+        <li><a href="#">{{ classes.classes }}</a>
+            <ul>
+                <li><a href="{% url 'show_doc' classes.id %}">PDF</a> </li>
+                <li><a href="{% url 'play_audio' classes.id %}">Audio</a> </li>
+            </ul>
+        </li>
+        {% else %}
+        <li><a href="{% url 'show_doc' classes.id %}">{{ classes.classes }}</a>
+        {% endif %}
         {% endfor %}
     </ul>
     </li>
