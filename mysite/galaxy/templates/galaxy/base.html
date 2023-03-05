@@ -4,6 +4,7 @@
 <head>
     <title>{{title}}</title>
     <link type="text/css" href="{% static 'galaxy/css/styles.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/submenu.css' %}" rel="stylesheet" />
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link rel="shortcut icon" href="{% static 'galaxy/images/main.ico' %}" type="image/x-icon"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,20 +13,20 @@
 
 <tr><td valign=top>
 {% block mainmenu %}
-    <div class="header">
+      <div class="header">
         <ul id="mainmenu" class="mainmenu">
-        <li class="logo"><a href="{% url 'home' %}"><div class="logo"></div></a></li>
-        {% if request.user.is_authenticated %}
-            {% for m in menu %}
-			    <li><a href="{% url m.url_name %}">{{m.title}}</a></li>
-            {% endfor %}
-        {% endif %}
-        {% if request.user.is_authenticated %}
-		<li class="last"><a href="{{ user.get_absolute_url }}">{{user.username}}</a> | <a href="{% url 'logout' %}">Log out</a></li>
-		{% else %}
-		<li class="last"><a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a></li>
-		{% endif %}
-</ul>
+            <li class="logo"><a href="{% url 'home' %}"><div class="logo"></div></a></li>
+            {% if request.user.is_authenticated %}
+
+            <li><a href="#">BB</a></li>
+            <li><a href="{% url 'idioms' %}">Idioms</a></li>
+            <li><a href="{% url 'fun_room' %}">Fun room</a></li>
+
+            <li class="last"><a href="{{ user.get_absolute_url }}">{{user.username}}</a>  <a href="{% url 'logout' %}">Log out</a></li>
+            {% else %}
+            <li class="last"><a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a></li>
+            {% endif %}
+        </ul>
     <div class="clear"></div>
     </div>
 {% endblock %}
@@ -33,3 +34,6 @@
 {% block content %}
 
 {% endblock %}
+
+</td></tr>
+</body>

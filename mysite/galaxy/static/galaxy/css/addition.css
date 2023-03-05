@@ -1,0 +1,23 @@
+body {
+    background-image: url("bg.jpg");
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.logo {
+    background: url('../images/logo.png') no-repeat 10px 5px;
+    width: 70px;
+    height: 60px;
+
+ul.mainmenu li.last {
+    float: right;
+}
+
+a {
+    color: #ffffff;
+}
+
+nav ul ul li {
+    width: auto !important;
+    min-width: unset !important;
+}

@@ -3,6 +3,7 @@ from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .utils import DataMixin
 from .forms import *
@@ -50,7 +51,7 @@ def logout_user(request):
     logout(request)             # станд функция выхода
     return redirect('home')
 
-class Personal_Acc(DataMixin, DetailView):
+class Personal_Acc(LoginRequiredMixin, DataMixin, DetailView):
     model = CustomUser
     template_name = "galaxy/personal_acc.html"
     slug_url_kwarg = 'acc_slug'
@@ -62,7 +63,7 @@ class Personal_Acc(DataMixin, DetailView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Oge(DataMixin, TemplateView):
+class Oge(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -74,7 +75,7 @@ class Oge(DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Ege(DataMixin, TemplateView):
+class Ege(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -86,7 +87,7 @@ class Ege(DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Dev_skills(DataMixin, TemplateView):
+class Dev_skills(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -98,7 +99,7 @@ class Dev_skills(DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Olymp(DataMixin, TemplateView):
+class Olymp(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -119,7 +120,7 @@ class Olymp(DataMixin, TemplateView):
 #        return dict(list(context.items()) + list(c_def.items()))
 
 
-class Idioms(DataMixin, TemplateView):
+class Idioms(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -128,8 +129,9 @@ class Idioms(DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Fun_room(DataMixin, TemplateView):
+class Fun_room(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
+    login_url = reverse_lazy('julik')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)

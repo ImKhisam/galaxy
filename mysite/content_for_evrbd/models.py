@@ -12,6 +12,7 @@ class BrittishBulldog(models.Model):
     classes = models.CharField(max_length=255, verbose_name='Class')
     year = models.CharField(max_length=255, verbose_name='Year')
     content = models.FileField(upload_to=content_file_name)
+    audio = models.FileField(upload_to=content_file_name, blank=True)
 
     def __str__(self):
         return self.classes
