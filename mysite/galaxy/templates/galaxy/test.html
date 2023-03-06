@@ -12,7 +12,7 @@
 <body>
 
       <header>
-          <div class="logo"></div>
+          <a href="{% url 'home' %}"><div class="logo"></div></a>
           <nav>
               <ul>
               {% if request.user.is_confirmed %}
@@ -28,8 +28,21 @@
                         {% drop_menu 'BB' %}
                       </ul>
                   </li>
-                  <li><a href="#">Idioms & Collocations</a></li>
-                  <li><a href="#">Fun room</a></li>
+                  <li>
+                      <a href="#">Idioms & Collocations</a>
+                      <ul>
+                          <li><a href="{% url 'play_video' %}">Watch & learn</a></li>
+                          <li><a href="#">Read & learn</a></li>
+                      </ul>
+                  </li>
+                  <li>
+                      <a href="#">Fun room</a>
+                      <ul>
+                          <li><a href="#">Cinema</a></li>
+                          <li><a href="#">Quiz</a></li>
+                          <li><a href="#">Crosswords</a></li>
+                      </ul>
+                  </li>
                   {% endif %}
               </ul>
           </nav>
@@ -41,5 +54,9 @@
                 {% endif %}
           </div>
       </header>
+
+{% block content %}
+
+{% endblock %}
 </body>
 </html>

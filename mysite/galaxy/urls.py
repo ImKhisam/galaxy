@@ -14,5 +14,7 @@ urlpatterns = [
     path('idioms/', Idioms.as_view(), name='idioms'),
     path('fun_room/', Fun_room.as_view(), name='fun_room'),
     path('julik/', julik, name='julik'),
-    path('test/', Test.as_view(), name='test')
+    path('test/', Test.as_view(), name='test'),
+    path('play_video/', play_video, name='play_video'),
+    path('cross/', cross, name='cross')
     ]

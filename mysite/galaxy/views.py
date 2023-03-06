@@ -141,3 +141,16 @@ class Test(DataMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         c_def = self.get_user_context(title='test')
         return dict(list(context.items()) + list(c_def.items()))
+
+
+def play_video(request):
+    videos = Video.objects.all()
+    context = {
+        'title': 'Videos',
+        'videos': videos
+    }
+    return render(request, 'galaxy/play_video.html', context=context)
+
+
+def cross(request):
+    return render(request, 'galaxy/cross2.html')

@@ -1,39 +1,62 @@
 {% load static %}
-<!DOCTYPE html>
+{% load galaxy_tags %}
+
+<!doctype html>
 <html lang="en">
 <head>
-    <title>{{title}}</title>
-    <link type="text/css" href="{% static 'galaxy/css/styles.css' %}" rel="stylesheet" />
-    <link type="text/css" href="{% static 'galaxy/css/submenu.css' %}" rel="stylesheet" />
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<link rel="shortcut icon" href="{% static 'galaxy/images/main.ico' %}" type="image/x-icon"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link type="text/css" href="{% static 'galaxy/css/chat.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'galaxy/css/addition.css' %}" rel="stylesheet" />
 </head>
+
 <body>
 
-<tr><td valign=top>
-{% block mainmenu %}
-      <div class="header">
-        <ul id="mainmenu" class="mainmenu">
-            <li class="logo"><a href="{% url 'home' %}"><div class="logo"></div></a></li>
-            {% if request.user.is_authenticated %}
-
-            <li><a href="#">BB</a></li>
-            <li><a href="{% url 'idioms' %}">Idioms</a></li>
-            <li><a href="{% url 'fun_room' %}">Fun room</a></li>
-
-            <li class="last"><a href="{{ user.get_absolute_url }}">{{user.username}}</a>  <a href="{% url 'logout' %}">Log out</a></li>
-            {% else %}
-            <li class="last"><a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a></li>
-            {% endif %}
-        </ul>
-    <div class="clear"></div>
-    </div>
-{% endblock %}
+      <header>
+          <a href="{% url 'home' %}"><div class="logo"></div></a>
+          <nav>
+              <ul>
+              {% if request.user.is_confirmed %}
+                  <li><a href="#">Ege</a></li>
+                  <li><a href="#">Oge</a></li>
+                  <li><a href="#">Olymp</a></li>
+                  <li><a href="#">Develop your skills</a></li>
+                  {% endif %}
+                  {% if request.user.is_authenticated %}
+                  <li>
+                      <a href="">British Bulldog</a>
+                      <ul>
+                        {% drop_menu 'BB' %}
+                      </ul>
+                  </li>
+                  <li>
+                      <a href="#">Idioms & Collocations</a>
+                      <ul>
+                          <li><a href="{% url 'play_video' %}">Watch & learn</a></li>
+                          <li><a href="#">Read & learn</a></li>
+                      </ul>
+                  </li>
+                  <li>
+                      <a href="#">Fun room</a>
+                      <ul>
+                          <li><a href="#">Cinema</a></li>
+                          <li><a href="#">Quiz</a></li>
+                          <li><a href="#">Crosswords</a></li>
+                      </ul>
+                  </li>
+                  {% endif %}
+              </ul>
+          </nav>
+          <div class="login">
+                {% if request.user.is_authenticated %}
+                    <a href="{{ user.get_absolute_url }}">{{user.username}}</a><a href="{% url 'logout' %}">Log out</a>
+                {% else %}
+                <a href="{% url 'register' %}">Register</a><a href="{% url 'login' %}">Login</a>
+                {% endif %}
+          </div>
+      </header>
 
 {% block content %}
 
 {% endblock %}
-
-</td></tr>
 </body>
+</html>

@@ -1,0 +1,9 @@
+{% extends 'galaxy/base.html' %}
+{% load embed_video_tags %}
+
+
+{% block content %}
+    {% for item in videos %}
+        {% video item.url '426x240' %}
+    {% endfor %}
+{% endblock %}
