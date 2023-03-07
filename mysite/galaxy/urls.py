@@ -16,6 +16,5 @@ urlpatterns = [
     path('julik/', julik, name='julik'),
     path('test/', Test.as_view(), name='test'),
     path('show_doc/<int:classes_id>/', pdf_view, name='show_doc'),
-    path('play_audio/<int:classes_id>/', Play_audio.as_view(), name='play_audio'),
-    path('cross/', cross, name='cross')
+    path('play_audio/<int:classes_id>/', Play_audio.as_view(), name='play_audio')
     ]

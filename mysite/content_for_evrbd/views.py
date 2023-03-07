@@ -56,3 +56,10 @@ def play_video(request):
         'fl': Video.objects.count()
     }
     return render(request, 'content_for_evrbd/play_video.html', context=context)
+
+
+def cross(request):
+    context = {
+        'title': 'Crossword'
+    }
+    return render(request, 'content_for_evrbd/crossword.html', context=context)
