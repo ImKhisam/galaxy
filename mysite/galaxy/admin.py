@@ -14,5 +14,9 @@ class CustomUserAdmin(UserAdmin):
     list_editable = ('is_confirmed',)
 
 
+class BritishBulldogAdmin(admin.ModelAdmin):
+    list_display = ('classes', 'year')
+
+
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Video)
+admin.site.register(BritishBulldog, BritishBulldogAdmin)

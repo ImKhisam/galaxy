@@ -63,7 +63,9 @@ nav ul li:hover > ul {
 }
 
 .login a {
+  background-color: #0000005c;
   display: block;
+
   padding: 10px;
   color: #ffffff;
   text-decoration: none;

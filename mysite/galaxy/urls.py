@@ -15,6 +15,7 @@ urlpatterns = [
     path('fun_room/', Fun_room.as_view(), name='fun_room'),
     path('julik/', julik, name='julik'),
     path('test/', Test.as_view(), name='test'),
-    path('play_video/', play_video, name='play_video'),
+    path('show_doc/<int:classes_id>/', pdf_view, name='show_doc'),
+    path('play_audio/<int:classes_id>/', Play_audio.as_view(), name='play_audio'),
     path('cross/', cross, name='cross')
     ]

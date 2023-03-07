@@ -1,24 +1,13 @@
 import os
 from django.db import models
 from django.urls import reverse
+from embed_video.fields import EmbedVideoField
 
-#module_dir = os.path.dirname(__file__)
-#os.path.join(module_dir, 'media/2015.pdf')
 
-def content_file_name(instance, filename):
-    return '/'.join(['bb', instance.year, filename])
-
-class BrittishBulldog(models.Model):
-    classes = models.CharField(max_length=255, verbose_name='Class')
-    year = models.CharField(max_length=255, verbose_name='Year')
-    content = models.FileField(upload_to=content_file_name)
-    audio = models.FileField(upload_to=content_file_name, blank=True)
+class Video(models.Model):
+    title = models.CharField(max_length=100)
+    added = models.DateTimeField(auto_now_add=True)
+    url = EmbedVideoField()
 
     def __str__(self):
-        return self.classes
-
-    def get_absolute_url(self):
-        return reverse('show_bb_year', kwargs={'bb_slug': self.year})
-
-    class Meta:
-        ordering = ['year', 'classes']
+        return self.title

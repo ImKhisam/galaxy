@@ -3,7 +3,11 @@
 
 
 {% block content %}
+    {% if fl > 0 %}
     {% for item in videos %}
         {% video item.url '426x240' %}
     {% endfor %}
+    {% else %}
+    <h1>Sorry, nothing here</h1>
+    {% endif %}
 {% endblock %}

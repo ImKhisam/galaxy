@@ -1,10 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.views.generic import TemplateView, ListView, DetailView
-from django.http import FileResponse, Http404
 
 
 from .models import *
-from django.conf import settings
 
 
 #class BB_years(ListView):
@@ -50,24 +48,11 @@ from django.conf import settings
 #        return context
 
 
-def pdf_view(request, classes_id):
-    media = settings.MEDIA_ROOT                                     # importing from settings
-    object = get_object_or_404(BrittishBulldog, id=classes_id)      # get path from db
-    filepath = os.path.join(media, str(object.content))             # uniting path
-
-    try:
-        return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
-    except FileNotFoundError:
-        raise Http404()
-
-
-class  Play_audio(DetailView):
-    model = BrittishBulldog
-    template_name = 'content_for_evrbd/play_audio.html'
-    pk_url_kwarg = 'classes_id'
-    context_object_name = 'file'
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
-        return context
+def play_video(request):
+    videos = Video.objects.all()
+    context = {
+        'title': 'Videos',
+        'videos': videos,
+        'fl': Video.objects.count()
+    }
+    return render(request, 'content_for_evrbd/play_video.html', context=context)

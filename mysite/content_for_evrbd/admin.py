@@ -1,9 +1,5 @@
 from django.contrib import admin
-from .models import BrittishBulldog
+from .models import *
 
 
-class BrittishBulldogAdmin(admin.ModelAdmin):
-    list_display = ('classes', 'year')
-
-
-admin.site.register(BrittishBulldog, BrittishBulldogAdmin)
+admin.site.register(Video)

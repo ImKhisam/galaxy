@@ -1,12 +1,17 @@
+import os
+
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import FileResponse, Http404
 
 from .utils import DataMixin
+from django.conf import settings
 from .forms import *
+
 
 class Index(DataMixin, TemplateView):
     template_name = "galaxy/index.html"
@@ -37,7 +42,6 @@ class LoginUser(DataMixin, LoginView):
     form_class = LoginUserForm
     template_name = 'galaxy/login.html'
 
-
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         c_def = self.get_user_context(title='Login')
@@ -51,11 +55,12 @@ def logout_user(request):
     logout(request)             # станд функция выхода
     return redirect('home')
 
+
 class Personal_Acc(LoginRequiredMixin, DataMixin, DetailView):
     model = CustomUser
     template_name = "galaxy/personal_acc.html"
     slug_url_kwarg = 'acc_slug'
-    #context_object_name = 'acc'
+    # context_object_name = 'acc'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,6 +116,29 @@ class Olymp(LoginRequiredMixin, DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
+def pdf_view(request, classes_id):
+    media = settings.MEDIA_ROOT                                     # importing from settings
+    obj = get_object_or_404(BritishBulldog, id=classes_id)      # get path from db
+    filepath = os.path.join(media, str(obj.content))             # uniting path
+
+    try:
+        return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
+    except FileNotFoundError:
+        raise Http404()
+
+
+class Play_audio(DetailView):
+    model = BritishBulldog
+    template_name = 'galaxy/play_audio.html'
+    pk_url_kwarg = 'classes_id'
+    context_object_name = 'file'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
+        return context
+
+
 class Idioms(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
@@ -133,7 +161,6 @@ def julik(request):
     return render(request, 'galaxy/julik.html')
 
 
-
 class Test(DataMixin, TemplateView):
     template_name = "galaxy/test.html"
 
@@ -141,15 +168,6 @@ class Test(DataMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         c_def = self.get_user_context(title='test')
         return dict(list(context.items()) + list(c_def.items()))
-
-
-def play_video(request):
-    videos = Video.objects.all()
-    context = {
-        'title': 'Videos',
-        'videos': videos
-    }
-    return render(request, 'galaxy/play_video.html', context=context)
 
 
 def cross(request):
