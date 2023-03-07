@@ -1,7 +1,13 @@
+{% load static %}
+{% load galaxy_tags %}
+
 <!DOCTYPE html>
 <html>
 <head>
 <title>Cross word Puzzel</title>
+	<link type="text/css" href="{% static 'galaxy/css/chat.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'galaxy/css/addition.css' %}" rel="stylesheet" />
+
 <style>
 
 #cross{
@@ -49,16 +55,19 @@ td{
 		text-align: center;
 }
 #question_left{
+	padding-top: 200px;
 	width: 20%;
 	float: left;
 }
 
 #question_right{
+	padding-top: 200px;
 	width: 20%;
 	float: right;
 }
 
 #crossw{
+	padding-top: 200px;
 	width: 60%;
 	float: left;
 }
@@ -201,6 +210,50 @@ function solveClicked(){
 </script>
 </head>
 <body onload="initializeScreen()">
+
+<header>
+          <a href="{% url 'home' %}"><div class="logo"></div></a>
+          <nav>
+              <ul>
+              {% if request.user.is_confirmed %}
+                  <li><a href="#">Ege</a></li>
+                  <li><a href="#">Oge</a></li>
+                  <li><a href="#">Olymp</a></li>
+                  <li><a href="#">Develop your skills</a></li>
+                  {% endif %}
+                  {% if request.user.is_authenticated %}
+                  <li>
+                      <a href="">British Bulldog</a>
+                      <ul>
+                        {% drop_menu 'BB' %}
+                      </ul>
+                  </li>
+                  <li>
+                      <a href="#">Idioms & Collocations</a>
+                      <ul>
+                          <li><a href="{% url 'play_video' %}">Watch & learn</a></li>
+                          <li><a href="#">Read & learn</a></li>
+                      </ul>
+                  </li>
+                  <li>
+                      <a href="#">Fun room</a>
+                      <ul>
+                          <li><a href="#">Cinema</a></li>
+                          <li><a href="#">Quiz</a></li>
+                          <li><a href="#">Crosswords</a></li>
+                      </ul>
+                  </li>
+                  {% endif %}
+              </ul>
+          </nav>
+          <div class="login">
+                {% if request.user.is_authenticated %}
+                    <a href="{{ user.get_absolute_url }}">{{user.username}}</a><a href="{% url 'logout' %}">Log out</a>
+                {% else %}
+                <a href="{% url 'register' %}">Register</a><a href="{% url 'login' %}">Login</a>
+                {% endif %}
+          </div>
+      </header>
 
 <table id="question_left">
 	<tr>

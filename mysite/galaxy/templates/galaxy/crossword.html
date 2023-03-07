@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Cross word Puzzel</title>
+<title>{{title}}</title>
+
 <style>
+
+body {
+	background-color: antiquewhite;
+}
 
 #cross{
 	text-align: center;
@@ -26,9 +31,7 @@ td{
 	height: 30px;
 	width: 30px;
 }
-#leftBox{
-	float: left;
-}
+
 #rightBox{
 	float: left;
 	clear:left;
@@ -39,7 +42,7 @@ td{
 }
 #puzzel{
 	text-align: center;
-	margin: 0;
+	margin: auto;
 	padding: 0;
 	border-collapse: collapse;
 	border: 1px solid black;
@@ -50,11 +53,33 @@ td{
 		border: 1px solid black;
 		text-align: center;
 }
-#hintsTable{
-	width: 480px;
+#question_left{
+	padding-top: 100px;
+	width: 20%;
 	float: left;
-	clear: left;
 }
+
+#question_right{
+	padding-top: 100px;
+	width: 20%;
+	float: right;
+}
+
+#crossw{
+	padding-top: 100px;
+	width: 60%;
+	float: left;
+}
+
+.buttons{
+	margin: auto;
+}
+
+h1 {
+	text-align: center;
+}
+
+
 </style>
 
 <script>
@@ -82,12 +107,15 @@ function initializeScreen(){
 }
 //Adds the hint numbers, номера слов в кроссворде
 function addHint(){
-	document.getElementById("txt_0_4").placeholder = "1";
-	document.getElementById("txt_2_6").placeholder = "2";
-	document.getElementById("txt_3_1").placeholder = "3";
-	document.getElementById("txt_3_9").placeholder = "4";
-	document.getElementById("txt_6_2").placeholder = "5";
-	document.getElementById("txt_9_0").placeholder = "6";
+	document.getElementById("txt_0_1").placeholder = "1";
+	document.getElementById("txt_0_2").placeholder = "2";
+	document.getElementById("txt_0_3").placeholder = "3";
+	document.getElementById("txt_0_5").placeholder = "4";
+	document.getElementById("txt_0_8").placeholder = "5";
+	document.getElementById("txt_0_10").placeholder = "6";
+	document.getElementById("txt_1_0").placeholder = "7";
+	document.getElementById("txt_1_7").placeholder = "8";
+	document.getElementById("txt_1_9").placeholder = "9";
 }
 //Stores ID of the selected cell into currentTextInput
 function textInputFocus(txtID123){
@@ -95,17 +123,18 @@ function textInputFocus(txtID123){
 }
 //Returns Array
 function preparePuzzelArray(){
-var items = [	[0, 0, 0, 0, 'p', 0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 'u', 0, 0, 0, 0, 0 ],
-				[0, 0, 0, 0, 'n', 0, 'b', 0, 0, 0],
-				[0, 'h', 'y', 'd', 'e', 'r', 'a', 'b', 'a', 'd'],
-				[0, 0, 0, 0, 0, 0, 'n', 0, 0, 'e'],
-				[0, 0, 0, 0, 0, 0, 'g', 0, 0, 'l'],
-				[0, 0, 'm', 'u', 'm', 'b', 'a', 'i', 0, 'h'],
-				[0, 0, 0, 0, 0, 0, 'l', 0, 0, 'i'],
-				[0, 0, 0, 0, 0, 0, 'o', 0, 0, 0],
-				['k', 'a', 's', 'h', 'm', 'i','r', 0, 0, 0],
-				[0, 0, 0, 0, 0, 0, 'e', 0, 0, 0]
+var items = [	[0, 'p', 'a', 'p', 'e', 'r', 0, 0, 'i', 0, 'c', 0],
+				['p', 'i', 'n', 'e', 0, 'u', 0, 'p', 'o', 'u', 'n', 'd'],
+				['u', 'n', 'd', 'e', 'r', 'g', 'r', 'o', 'u', 'n', 'd', 0],
+				['n', 't', 0, 'r', 'u', 'b', 0, 'w', 0, 'i', 0, 'b'],
+				[0, 0, 'c', 0, 'm', 'y', 0, 'e', 0, 'o', 0, 'e'],
+				['l', 'i', 'o', 'n', 0, 0, 'p', 'r', 'i', 'n', 'c', 'e'],
+				[0, 0, 'a', 0, 'c', 0, 'i', 0, 0, 'j', 0, 'f'],
+				['w', 'e', 'l', 'f', 'a', 'r', 'e', 's', 't', 'a', 't', 'e'],
+				['e', 0, 0, 0, 'b', 'a', 0, 'h', 0, 'c', 0, 'a'],
+				['l', 'o', 'r', 'd', 0, 'c', 'r', 'i', 'c', 'k', 'e', 't'],
+				['s', 0, 0, 0, 'b', 'e', 'e', 'r', 0, 0, 'w', 'e'],
+				['h', 'u', 'n', 't', 0, 's', 'p', 'e', 'a', 'k', 'e', 'r'],
 			];
 return items;
 }
@@ -124,7 +153,7 @@ function checkClicked(){
 			if(rowData[j] != 0){
 				var selectedInputTextElement = document.getElementById('txt' + '_' + i + '_' + j);
 				if(selectedInputTextElement.value != puzzelArrayData[i][j]){
-					selectedInputTextElement.style.backgroundColor = 'red';
+					selectedInputTextElement.value = '';
 
 				}else{
 					selectedInputTextElement.style.backgroundColor = 'white';
@@ -183,33 +212,133 @@ function solveClicked(){
 }
 </script>
 </head>
-<body onload="initializeScreen()">
-<div id="leftBox">
-<table id="puzzel">
 
+<body onload="initializeScreen()">
+<h1>{{title}}</h1>
+<table id="question_left">
+	<tr>
+		<td>1.    The Times is one, so is the Guardian.</td>
+	</tr>
+	<tr>
+		<td>7.    Tree very common in Scotland.</td>
+	</tr>
+	<tr>
+		<td>8.    It can be Sterling, or a weight.</td>
+	</tr>
+	<tr>
+		<td>10.  London railway sometimes known as the "tube".</td>
+	</tr>
+	<tr>
+		<td>2.    National Trust (initials).</td>
+	</tr>
+	<tr>
+		<td>13.  To _____ out means to erase, to make something disappear.</td>
+	</tr>
+	<tr>
+		<td>16.    Britain's national symbolic animal.</td>
+	</tr>
+	<tr>
+		<td>17.    Charles's title; William's too.</td>
+	</tr>
+	<tr>
+		<td>19. The general name given to Britain's health and social security system (7, 5).</td>
+	</tr>
+	<tr>
+		<td>22.    Common university qualification; or an airline!</td>
+	</tr>
+	<tr>
+		<td>23.    A member of the British aristocracy.</td>
+	</tr>
+	<tr>
+		<td>24.    Traditional British summer sport.</td>
+	</tr>
+	<tr>
+		<td>27.    Popular drink sold in pubs.</td>
+	</tr>
+	<tr>
+		<td>28.    Pronoun.</td>
+	</tr>
+	<tr>
+		<td>29.    A very traditional English country sporting event, with dogs and horses</td>
+	</tr>
+	<tr>
+		<td>30.    The person who manages operations in the House of Commons... or someone who is talking.</td>
+	</tr>
 </table>
-</div>
-<div id="rightBox">
-<table>
-	<tr><td><input class="butt"  type="submit" value="Clear All" onclick="clearAllClicked()"></td>
-	<td><input class="butt"  type="submit" value="Check" onclick="checkClicked()"></td>
-	<td><input class="butt"  type="submit" value="Solve" onclick="solveClicked()"></td>
-	<td><input class="butt"  type="submit" value="Clue" onclick="clueClicked()"></td></tr>
-</table>
-</div>
-<table id="hintsTable">
-		<tr>
-			<td><strong>Horizontal:</strong></td><td><strong>Vertical:</strong></td>
-		</tr>
-		<tr>
-			<td>3. Cultural Hub (Hyderabad)</td><td>1. Education Hub (Pune)</td>
-		</tr>
-		<tr>
-			<td>5. India's financial capital (Mumbai)</td><td>2. Information Technology Hub (Bangalore)</td>
-		</tr>
-		<tr>
-			<td>6. Saffron region (Kashmir)</td><td>4. Capital of India (Delhi)</td>
+
+
+
+	<div id="crossw">
+		<table id="puzzel">
+
+		</table>
+		<table class="buttons">
+			<tr><td><input class="butt"  type="submit" value="Clear All" onclick="clearAllClicked()"></td>
+			<td><input class="butt"  type="submit" value="Check" onclick="checkClicked()"></td>
+			<td><input class="butt"  type="submit" value="Solve" onclick="solveClicked()"></td>
+			<td><input class="butt"  type="submit" value="Clue" onclick="clueClicked()"></td></tr>
+		</table>
+	</div>
+
+
+
+<table id="question_right">
+	<tr>
+		<td>1.    Traditional unit of liquid, used for beer or milk. </td>
+	</tr>
+	<tr>
+		<td>2.    Fish ....... chips.</td>
+	</tr>
+	<tr>
+		<td>3.    Member of the nobility.</td>
+	</tr>
+	<tr>
+		<td>4.    Famous ball game invented at an English school.</td>
+	</tr>
+	<tr>
+		<td>5.    Acronym of "I owe you".</td>
+	</tr>
+	<tr>
+		<td>6.    Same as 2 down.</td>
+	</tr>
+	<tr>
+		<td>8.    The Queen is head of state, but she has no ..........</td>
+	</tr>
+	<tr>
+		<td>9.    British flag (5,4) </td>
+	</tr>
+	<tr>
+		<td>11.   The traditional drink of the Royal Navy. </td>
+	</tr>
+	<tr>
+		<td>14.   Ceremonial guard at the Tower of London.</td>
+	</tr>
+	<tr>
+		<td>15.   Britain has great reserves of this black rock.</td>
+	</tr>
+	<tr>
+		<td>17.   A tart upside down! </td>
+	</tr>
+	<tr>
+		<td>18.   Another word for a black taxi.</td>
+	</tr>
+	<tr>
+		<td>19.   They come from Wales. </td>
+	</tr>
+	<tr>
+		<td>20.  The Grand National and the Derby are both .......</td>
+	</tr>
+	<tr>
+		<td>21.   County.</td>
+	</tr>
+	<tr>
+		<td>25.   Travelling sales representative (abbreviation). </td>
+	</tr>
+	<tr>
+		<td>26.    Female sheep</td>
+	</tr>
 </table>
 
 </body>
 </html>
+

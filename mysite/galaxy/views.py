@@ -153,4 +153,7 @@ def play_video(request):
 
 
 def cross(request):
-    return render(request, 'galaxy/cross2.html')
+    context = {
+        'title': 'Crossword'
+    }
+    return render(request, 'galaxy/crossword.html', context=context)

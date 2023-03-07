@@ -11,6 +11,7 @@ header {
 
 nav ul {
   list-style: none;
+  background-color: #0000005c;
   margin: 0;
   padding: 0;
   display: flex;
@@ -18,7 +19,8 @@ nav ul {
 
 nav li {
   position: relative;
-  margin-right: 20px;
+  padding-right: 40px;
+  padding-left: 40px;
 }
 
 nav a {
@@ -38,6 +40,7 @@ nav ul ul {
   top: 100%;
   left: 0;
   padding: 0;
+  width: 100%;
 }
 
 nav ul ul li {
@@ -45,6 +48,9 @@ nav ul ul li {
   width: 200px;
   width: inherit;
   min-width: unset !important;
+  text-align: center;
+  padding-left: 0px;
+  padding-right: 0px;
 }
 
 nav ul ul a {

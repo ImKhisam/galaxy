@@ -399,7 +399,8 @@ ul.lang-list li a:hover {color: #fdc073;}
 }
 
 .modal{
-  padding: 50px;
+  padding: 20px;
+  background-color: #0000005c;
   position: fixed; top: 50%; left: 50%;
   -webkit-transform: translate(-50%, -50%);
   -ms-transform: translate(-50%, -50%);

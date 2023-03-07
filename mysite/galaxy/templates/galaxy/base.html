@@ -7,6 +7,10 @@
     <title>{{ title }}</title>
     <link type="text/css" href="{% static 'galaxy/css/chat.css' %}" rel="stylesheet">
     <link type="text/css" href="{% static 'galaxy/css/addition.css' %}" rel="stylesheet" />
+    {% block styles %}
+
+    {% endblock %}
+
 </head>
 
 <body>
@@ -16,32 +20,37 @@
           <nav>
               <ul>
               {% if request.user.is_confirmed %}
-                  <li><a href="#">Ege</a></li>
+                  <li><a href="#">Ege</a>
+                    <ul>
+                        <li><a href="#">Listening</a></li>
+                        <li><a href="#">Reading</a></li>
+                        <li><a href="#">Grammar & Vocabulary</a></li>
+                        <li><a href="#">Writing</a></li>
+                        <li><a href="#">Speaking</a></li>
+                    </ul>
+                  </li>
                   <li><a href="#">Oge</a></li>
                   <li><a href="#">Olymp</a></li>
                   <li><a href="#">Develop your skills</a></li>
                   {% endif %}
                   {% if request.user.is_authenticated %}
-                  <li>
-                      <a href="">British Bulldog</a>
-                      <ul>
+                  <li><a href="">British Bulldog</a>
+                    <ul>
                         {% drop_menu 'BB' %}
-                      </ul>
+                    </ul>
                   </li>
-                  <li>
-                      <a href="#">Idioms & Collocations</a>
-                      <ul>
-                          <li><a href="{% url 'play_video' %}">Watch & learn</a></li>
-                          <li><a href="#">Read & learn</a></li>
-                      </ul>
+                  <li><a href="#">Idioms & Collocations</a>
+                    <ul>
+                        <li><a href="{% url 'play_video' %}">Watch & learn</a></li>
+                        <li><a href="#">Read & learn</a></li>
+                    </ul>
                   </li>
-                  <li>
-                      <a href="#">Fun room</a>
-                      <ul>
-                          <li><a href="#">Cinema</a></li>
-                          <li><a href="#">Quiz</a></li>
-                          <li><a href="#">Crosswords</a></li>
-                      </ul>
+                  <li><a href="#">Fun room</a>
+                    <ul>
+                        <li><a href="#">Cinema</a></li>
+                        <li><a href="#">Quiz</a></li>
+                        <li><a href="{% url 'cross' %}">Crosswords</a></li>
+                    </ul>
                   </li>
                   {% endif %}
               </ul>
