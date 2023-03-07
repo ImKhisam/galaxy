@@ -15,8 +15,13 @@ class CustomUserAdmin(UserAdmin):
 
 
 class BritishBulldogAdmin(admin.ModelAdmin):
+    list_display = ('classes', 'year', 'content', 'audio')
+
+
+class OlympAdmin(admin.ModelAdmin):
     list_display = ('classes', 'year')
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(BritishBulldog, BritishBulldogAdmin)
+admin.site.register(Olymp, OlympAdmin)

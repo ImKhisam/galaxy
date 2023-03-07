@@ -28,9 +28,18 @@ class BritishBulldog(models.Model):
     def __str__(self):
         return self.classes
 
-    def get_absolute_url(self):
-        return reverse('show_bb_year', kwargs={'bb_slug': self.year})
-
     class Meta:
         ordering = ['year', 'classes']
+
+
+class Olymp(models.Model):
+    classes = models.CharField(max_length=255, verbose_name='Class')
+    year = models.CharField(max_length=255, verbose_name='Year')
+    content = models.FileField(upload_to=content_file_name)
+    audio = models.FileField(upload_to=content_file_name, blank=True)
+
+    def __str__(self):
+        return self.classes
+
+
 

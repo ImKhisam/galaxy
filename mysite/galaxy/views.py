@@ -68,7 +68,7 @@ class Personal_Acc(LoginRequiredMixin, DataMixin, DetailView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Oge(LoginRequiredMixin, DataMixin, TemplateView):
+class Gse(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -80,7 +80,7 @@ class Oge(LoginRequiredMixin, DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Ege(LoginRequiredMixin, DataMixin, TemplateView):
+class Use(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -104,7 +104,7 @@ class Dev_skills(LoginRequiredMixin, DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Olymp(LoginRequiredMixin, DataMixin, TemplateView):
+class Olymp_way(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):

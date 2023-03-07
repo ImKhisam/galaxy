@@ -152,8 +152,12 @@ function checkClicked(){
 		for(var j = 0 ; j < rowData.length ; j++){
 			if(rowData[j] != 0){
 				var selectedInputTextElement = document.getElementById('txt' + '_' + i + '_' + j);
+				if(selectedInputTextElement.value == ''){
+				continue;
+				}
 				if(selectedInputTextElement.value != puzzelArrayData[i][j]){
-					selectedInputTextElement.value = '';
+					//selectedInputTextElement.value = '';
+					selectedInputTextElement.style.backgroundColor = 'red';
 
 				}else{
 					selectedInputTextElement.style.backgroundColor = 'white';

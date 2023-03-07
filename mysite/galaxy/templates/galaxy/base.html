@@ -7,9 +7,6 @@
     <title>{{ title }}</title>
     <link type="text/css" href="{% static 'galaxy/css/chat.css' %}" rel="stylesheet">
     <link type="text/css" href="{% static 'galaxy/css/addition.css' %}" rel="stylesheet" />
-    {% block styles %}
-
-    {% endblock %}
 
 </head>
 
@@ -20,7 +17,7 @@
           <nav>
               <ul>
               {% if request.user.is_confirmed %}
-                  <li><a href="#">Ege</a>
+                  <li><a href="#">GSE</a>
                     <ul>
                         <li><a href="#">Listening</a></li>
                         <li><a href="#">Reading</a></li>
@@ -29,7 +26,7 @@
                         <li><a href="#">Speaking</a></li>
                     </ul>
                   </li>
-                  <li><a href="#">Oge</a>
+                  <li><a href="#">USE</a>
                     <ul>
                         <li><a href="#">Listening</a></li>
                         <li><a href="#">Reading</a></li>
@@ -38,7 +35,7 @@
                         <li><a href="#">Speaking</a></li>
                     </ul>
                   </li>
-                  <li><a href="#">Olymp</a></li>
+                  <li><a href="#">Olymp Way</a></li>
                   <li><a href="https://learnenglish.britishcouncil.org/skills">Develop your skills</a></li>
                   {% endif %}
                   {% if request.user.is_authenticated %}
