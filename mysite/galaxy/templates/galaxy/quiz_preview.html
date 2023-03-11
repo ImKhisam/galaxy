@@ -1,0 +1,49 @@
+{% extends 'galaxy/base.html' %}
+{% block custom_styles %}
+    <style>
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .preview {
+        width: 30%;
+        margin: 10px;
+      }
+      .preview img {
+        width: 100%;
+      }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+      <div class="preview">
+        <img src="picture1.jpg" alt="Preview Picture 1">
+      </div>
+      <div class="preview">
+        <img src="picture2.jpg" alt="Preview Picture 2">
+      </div>
+      <div class="preview">
+        <img src="picture3.jpg" alt="Preview Picture 3">
+      </div>
+      <div class="preview">
+        <img src="picture4.jpg" alt="Preview Picture 4">
+      </div>
+      <div class="preview">
+        <img src="picture5.jpg" alt="Preview Picture 5">
+      </div>
+      <div class="preview">
+        <img src="picture6.jpg" alt="Preview Picture 6">
+      </div>
+      <div class="preview">
+        <img src="picture7.jpg" alt="Preview Picture 7">
+      </div>
+      <div class="preview">
+        <img src="picture8.jpg" alt="Preview Picture 8">
+      </div>
+      <div class="preview">
+        <img src="picture9.jpg" alt="Preview Picture 9">
+      </div>
+    </div>
+{% endblock %}

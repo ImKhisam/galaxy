@@ -15,5 +15,6 @@ urlpatterns = [
     path('julik/', julik, name='julik'),
     path('test/', Test.as_view(), name='test'),
     path('show_doc/<int:classes_id>/<doc_type>/', showdoc, name='show_doc'),
-    path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio')
+    path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio'),
+    path('quiz_preview/', quizpreview, name='quiz_preview')
     ]

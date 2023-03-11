@@ -8,7 +8,7 @@
     <title>{{ title }}</title>
     <link type="text/css" href="{% static 'galaxy/css/chat.css' %}" rel="stylesheet">
     <link type="text/css" href="{% static 'galaxy/css/addition.css' %}" rel="stylesheet" />
-
+    {% block custom_styles %}{% endblock %}
 </head>
 
 <body>
@@ -58,7 +58,7 @@
                   <li><a href="#">Fun room</a>
                     <ul>
                         <li><a href="#">Cinema</a></li>
-                        <li><a href="#">Quiz</a></li>
+                        <li><a href="{% url 'quiz_preview' %}">Quiz</a></li>
                         <li><a href="" target="_blank">Crosswords</a>
                             <ul>
                                 <li><a href="{% url 'cross' 1 %}" target="_blank">Painting</a></li>

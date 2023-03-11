@@ -160,3 +160,5 @@ class Test(DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
+def quizpreview(request):
+    return render(request, 'galaxy/quiz_preview.html')
