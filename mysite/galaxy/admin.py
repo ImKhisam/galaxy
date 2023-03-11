@@ -14,14 +14,9 @@ class CustomUserAdmin(UserAdmin):
     list_editable = ('is_confirmed',)
 
 
-class BritishBulldogAdmin(admin.ModelAdmin):
-    list_display = ('classes', 'year', 'content', 'audio')
-
-
-class OlympAdmin(admin.ModelAdmin):
-    list_display = ('classes', 'year')
+class OlympWayAdmin(admin.ModelAdmin):
+    list_display = ('id', 'year', 'stage', 'classes', 'task', 'answer', 'audio', 'script')
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(BritishBulldog, BritishBulldogAdmin)
-admin.site.register(Olymp, OlympAdmin)
+admin.site.register(OlympWay, OlympWayAdmin)

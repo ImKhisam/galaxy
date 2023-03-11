@@ -1,15 +1,13 @@
 import os
-
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import FileResponse, Http404
-
-from .utils import DataMixin
 from django.conf import settings
+from django.http import FileResponse, Http404
+from .utils import DataMixin
 from .forms import *
 
 
@@ -56,7 +54,7 @@ def logout_user(request):
     return redirect('home')
 
 
-class Personal_Acc(LoginRequiredMixin, DataMixin, DetailView):
+class PersonalAcc(LoginRequiredMixin, DataMixin, DetailView):
     model = CustomUser
     template_name = "galaxy/personal_acc.html"
     slug_url_kwarg = 'acc_slug'
@@ -92,7 +90,7 @@ class Use(LoginRequiredMixin, DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Dev_skills(LoginRequiredMixin, DataMixin, TemplateView):
+class DevSkills(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -104,22 +102,14 @@ class Dev_skills(LoginRequiredMixin, DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Olymp_way(LoginRequiredMixin, DataMixin, TemplateView):
-    template_name = "galaxy/zaglushka.html"
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        if not self.check_access():
-            return redirect('julik')
-
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Ege')
-        return dict(list(context.items()) + list(c_def.items()))
-
-
-def pdf_view(request, classes_id):
+def showdoc(request, classes_id, doc_type):
     media = settings.MEDIA_ROOT                                     # importing from settings
-    obj = get_object_or_404(BritishBulldog, id=classes_id)      # get path from db
-    filepath = os.path.join(media, str(obj.content))             # uniting path
+    obj = get_object_or_404(OlympWay, id=classes_id)                # get path from db
+    filepath = os.path.join(media, str(obj.task))                   # uniting path
+    if doc_type == 'answer':
+        filepath = os.path.join(media, str(obj.answer))
+    elif doc_type == 'script':
+        filepath = os.path.join(media, str(obj.script))
 
     try:
         return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
@@ -127,15 +117,15 @@ def pdf_view(request, classes_id):
         raise Http404()
 
 
-class Play_audio(DetailView):
-    model = BritishBulldog
+class Playaudio(DetailView):
+    model = OlympWay
     template_name = 'galaxy/play_audio.html'
     pk_url_kwarg = 'classes_id'
     context_object_name = 'file'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
+        context['title'] = '_'.join(('Olymp', context['file'].year, context['file'].classes))
         return context
 
 
@@ -148,7 +138,7 @@ class Idioms(LoginRequiredMixin, DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-class Fun_room(LoginRequiredMixin, DataMixin, TemplateView):
+class FunRoom(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):

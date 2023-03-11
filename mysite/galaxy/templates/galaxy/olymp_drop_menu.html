@@ -1,17 +1,27 @@
-{% for key, value in menu_dict.items %}
-    <li><a href="#">{{key.year}}</a>
+{% for year, stages in menu_dict.items %}
+    <li><a href="#">{{year.year}}</a>
     <ul  class="dropdown">
-        {% for classes in value %}
-        {% if classes.audio %}
-        <li><a href="#">{{ classes.classes }}</a>
-            <ul>
-                <li><a href="{% url 'show_doc' classes.id %}">PDF</a> </li>
-                <li><a href="{% url 'play_audio' classes.id %}">Audio</a> </li>
+        {% for stage, classes in stages.items %}
+        <li><a href="#">{{ stage.stage }}</a>
+            <ul  class="dropdown">
+                {% for classes, file in classes.items %}
+                <li><a href="#">{{ classes.classes }}</a>
+                    <ul>
+                        <li><a href="{% url 'show_doc' classes.id 'task' %}">Task</a></li>
+                        {% if classes.answer %}
+                        <li><a href="{% url 'show_doc' classes.id 'answer' %}">Answer</a></li>
+                        {% endif %}
+                        {% if classes.audio %}
+                        <li><a href="{% url 'play_audio' classes.id %}">Audio</a></li>
+                        {% endif %}
+                        {% if classes.script %}
+                        <li><a href="{% url 'show_doc' classes.id 'script' %}">Script</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+                {% endfor %}
             </ul>
         </li>
-        {% else %}
-        <li><a href="{% url 'show_doc' classes.id %}">{{ classes.classes }}</a>
-        {% endif %}
         {% endfor %}
     </ul>
     </li>

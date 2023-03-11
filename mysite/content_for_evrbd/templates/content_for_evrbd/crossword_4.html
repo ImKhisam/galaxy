@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{title}}</title>
+
+<style>
+
+body {
+	background-color: antiquewhite;
+}
+
+#cross{
+	text-align: center;
+	width:30px;
+	height:30px;
+	margin: 0;
+	padding: 0;
+	border-collapse: collapse;
+	border: 1px solid white;
+}
+#buttons{
+	width:30%;
+	float: right;
+
+}
+tr{
+	margin: 0;
+	padding: 0;
+	border-collapse: collapse;
+}
+td{
+	height: 30px;
+	width: 30px;
+	font-size: 18px;
+}
+
+#rightBox{
+	float: left;
+	clear:left;
+}
+.butt{
+	height:50px;
+	width: 107px;
+}
+#puzzel{
+	text-align: center;
+	margin: auto;
+	padding: 0;
+	border-collapse: collapse;
+
+}
+.inputBox{
+		width: 40px;
+		height:40px;
+		border: 1px solid black;
+		text-align: center;
+}
+#question_left{
+	padding-top: 30px;
+	width: 20%;
+	float: left;
+}
+
+#question_right{
+	padding-top: 30px;
+	width: 20%;
+	float: right;
+}
+
+#crossw{
+	padding-top: 30px;
+	width: 60%;
+	float: left;
+}
+
+.buttons{
+	margin: auto;
+	padding-top: 30px;
+}
+
+h1 {
+	text-align: center;
+}
+
+
+</style>
+
+<script>
+//Globals
+var currentTextInput;
+var puzzelArrayData;
+//Loads the Crossword
+function initializeScreen(){
+	var puzzelTable = document.getElementById("puzzel");
+	puzzelArrayData = preparePuzzelArray();
+	for ( var i = 0; i < puzzelArrayData.length ; i++ ) {
+		var row = puzzelTable.insertRow(-1);
+		var rowData = puzzelArrayData[i];
+		for(var j = 0 ; j < rowData.length ; j++){
+			var cell = row.insertCell(-1);
+			if(rowData[j] != 0){
+				var txtID = String('txt' + '_' + i + '_' + j);
+				cell.innerHTML = '<input type="text" class="inputBox" maxlength="1" style="text-transform: lowercase" ' + 'id="' + txtID + '" onfocus="textInputFocus(' + "'" + txtID + "'"+ ')">';
+			}else{
+				cell.style.backgroundColor  = "antiquewhite";
+			}
+		}
+	}
+	addHint();
+}
+//Adds the hint numbers, номера слов в кроссворде
+function addHint(){
+	document.getElementById("txt_0_11").placeholder = "1";
+	document.getElementById("txt_1_11").placeholder = "2";
+	document.getElementById("txt_2_5").placeholder = "3";
+	document.getElementById("txt_2_8").placeholder = "4";
+	document.getElementById("txt_5_6").placeholder = "5";
+	document.getElementById("txt_6_4").placeholder = "6";
+	document.getElementById("txt_8_2").placeholder = "7";
+	document.getElementById("txt_8_4").placeholder = "8";
+	document.getElementById("txt_8_8").placeholder = "9";
+	document.getElementById("txt_8_11").placeholder = "10";
+	document.getElementById("txt_10_4").placeholder = "11";
+	document.getElementById("txt_11_0").placeholder = "12";
+}
+//Stores ID of the selected cell into currentTextInput
+function textInputFocus(txtID123){
+	currentTextInput = txtID123;
+}
+//Returns Array
+function preparePuzzelArray(){
+var items = [	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'c', 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'h', 'u', 'n', 't'],
+				[0, 0, 0, 0, 0, 'l', 'a', 'm', 'b', 0, 0, 'o', 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 'u', 0, 0, 'c', 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 'n', 0, 0, 'o', 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 'f', 0, 'n', 0, 0, 'l', 0, 0, 0],
+				[0, 0, 0, 0, 'j', 'e', 'l', 'l', 'y', 'b', 'e', 'a', 'n', 's', 0],
+				[0, 0, 0, 0, 0, 0, 'o', 0, 0, 0, 0, 't', 0, 0, 0],
+				[0, 0, 'a', 0, 'b', 0, 'w', 0, 'c', 0, 0, 'e', 'g', 'g', 's'],
+				[0, 0, 'p', 0, 'a', 0, 'e', 0, 'a', 0, 0, 0, 0, 0, 0],
+				[0, 0, 'r', 0, 's', 'p', 'r', 'i', 'n', 'g', 0, 0, 0, 0, 0],
+				['c', 'h', 'i', 'c', 'k', 0, 0, 0, 'd', 0, 0, 0, 0, 0, 0],
+				[0, 0, 'l', 0, 'e', 0, 0, 0, 'y', 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 't', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+			];
+return items;
+}
+//Clear All Button
+function clearAllClicked(){
+	currentTextInput = '';
+	var puzzelTable = document.getElementById("puzzel");
+	puzzelTable.innerHTML = '';
+    initializeScreen();
+}
+//Check button
+function checkClicked(){
+	for ( var i = 0; i < puzzelArrayData.length ; i++ ) {
+		var rowData = puzzelArrayData[i];
+		for(var j = 0 ; j < rowData.length ; j++){
+			if(rowData[j] != 0){
+				var selectedInputTextElement = document.getElementById('txt' + '_' + i + '_' + j);
+				if(selectedInputTextElement.value == ''){
+				continue;
+				}
+				if(selectedInputTextElement.value != puzzelArrayData[i][j]){
+					//selectedInputTextElement.value = '';
+					selectedInputTextElement.style.backgroundColor = 'red';
+
+				}else{
+					selectedInputTextElement.style.backgroundColor = 'white';
+				}
+			}
+		}
+	}
+}
+//Clue Button
+function clueClicked(){
+	if (currentTextInput != null){
+		var temp1 = currentTextInput;
+		var token = temp1.split("_");
+		var row = token[1];
+		var column = token[2];
+		document.getElementById(temp1).value = puzzelArrayData[row][column];
+		//checkClicked();
+	}
+}
+//Solve Button
+function solveClicked(){
+	if (currentTextInput != null){
+		var temp1 = currentTextInput;
+		var token = temp1.split("_");
+		var row = token[1];
+		var column = token[2];
+
+		// Print elements on top
+		for(j = row; j >= 0; j--){
+			if(puzzelArrayData[j][column] != 0){
+				document.getElementById('txt' + '_' + j + '_' + column).value = puzzelArrayData[j][column];
+				}else break;
+		}
+		// Print elements on right
+		for(i = column; i< puzzelArrayData[row].length; i++){
+			if(puzzelArrayData[row][i] != 0){
+				document.getElementById('txt' + '_' + row + '_' + i).value = puzzelArrayData[row][i];
+				}else break;
+		}
+
+		// Print elements below
+		for(m = row; m< puzzelArrayData.length; m++){
+			if(puzzelArrayData[m][column] != 0){
+				document.getElementById('txt' + '_' + m + '_' + column).value = puzzelArrayData[m][column];
+				}else break;
+		}
+		// Print elements on left
+		for(k = column; k >= 0; k--){
+			if(puzzelArrayData[row][k] != 0){
+				document.getElementById('txt' + '_' + row + '_' + k).value = puzzelArrayData[row][k];
+				}else break;
+		}
+		// Done!
+
+	}
+}
+</script>
+</head>
+
+<body onload="initializeScreen()">
+<h1>Easter</h1>
+<table id="question_left">
+	<tr>
+		<td style="font-size: 20px; text-align: center;"><b>Across</b></td>
+	</tr>
+	<tr>
+		<td>2. You do this to find the eggs.</td>
+	</tr>
+	<tr><td></td></tr>
+	<tr>
+		<td>3. March rolls in like a lion, out like a ____.</td>
+	</tr>
+	<tr><td></td></tr>
+	<tr>
+		<td>6. I am a type of candy that is colorful and delicious.</td>
+	</tr>
+	<tr><td></td></tr>
+	<tr>
+		<td>10. The Easter bunny hides me!</td>
+	</tr>
+	<tr><td></td></tr>
+	<tr>
+		<td>11. The season that comes before summer.</td>
+	</tr>
+	<tr><td></td></tr>
+	<tr>
+		<td>12. I am a baby chicken.</td>
+	</tr>
+</table>
+
+
+
+	<div id="crossw">
+		<table id="puzzel">
+
+		</table>
+		<table class="buttons">
+			<tr><td><input class="butt"  type="submit" value="Clear All" onclick="clearAllClicked()"></td>
+			<td><input class="butt"  type="submit" value="Check" onclick="checkClicked()"></td>
+			<td><input class="butt"  type="submit" value="Solve" onclick="solveClicked()"></td>
+			<td><input class="butt"  type="submit" value="Clue" onclick="clueClicked()"></td></tr>
+		</table>
+	</div>
+
+
+
+<table id="question_right">
+	<tr>
+		<td style="font-size: 20px; text-align: center;"><b>Down</b></td>
+	</tr>
+	<tr>
+		<td>1. There are many kinds of me, including Reese's and Hershey's.</td>
+	</tr>
+	<tr><td></td></tr>
+	<tr>
+		<td>4. I deliver the eggs and hide them for you to find.</td>
+	</tr>
+	<tr><td></td></tr>
+	<tr>
+		<td>5.  I am beautiful, and bees love me!</td>
+	</tr>
+	<tr><td></td></tr>
+	<tr>
+		<td>7. _____ showers bring May flowers.</td>
+	</tr>
+    <tr><td></td></tr>
+	<tr>
+		<td>8. You put the eggs that you find into me!</td>
+	</tr>
+    <tr><td></td></tr>
+	<tr>
+		<td>9. Some kinds of me are Peeps and Taffy. </td>
+	</tr>
+</table>
+
+</body>
+</html>
+

@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView, ListView, DetailView
-
-
+from django.http import FileResponse, Http404
+from django.conf import settings
 from .models import *
 
 
@@ -48,6 +48,29 @@ from .models import *
 #        return context
 
 
+def ShowDoc(request, classes_id):
+    media = settings.MEDIA_ROOT                                     # importing from settings
+    obj = get_object_or_404(BritishBulldog, id=classes_id)      # get path from db
+    filepath = os.path.join(media, str(obj.content))             # uniting path
+
+    try:
+        return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
+    except FileNotFoundError:
+        raise Http404()
+
+
+class Playaudio(DetailView):
+    model = BritishBulldog
+    template_name = 'content_for_evrbd/play_audio.html'
+    pk_url_kwarg = 'classes_id'
+    context_object_name = 'file'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
+        return context
+
+
 def play_video(request):
     videos = Video.objects.all()
     context = {
@@ -58,8 +81,6 @@ def play_video(request):
     return render(request, 'content_for_evrbd/play_video.html', context=context)
 
 
-def cross(request):
-    context = {
-        'title': 'Crossword'
-    }
-    return render(request, 'content_for_evrbd/crossword.html', context=context)
+def cross(request, cross_num):
+    crossword_template = "".join(('content_for_evrbd/crossword_', str(cross_num), '.html'))
+    return render(request, crossword_template)

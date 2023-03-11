@@ -1,5 +1,6 @@
 {% load static %}
 {% load galaxy_tags %}
+{% load content_for_evrbd_tags %}
 
 <!doctype html>
 <html lang="en">
@@ -35,13 +36,17 @@
                         <li><a href="#">Speaking</a></li>
                     </ul>
                   </li>
-                  <li><a href="#">Olymp Way</a></li>
+                  <li><a href="#">Olymp Way</a>
+                    <ul>
+                        {% drop_menu_olymp %}
+                    </ul>
+                  </li>
                   <li><a href="https://learnenglish.britishcouncil.org/skills">Develop your skills</a></li>
                   {% endif %}
                   {% if request.user.is_authenticated %}
                   <li><a href="">British Bulldog</a>
                     <ul>
-                        {% drop_menu 'BB' %}
+                        {% drop_menu_bb %}
                     </ul>
                   </li>
                   <li><a href="#">Idioms & Collocations</a>
@@ -54,7 +59,14 @@
                     <ul>
                         <li><a href="#">Cinema</a></li>
                         <li><a href="#">Quiz</a></li>
-                        <li><a href="{% url 'cross' %}">Crosswords</a></li>
+                        <li><a href="" target="_blank">Crosswords</a>
+                            <ul>
+                                <li><a href="{% url 'cross' 1 %}" target="_blank">Painting</a></li>
+                                <li><a href="{% url 'cross' 2 %}" target="_blank">Saint Patricks Day</a></li>
+                                <li><a href="{% url 'cross' 3 %}" target="_blank">Spring</a></li>
+                                <li><a href="{% url 'cross' 4 %}" target="_blank">Easter</a></li>
+                            </ul>
+                        </li>
                     </ul>
                   </li>
                   {% endif %}
