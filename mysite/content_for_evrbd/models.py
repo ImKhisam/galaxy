@@ -4,15 +4,15 @@ from django.urls import reverse
 from embed_video.fields import EmbedVideoField
 
 
-def content_file_name(instance, filename):
+def content_bb_name(instance, filename):
     return '/'.join(['bb', instance.year, filename])
 
 
 class BritishBulldog(models.Model):
     classes = models.CharField(max_length=255, verbose_name='Class')
     year = models.CharField(max_length=255, verbose_name='Year')
-    content = models.FileField(upload_to=content_file_name)
-    audio = models.FileField(upload_to=content_file_name, blank=True)
+    content = models.FileField(upload_to=content_bb_name)
+    audio = models.FileField(upload_to=content_bb_name, blank=True)
 
     def __str__(self):
         return self.classes
@@ -28,3 +28,13 @@ class Video(models.Model):
 
     def __str__(self):
         return self.title
+
+
+def content_quiz_name(instance, filename):
+    return '/'.join(['quiz', filename])
+
+
+class Quizzes(models.Model):
+    title = models.CharField(max_length=100)
+    quiz = models.FileField(upload_to=content_quiz_name)
+    answer = models.FileField(upload_to=content_quiz_name)

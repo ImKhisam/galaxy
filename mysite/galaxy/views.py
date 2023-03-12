@@ -158,7 +158,3 @@ class Test(DataMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         c_def = self.get_user_context(title='test')
         return dict(list(context.items()) + list(c_def.items()))
-
-
-def quizpreview(request):
-    return render(request, 'galaxy/quiz_preview.html')

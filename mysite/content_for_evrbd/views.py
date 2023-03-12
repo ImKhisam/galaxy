@@ -48,7 +48,7 @@ from .models import *
 #        return context
 
 
-def ShowDoc(request, classes_id):
+def showdoc(request, classes_id):
     media = settings.MEDIA_ROOT                                     # importing from settings
     obj = get_object_or_404(BritishBulldog, id=classes_id)      # get path from db
     filepath = os.path.join(media, str(obj.content))             # uniting path
@@ -84,3 +84,25 @@ def play_video(request):
 def cross(request, cross_num):
     crossword_template = "".join(('content_for_evrbd/crossword_', str(cross_num), '.html'))
     return render(request, crossword_template)
+
+
+def quizpreview(request):
+    return render(request, 'content_for_evrbd/quiz_preview.html')
+
+
+class QuizPreview(ListView):
+    paginate_by = 5
+    model = Quizzes
+    template_name = 'content_for_evrbd/quiz_preview.html'
+    context_object_name = 'quizzes'
+
+    def get_queryset(self):
+        return Quizzes.objects.all()
+
+
+class ShowQuiz(DetailView):
+    model = Quizzes
+    template_name = 'content_for_evrbd/show_quiz.html'
+    pk_url_kwarg = 'quiz_id'
+    context_object_name = 'quiz'
+

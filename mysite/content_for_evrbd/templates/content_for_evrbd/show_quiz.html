@@ -1,0 +1,32 @@
+{% extends 'galaxy/base.html' %}
+{% block custom_styles %}
+  <style>
+    .quiz-line {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 5%;
+    }
+    .quiz {
+      margin: 30px;
+    }
+    .quiz img {
+      height: 650px;
+    }
+    .answer {
+      filter: blur(10px);
+      transition: 1s;
+    }
+    .answer:hover {
+    filter: blur(0);
+   }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-line">
+  <div class="quiz"><img src="{{ quiz.quiz.url }}"></div>
+  <div class="quiz"><img class="answer" src="{{ quiz.answer.url }}"></div>
+</div>
+{% endif %}
+{% endblock %}
