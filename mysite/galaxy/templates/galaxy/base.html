@@ -20,11 +20,7 @@
               {% if request.user.is_confirmed %}
                   <li><a href="#">GSE</a>
                     <ul>
-                        <li><a href="#">Listening</a></li>
-                        <li><a href="#">Reading</a></li>
-                        <li><a href="#">Grammar & Vocabulary</a></li>
-                        <li><a href="#">Writing</a></li>
-                        <li><a href="#">Speaking</a></li>
+                        {% drop_menu_exam 'GSE' %}
                     </ul>
                   </li>
                   <li><a href="#">USE</a>

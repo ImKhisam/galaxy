@@ -11,7 +11,7 @@ header {
 
 nav ul {
   list-style: none;
-  background-color: #0000005c;
+  background-color: #000000c9;
   margin: 0;
   padding: 0;
   display: flex;
@@ -63,9 +63,8 @@ nav ul li:hover > ul {
 }
 
 .login a {
-  background-color: #0000005c;
+  background-color: #000000c9;
   display: block;
-
   padding: 10px;
   color: #ffffff;
   text-decoration: none;

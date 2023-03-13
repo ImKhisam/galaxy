@@ -18,5 +18,10 @@ class OlympWayAdmin(admin.ModelAdmin):
     list_display = ('id', 'year', 'stage', 'classes', 'task', 'answer', 'audio', 'script')
 
 
+class TestsAdmin(admin.ModelAdmin):
+    list_display = ('type', 'part', 'test_num')
+
+
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(OlympWay, OlympWayAdmin)
+admin.site.register(Tests, TestsAdmin)

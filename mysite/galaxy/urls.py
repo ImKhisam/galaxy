@@ -11,9 +11,9 @@ urlpatterns = [
     path('ege/', Use.as_view(), name='ege'),
     path('dev_skills/', DevSkills.as_view(), name='dev_skills'),
     path('idioms/', Idioms.as_view(), name='idioms'),
-    path('fun_room/', FunRoom.as_view(), name='fun_room'),
     path('julik/', julik, name='julik'),
     path('test/', Test.as_view(), name='test'),
     path('show_doc/<int:classes_id>/<doc_type>/', showdoc, name='show_doc'),
-    path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio')
+    path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio'),
+    path('listening_test/', ListeningTest.as_view(), name='listening_test')
     ]

@@ -1,0 +1,9 @@
+{% for key, value in menu_dict.items %}
+    <li><a href="#">{{key.part}}</a>
+    <ul  class="dropdown">
+        {% for test in value %}
+        <li><a href="{% url 'listening_test' %}">Test {{ test.test_num }}</a>
+        {% endfor %}
+    </ul>
+    </li>
+{% endfor %}

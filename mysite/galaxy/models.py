@@ -25,7 +25,7 @@ class OlympWay(models.Model):
     Municipal_stage = 'Municipal stage'
     Region_stage = 'Region stage'
     Final_stage = 'Final stage'
-    Choices_in_stage = [
+    choices_in_stage = [
         (School_stage, 'School stage'),
         (Municipal_stage, 'Municipal stage'),
         (Region_stage, 'Region stage'),
@@ -33,7 +33,7 @@ class OlympWay(models.Model):
     ]
 
     year = models.CharField(max_length=255, verbose_name='Year')
-    stage = models.CharField(max_length=255, verbose_name='Stage', choices=Choices_in_stage)
+    stage = models.CharField(max_length=255, verbose_name='Stage', choices=choices_in_stage)
     classes = models.CharField(max_length=255, verbose_name='Class')
     task = models.FileField(upload_to=content_file_name_test)
     answer = models.FileField(upload_to=content_file_name_test, blank=True)
@@ -45,3 +45,33 @@ class OlympWay(models.Model):
 
     class Meta:
         ordering = ['year', 'stage']
+
+
+class Tests(models.Model):
+    GSE = 'GSE'
+    USE = 'USE'
+    choices_in_type = [
+        (GSE, 'GSE'),
+        (USE, 'USE'),
+    ]
+    Listening = 'Listening'
+    Reading = 'Reading'
+    Grammar = 'Grammar and Vocabulary'
+    Writing = 'Writing'
+    Speaking = 'Speaking'
+    choices_in_part = [
+        (Listening, 'Listening'),
+        (Reading, 'Reading'),
+        (Grammar, 'Grammar'),
+        (Writing, 'Writing'),
+        (Speaking, 'Speaking'),
+    ]
+    type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
+    part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
+    test_num = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.type}, {self.part}, {self.pk}"
+
+    class Meta:
+        ordering = ['type', 'part']
