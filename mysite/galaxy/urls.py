@@ -15,5 +15,6 @@ urlpatterns = [
     path('test/', Test.as_view(), name='test'),
     path('show_doc/<int:classes_id>/<doc_type>/', showdoc, name='show_doc'),
     path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio'),
-    path('listening_test/', ListeningTest.as_view(), name='listening_test')
+    path('listening_test/', ListeningTest.as_view(), name='listening_test'),
+    path('exam/<int:test_pk>/', exam, name='exam')
     ]

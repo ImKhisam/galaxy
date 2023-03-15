@@ -75,3 +75,21 @@ class Tests(models.Model):
 
     class Meta:
         ordering = ['type', 'part']
+
+
+class Questions(models.Model):
+    test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    cost = models.PositiveIntegerField()
+    question = models.CharField(max_length=600)
+    question_number = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.test}, Q{self.question_number}"
+
+
+class Answers(models.Model):
+    question = models.ForeignKey(Questions, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=200)
+    is_true = models.BooleanField(default=False)
+
+

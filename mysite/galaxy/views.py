@@ -90,6 +90,17 @@ class Use(LoginRequiredMixin, DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
+def exam(request, test_pk):
+    test = get_object_or_404(Tests, id=test_pk)
+    qa = {}
+    for item in Questions.objects.filter(test__id=test.id):
+        qa[item] = Answers.objects.filter(question__id=item.id)
+    if request.method == 'POST':
+        pass
+    response = render(request, 'galaxy/exam.html', {'test': test, 'qa': qa})
+    return response
+
+
 class ListeningTest(TemplateView):
     template_name = "galaxy/listening_test.html"
 

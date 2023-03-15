@@ -1,0 +1,22 @@
+{% extends 'galaxy/base.html' %}
+
+{% block content %}
+<h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
+
+<form action="submit-test.php" method="post">
+      <ol>
+        <li>
+          {% for question, answers in qa.items %}
+          <h2>{{question.question}}</h2>
+          {% for answer in answers %}
+          <label>
+            <input type="radio" name="q1" value="a">
+              {{ answer.answer }}
+          </label>
+          {% endfor %}
+          {% endfor %}
+        </li>
+      </ol>
+</form>
+
+{% endblock %}
