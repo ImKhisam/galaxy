@@ -96,7 +96,12 @@ def exam(request, test_pk):
     for item in Questions.objects.filter(test__id=test.id):
         qa[item] = Answers.objects.filter(question__id=item.id)
     if request.method == 'POST':
-        pass
+        sum = 0
+        for question in Questions.objects.filter(test__id=test.id):
+            obj = Answers.objects.get(pk=request.POST.get('answer_' + str(question.id)))
+            if obj.is_true:
+                sum += question.cost
+        print(sum)
     response = render(request, 'galaxy/exam.html', {'test': test, 'qa': qa})
     return response
 

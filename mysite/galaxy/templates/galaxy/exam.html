@@ -3,20 +3,22 @@
 {% block content %}
 <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
 
-<form action="submit-test.php" method="post">
-      <ol>
-        <li>
+<form action="{% url 'exam' test.pk %}" method="post">
+  {% csrf_token %}
+  <div class="form errors">{{ form.non_field_errors }}</div>
+
           {% for question, answers in qa.items %}
           <h2>{{question.question}}</h2>
           {% for answer in answers %}
-          <label>
-            <input type="radio" name="q1" value="a">
+            <label>
+            <input type="radio" name="answer_{{question.pk}}" value="{{answer.pk}}">
               {{ answer.answer }}
-          </label>
+            </label>
           {% endfor %}
           {% endfor %}
-        </li>
-      </ol>
+
+<br><br>
+<input class="btn btn-success btn-lg" style="border-radius: 0%;"  type="submit" value="Submit Answers">
 </form>
 
 {% endblock %}
