@@ -1,0 +1,44 @@
+{% extends 'galaxy/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container">
+  <h3 style="text-align: center;">Teacher Signup Form</h3>
+<form method="POST" autocomplete="off" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="first_name">First Name</label>
+          {% render_field userForm.first_name|attr:'required:true'  class="form-control"  placeholder="First Name" %}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="last_name">Last Name</label>
+          {% render_field userForm.last_name|attr:'required:true'  class="form-control" placeholder="Last Name" %}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="username">Username</label>
+          {% render_field userForm.username|attr:'required:true'  class="form-control" placeholder="username" %}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="inputPassword4">Password</label>
+          {% render_field userForm.password|attr:'required:true'  class="form-control" placeholder="password" %}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-12">
+          <label for="profile_pic">Profile Picture</label>
+          {% render_field teacherForm.profile_pic|attr:'required:true' class="form-control" placeholder="" %}
+        </div>
+
+      </div>
+
+
+    <button type="submit" class="btn btn-success" style="border-radius:0px;">Sign Up</button>
+  </form>
+</div>
+{% endblock %}

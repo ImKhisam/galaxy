@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('galaxy.urls')),
     path('', include('content_for_evrbd.urls')),
+    path('', include('users.urls')),
 ]
 
 if settings.DEBUG:

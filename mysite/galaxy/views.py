@@ -20,6 +20,10 @@ class Index(DataMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
+class SignUp(TemplateView):
+    template_name = "galaxy/sign_up.html"
+
+
 class RegisterUser(DataMixin, CreateView):
     form_class = RegisterUserForm
     template_name = 'galaxy/register.html'

@@ -93,8 +93,8 @@ class Answers(models.Model):
     is_true = models.BooleanField(default=False)
 
 
-class Results(models.Model):
-    student = models.ForeignKey()
-    test = models.ForeignKey(Tests)
-    date = models.DateTimeField(auto_now=True)
-    result = models.PositiveIntegerField()
+#class Results(models.Model):
+#    student = models.ForeignKey()
+#    test = models.ForeignKey(Tests)
+#    date = models.DateTimeField(auto_now=True)
+#    result = models.PositiveIntegerField()
