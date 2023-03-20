@@ -6,6 +6,8 @@ from django.urls import reverse
 
 
 class CustomUser(AbstractUser):
+    role_choice = ((None, 'Choose role'), ('Student', 'Student'), ('Teacher', 'Teacher'))
+    role = models.CharField(max_length=100, choices=role_choice)
     is_confirmed = models.BooleanField(default=False)
     slug = AutoSlugField(populate_from='username')
 
@@ -66,12 +68,12 @@ class Tests(models.Model):
         (Writing, 'Writing'),
         (Speaking, 'Speaking'),
     ]
+    test_num = models.IntegerField()
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
-    test_num = models.IntegerField()
 
     def __str__(self):
-        return f"{self.type}, {self.part}, {self.pk}"
+        return f"{self.type}, {self.part}, Test №{self.pk}"
 
     class Meta:
         ordering = ['type', 'part']
@@ -79,7 +81,7 @@ class Tests(models.Model):
 
 class Questions(models.Model):
     test = models.ForeignKey(Tests, on_delete=models.CASCADE)
-    cost = models.PositiveIntegerField()
+    points = models.PositiveIntegerField()
     question = models.CharField(max_length=600)
     question_number = models.PositiveIntegerField()
 
@@ -93,8 +95,8 @@ class Answers(models.Model):
     is_true = models.BooleanField(default=False)
 
 
-#class Results(models.Model):
-#    student = models.ForeignKey()
-#    test = models.ForeignKey(Tests)
-#    date = models.DateTimeField(auto_now=True)
-#    result = models.PositiveIntegerField()
+class Results(models.Model):
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True)
+    points = models.CharField(max_length=20)

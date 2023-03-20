@@ -39,9 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'galaxy.apps.GalaxyConfig',
     'content_for_evrbd.apps.ContentForEvrbdConfig',
-    'users.apps.UsersConfig',
     'embed_video',
-    'widget_tweaks',
 ]
 
 MIDDLEWARE = [

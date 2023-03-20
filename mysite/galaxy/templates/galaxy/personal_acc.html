@@ -3,5 +3,7 @@
 {% block content %}
 <h1>PK of {{user.username}}</h1>
 
-
+{% if not user.is_confirmed %}
+<p>You're not confirmed, pls contact administrator</p>
+{% endif %}
 {% endblock %}

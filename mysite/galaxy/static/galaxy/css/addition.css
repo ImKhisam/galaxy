@@ -19,10 +19,6 @@ body {
     height: 60px;
 } 
 
-ul.mainmenu li.last {
-    float: right;
-}
-
 a {
     color: #ffffff;
 }

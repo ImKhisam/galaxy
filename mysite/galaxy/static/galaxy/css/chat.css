@@ -45,8 +45,7 @@ nav ul ul {
 
 nav ul ul li {
   margin: 0;
-  width: 200px;
-  width: inherit;
+  
   min-width: unset !important;
   text-align: center;
   padding-left: 0px;
@@ -62,18 +61,7 @@ nav ul li:hover > ul {
   display: block;
 }
 
-.login a {
-  background-color: #000000c9;
-  display: block;
-  padding: 10px;
-  color: #ffffff;
-  text-decoration: none;
-  float: left;
-}
 
-.login a:hover {
-  color: #c9b4b4;
-}  
 
 nav ul ul ul {
   left: 100%;

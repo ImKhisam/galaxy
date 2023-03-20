@@ -1,0 +1,68 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+
+{% block custom_styles %}
+<style>
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  text-align: center;
+  padding: 8px;
+}
+
+th, td {
+  background-color: #000000c9;
+}
+
+h1 {
+    text-align: center;
+}
+
+div.parent {
+  display: flex;
+  justify-content: center;
+}
+
+div.table {
+  width: 40%;
+}
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+<h1>Your results</h1>
+
+<div class="parent">
+  <div class="table">
+      <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Student</th>
+          <th scope="col">Test</th>
+          <th scope="col">Date</th>
+          <th scope="col">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for result in results %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+            <td> {{result.student}}</td>
+            <td>{{result.test}}</td>
+            <td>{{result.date}}</td>
+            <td>{{result.points}} / {{ dict|get_item:result.test }}</td>
+        </tr>
+
+      {% endfor %}
+      </tbody>
+      </table>
+  </div>
+</div>
+{% endblock %}

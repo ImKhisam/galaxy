@@ -27,3 +27,9 @@ def drop_menu_exam(type_of_exam):
         menu_dict[item] = Tests.objects.filter(type=type_of_exam, part=item.part)
 
     return {"menu_dict": menu_dict}
+
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
+

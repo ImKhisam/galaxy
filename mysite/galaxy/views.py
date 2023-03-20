@@ -3,36 +3,37 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView, DetailView
+from django.views.generic import CreateView, TemplateView, DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
-from django.http import FileResponse, Http404
-from .utils import DataMixin
+from django.http import FileResponse, Http404, HttpResponseRedirect
 from .forms import *
+from django.db.models import Sum
 
 
-class Index(DataMixin, TemplateView):
+
+class Index(TemplateView):
     template_name = "galaxy/index.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Main page')
-        return dict(list(context.items()) + list(c_def.items()))
+        context['title'] = 'Main Page'
+        return context
 
 
 class SignUp(TemplateView):
     template_name = "galaxy/sign_up.html"
 
 
-class RegisterUser(DataMixin, CreateView):
+class RegisterUser(CreateView):
     form_class = RegisterUserForm
     template_name = 'galaxy/register.html'
     success_url = reverse_lazy('personal_acc')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Registration')
-        return dict(list(context.items()) + list(c_def.items()))
+        context['title'] = 'Registration'
+        return context
 
     def form_valid(self, form):
         user = form.save()              # сохраняем форму в бд
@@ -40,14 +41,14 @@ class RegisterUser(DataMixin, CreateView):
         return redirect('personal_acc', acc_slug=self.request.user.slug)
 
 
-class LoginUser(DataMixin, LoginView):
+class LoginUser(LoginView):
     form_class = LoginUserForm
     template_name = 'galaxy/login.html'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Login')
-        return dict(list(context.items()) + list(c_def.items()))
+        context['title'] = 'Login'
+        return context
 
     def get_success_url(self):          # при успешном логине перенаправляет
         return reverse_lazy('personal_acc', kwargs={'acc_slug': self.request.user.slug})
@@ -58,7 +59,7 @@ def logout_user(request):
     return redirect('home')
 
 
-class PersonalAcc(LoginRequiredMixin, DataMixin, DetailView):
+class PersonalAcc(LoginRequiredMixin, DetailView):
     model = CustomUser
     template_name = "galaxy/personal_acc.html"
     slug_url_kwarg = 'acc_slug'
@@ -66,32 +67,42 @@ class PersonalAcc(LoginRequiredMixin, DataMixin, DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Personal Account')
-        return dict(list(context.items()) + list(c_def.items()))
+        context['title'] = 'Personal Account'
+        return context
 
 
-class Gse(LoginRequiredMixin, DataMixin, TemplateView):
-    template_name = "galaxy/zaglushka.html"
+class ShowTestStat(ListView):
+    model = Results
+    template_name = "galaxy/show_test_stat.html"
+    context_object_name = 'results'
+    extra_context = {'dict': {key: Questions.objects.filter(test=key).aggregate(Sum('points'))['points__sum'] for key in Tests.objects.all()}}
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        if not self.check_access():
-            return redirect('julik')
-
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Oge')
-        return dict(list(context.items()) + list(c_def.items()))
+    def get_queryset(self):
+        return Results.objects.filter(student=self.request.user)
 
 
-class Use(LoginRequiredMixin, DataMixin, TemplateView):
-    template_name = "galaxy/zaglushka.html"
+#class Gse(LoginRequiredMixin, TemplateView):
+#    template_name = "galaxy/zaglushka.html"
+#
+#    def get_context_data(self, *, object_list=None, **kwargs):
+#        if not self.check_access():
+#            return redirect('julik')
+#
+#        context = super().get_context_data(**kwargs)
+#        c_def = self.get_user_context(title='Oge')
+#        return dict(list(context.items()) + list(c_def.items()))
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        if not self.check_access():
-            return redirect('julik')
 
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Ege')
-        return dict(list(context.items()) + list(c_def.items()))
+#class Use(LoginRequiredMixin, TemplateView):
+#    template_name = "galaxy/zaglushka.html"
+#
+#    def get_context_data(self, *, object_list=None, **kwargs):
+#        if not self.check_access():
+#            return redirect('julik')
+#
+#        context = super().get_context_data(**kwargs)
+#        c_def = self.get_user_context(title='Ege')
+#        return dict(list(context.items()) + list(c_def.items()))
 
 
 def exam(request, test_pk):
@@ -105,25 +116,37 @@ def exam(request, test_pk):
             obj = Answers.objects.get(pk=request.POST.get('answer_' + str(question.id)))
             if obj.is_true:
                 sum += question.cost
-        print(sum)
+        student = CustomUser.objects.get(id=request.user.id)
+        result = Results()
+        result.student = student
+        result.test = test
+        result.result = sum
+        result.save()
+        response = render(request, 'galaxy/test_result.html', {'result': result})
+        return response
     response = render(request, 'galaxy/exam.html', {'test': test, 'qa': qa})
     return response
 
 
-class ListeningTest(TemplateView):
-    template_name = "galaxy/listening_test.html"
+class TestResult(TemplateView):
+    template_name = "galaxy/test_result.html"
 
 
-class DevSkills(LoginRequiredMixin, DataMixin, TemplateView):
-    template_name = "galaxy/zaglushka.html"
+#class ListeningTest(TemplateView):
+#    template_name = "galaxy/listening_test.html"
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        if not self.check_access():
-            return redirect('julik')
 
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Ege')
-        return dict(list(context.items()) + list(c_def.items()))
+#class DevSkills(LoginRequiredMixin, TemplateView):
+#    template_name = "galaxy/zaglushka.html"
+#
+#    def get_context_data(self, *, object_list=None, **kwargs):
+#        #if not self.check_access():
+#        #    return redirect('julik')
+#
+#        context = super().get_context_data(**kwargs)
+#        c_def = self.get_user_context(title='Ege')
+#        context['title'] = 'idioms'
+#        return context
 
 
 def showdoc(request, classes_id, doc_type):
@@ -153,23 +176,28 @@ class Playaudio(DetailView):
         return context
 
 
-class Idioms(LoginRequiredMixin, DataMixin, TemplateView):
+class Idioms(LoginRequiredMixin, TemplateView):
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='idioms')
-        return dict(list(context.items()) + list(c_def.items()))
+        context['title'] = 'idioms'
+        return context
 
 
 def julik(request):
     return render(request, 'galaxy/julik.html')
 
 
-class Test(DataMixin, TemplateView):
-    template_name = "galaxy/test.html"
+class ShowTests(ListView):
+    model = Tests
+    template_name = "galaxy/tests.html"
+    context_object_name = 'tests'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='test')
-        return dict(list(context.items()) + list(c_def.items()))
+        context['title'] ='tests'
+        return context
+
+    #def get_queryset(self):
+    #    return Tests.objects.all()

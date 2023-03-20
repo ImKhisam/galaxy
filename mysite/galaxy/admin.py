@@ -10,7 +10,8 @@ class CustomUserAdmin(UserAdmin):
     add_form = RegisterUserForm
     form = CustomUserChangeForm
     model = CustomUser
-    list_display = ('email', 'username', 'is_confirmed')
+
+    list_display = ('username', 'first_name', 'last_name', 'role', 'email', 'is_confirmed')
     list_editable = ('is_confirmed',)
 
 
@@ -23,7 +24,7 @@ class TestsAdmin(admin.ModelAdmin):
 
 
 class QuestionsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'test', 'cost', 'question')
+    list_display = ('id', 'test', 'points', 'question')
 
 
 class AnswersAdmin(admin.ModelAdmin):

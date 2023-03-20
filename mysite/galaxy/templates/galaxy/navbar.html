@@ -1,0 +1,93 @@
+{% load static %}
+{% load galaxy_tags %}
+{% load content_for_evrbd_tags %}
+
+<header>
+          <a href="{% url 'home' %}"><div class="logo"></div></a>
+          <nav>
+              <ul>
+              {% if request.user.is_confirmed %}
+                  <li><a href="#">GSE</a>
+                    <ul>
+                        {% drop_menu_exam 'GSE' %}
+                    </ul>
+                  </li>
+                  <li><a href="#">USE</a>
+                    <ul>
+                        <li><a href="#">Listening</a></li>
+                        <li><a href="#">Reading</a></li>
+                        <li><a href="#">Grammar & Vocabulary</a></li>
+                        <li><a href="#">Writing</a></li>
+                        <li><a href="#">Speaking</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#">Olymp Way</a>
+                    <ul>
+                        {% drop_menu_olymp %}
+                    </ul>
+                  </li>
+                  <li><a href="https://learnenglish.britishcouncil.org/skills">Develop your skills</a></li>
+                  {% endif %}
+                  {% if request.user.is_authenticated %}
+                  <li><a href="">British Bulldog</a>
+                    <ul>
+                        {% drop_menu_bb %}
+                    </ul>
+                  </li>
+                  <li><a href="#">Idioms & Collocations</a>
+                    <ul>
+                        <li><a href="{% url 'play_video' %}">Watch & learn</a></li>
+                        <li><a href="#">Read & learn</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#">Fun room</a>
+                    <ul>
+                        <li><a href="#">Cinema</a></li>
+                        <li><a href="{% url 'quiz_preview' %}">Quiz</a></li>
+                        <li><a href="" target="_blank">Crosswords</a>
+                            <ul>
+                                <li><a href="{% url 'cross' 1 %}" target="_blank">Painting</a></li>
+                                <li><a href="{% url 'cross' 2 %}" target="_blank">Saint Patricks Day</a></li>
+                                <li><a href="{% url 'cross' 3 %}" target="_blank">Spring</a></li>
+                                <li><a href="{% url 'cross' 4 %}" target="_blank">Easter</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                  </li>
+                  {% endif %}
+              </ul>
+          </nav>
+          <div class="login">
+              <nav>
+              <ul>
+                {% if request.user.is_authenticated %}
+                    {% if request.user.is_confirmed %}
+                        {% if request.user.role == 'Teacher' or request.user.is_staff %} <!-- Confirmed teacher of stuff -->
+                            <li><a href="#">{{user.username}}</a>
+                                <ul>
+                                    <li><a href="{{ user.get_absolute_url }}">Account</a></li>
+                                    <li><a href="{% url 'tests' %}">Tests</a></li>
+                                    <li><a href="{% url 'show_test_stat' %}">Results</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="{% url 'logout' %}">Log out</a></li>
+                        {% else %} <!-- Confirmed student -->
+                            <li><a href="#">{{user.username}}</a>
+                                <ul>
+                                    <li><a href="{{ user.get_absolute_url }}">Account</a></li>
+                                    <li><a href="{% url 'show_test_stat' %}">Results</a></li>
+                                </ul>
+                            <li><a href="{% url 'logout' %}">Log out</a></li>
+                        {% endif %}
+                    {% else %} <!-- Not confirmed person -->
+                        <li><a href="{{ user.get_absolute_url }}">{{user.username}}</a></li>
+                        <li><a href="{% url 'logout' %}">Log out</a></li>
+                    {% endif %}
+                {% else %} <!-- Not authenticated guest -->
+                    <li><a href="{% url 'register' %}">Sign Up</a></li>
+                    <li><a href="{% url 'login' %}">Log in</a></li>
+                {% endif %}
+              </ul>
+              </nav>
+          </div>
+</header>
