@@ -1,4 +1,6 @@
 import os
+import time
+
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
@@ -118,6 +120,16 @@ class TestPreview(DetailView):
 
 
 def test(request, test_pk):
+    if 'start_time' not in request.session:
+        request.session['start_time'] = time.time()
+    else:
+        elapsed_time = time.time() - request.session['start_time']
+        if elapsed_time > 60:
+            # The user has exceeded the maximum time allowed on the page.
+            # Redirect the user to another page or show an error message.
+            return HttpResponseRedirect('/julik/')
+
+
     test = get_object_or_404(Tests, id=test_pk)
     qa = {}
     for item in Questions.objects.filter(test__id=test.id):
