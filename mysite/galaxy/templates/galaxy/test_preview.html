@@ -1,0 +1,9 @@
+{% extends "galaxy/base.html" %}
+
+{% block content %}
+
+    <p>You're going to start {{test}}</p>
+<br><br>
+<button type="button"><a href="{% url 'test' test.pk %}">Start test</a></button>
+
+{% endblock %}

@@ -19,8 +19,8 @@ def drop_menu_olymp():
     return {"menu_dict": menu_dict}
 
 
-@register.inclusion_tag('galaxy/exam_drop_menu.html')
-def drop_menu_exam(type_of_exam):
+@register.inclusion_tag('galaxy/test_drop_menu.html')
+def drop_menu_test(type_of_exam):
     menu_dict = {}
 
     for item in Tests.objects.filter(type=type_of_exam).order_by('part').distinct('part'):

@@ -105,7 +105,19 @@ class ShowTestStat(ListView):
 #        return dict(list(context.items()) + list(c_def.items()))
 
 
-def exam(request, test_pk):
+class TestPreview(DetailView):
+    model = Tests
+    template_name = "galaxy/test_preview.html"
+    pk_url_kwarg = 'test_pk'
+    context_object_name = 'test'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Test preview'
+        return context
+
+
+def test(request, test_pk):
     test = get_object_or_404(Tests, id=test_pk)
     qa = {}
     for item in Questions.objects.filter(test__id=test.id):
@@ -124,7 +136,7 @@ def exam(request, test_pk):
         result.save()
         response = render(request, 'galaxy/test_result.html', {'result': result})
         return response
-    response = render(request, 'galaxy/exam.html', {'test': test, 'qa': qa})
+    response = render(request, 'galaxy/test.html', {'test': test, 'qa': qa})
     return response
 
 
