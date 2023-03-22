@@ -100,3 +100,5 @@ class Results(models.Model):
     test = models.ForeignKey(Tests, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
     points = models.CharField(max_length=20)
+    time = models.CharField(max_length=50)
+

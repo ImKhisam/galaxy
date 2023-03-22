@@ -48,6 +48,7 @@ div.table {
           <th scope="col">Test</th>
           <th scope="col">Date</th>
           <th scope="col">Points</th>
+          <th scope="col">Time</th>
         </tr>
       </thead>
       <tbody>
@@ -58,6 +59,7 @@ div.table {
             <td>{{result.test}}</td>
             <td>{{result.date}}</td>
             <td>{{result.points}} / {{ dict|get_item:result.test }}</td>
+            <td>{{result.time}}</td>
         </tr>
 
       {% endfor %}

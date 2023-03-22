@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import datetime, timedelta
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
@@ -122,38 +123,59 @@ class TestPreview(DetailView):
 def test(request, test_pk):
     if 'start_time' not in request.session:
         request.session['start_time'] = time.time()
-    else:
-        elapsed_time = time.time() - request.session['start_time']
-        if elapsed_time > 60:
-            # The user has exceeded the maximum time allowed on the page.
-            # Redirect the user to another page or show an error message.
-            return HttpResponseRedirect('/julik/')
 
+    #time_now = time.time()
+    #time_diff = time_now - request.session['start_time']
+    #datetime.now().strftime('%H:%M:%S')
 
     test = get_object_or_404(Tests, id=test_pk)
     qa = {}
     for item in Questions.objects.filter(test__id=test.id):
         qa[item] = Answers.objects.filter(question__id=item.id)
     if request.method == 'POST':
-        sum = 0
+        test_time = int(time.time() - request.session['start_time'])
+        print(test_time)
+        del request.session['start_time']
+        points = 0
         for question in Questions.objects.filter(test__id=test.id):
-            obj = Answers.objects.get(pk=request.POST.get('answer_' + str(question.id)))
-            if obj.is_true:
-                sum += question.cost
+            try:
+                obj = Answers.objects.get(pk=request.POST.get('answer_' + str(question.id)))
+                if obj.is_true:
+                    points += question.points
+            except:
+                pass
+
         student = CustomUser.objects.get(id=request.user.id)
         result = Results()
         result.student = student
         result.test = test
-        result.result = sum
+        result.points = points
+        result.time = str(timedelta(seconds=test_time))
         result.save()
-        response = render(request, 'galaxy/test_result.html', {'result': result})
-        return response
-    response = render(request, 'galaxy/test.html', {'test': test, 'qa': qa})
+        #response = render(request, 'galaxy/test_result.html', {'result': result})
+        return HttpResponseRedirect('/test_result/' + str(result.pk) + '/')
+
+    context = {'test': test, 'qa': qa,
+               'start_time': request.session['start_time'],
+               }
+
+    response = render(request, 'galaxy/test.html', context)
     return response
 
 
-class TestResult(TemplateView):
+class TestResult(DetailView):
+    model = Results
     template_name = "galaxy/test_result.html"
+    pk_url_kwarg = 'res_pk'
+    context_object_name = 'result'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Test result'
+        obj = Results.objects.get(pk=context['result'].pk)
+        test_time = obj.time
+        context['test_time'] = test_time
+        return context
 
 
 #class ListeningTest(TemplateView):
