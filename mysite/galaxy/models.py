@@ -80,25 +80,42 @@ class Tests(models.Model):
 
 
 class Questions(models.Model):
-    test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    single_choice_type = 'single_choice_type'
+    match_type = 'match_type'
+    input_type = 'input_type'
+    choices_in_question_type = [
+        (single_choice_type, 'single_choice_type'),
+        (match_type, 'match_type'),
+        (input_type, 'input_type')
+    ]
+
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     points = models.PositiveIntegerField()
     question = models.CharField(max_length=600)
     question_number = models.PositiveIntegerField()
+    question_type = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_question_type)
 
     def __str__(self):
-        return f"{self.test}, Q{self.question_number}"
+        return f"{self.test_id}, Q{self.question_number}"
 
 
 class Answers(models.Model):
-    question = models.ForeignKey(Questions, on_delete=models.CASCADE)
+    question_id = models.ForeignKey(Questions, on_delete=models.CASCADE)
     answer = models.CharField(max_length=200)
     is_true = models.BooleanField(default=False)
+    match = models.CharField(max_length=50)
 
 
 class Results(models.Model):
-    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
     points = models.CharField(max_length=20)
     time = models.CharField(max_length=50)
+
+
+#class Option(models.Model):
+#    text = models.CharField(max_length=255)
+#    question = models.ForeignKey(Questions, on_delete=models.CASCADE, related_name='options')
+#    match = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='matches')
 

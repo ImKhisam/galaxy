@@ -121,7 +121,7 @@ AUTH_USER_MODEL = "galaxy.CustomUser"
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Astrakhan'
 
 USE_I18N = True
 

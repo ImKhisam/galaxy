@@ -78,10 +78,10 @@ class ShowTestStat(ListView):
     model = Results
     template_name = "galaxy/show_test_stat.html"
     context_object_name = 'results'
-    extra_context = {'dict': {key: Questions.objects.filter(test=key).aggregate(Sum('points'))['points__sum'] for key in Tests.objects.all()}}
+    extra_context = {'dict': {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum'] for key in Tests.objects.all()}}
 
     def get_queryset(self):
-        return Results.objects.filter(student=self.request.user)
+        return Results.objects.filter(student_id=self.request.user)
 
 
 #class Gse(LoginRequiredMixin, TemplateView):
@@ -124,21 +124,37 @@ def test(request, test_pk):
     if 'start_time' not in request.session:
         request.session['start_time'] = time.time()
 
-    #time_now = time.time()
-    #time_diff = time_now - request.session['start_time']
-    #datetime.now().strftime('%H:%M:%S')
-
     test = get_object_or_404(Tests, id=test_pk)
     qa = {}
-    for item in Questions.objects.filter(test__id=test.id):
-        qa[item] = Answers.objects.filter(question__id=item.id)
+    match = {}
+    questions_for_test = Questions.objects.filter(test_id__id=test.id)
+    for item in questions_for_test:
+        if item.question_type == 'match_type':      # Если вопрос на сопоставление
+            match_list = Answers.objects.filter(question_id__id=item.id).order_by('match').values_list('match', flat=True)
+            qa[item] = {key: match_list for key in Answers.objects.filter(question_id__id=item.id)}
+            #match = Answers.objects.filter(question_id__id=item.id).values_list('match', flat=True)
+        else:
+            qa[item] = Answers.objects.filter(question_id__id=item.id)
+
     if request.method == 'POST':
+        # Подсчитываем время, потраченное на тест и удаляем из сессии время старта
         test_time = int(time.time() - request.session['start_time'])
-        print(test_time)
+        #print(test_time)
         del request.session['start_time']
+        # Подсчитываем баллы за тест
         points = 0
-        for question in Questions.objects.filter(test__id=test.id):
-            try:
+        for question in questions_for_test:
+            # Подсчёт вопросов на сопоставление
+            if question.question_type == 'match_type':
+                fl = 0
+                for answer in Answers.objects.filter(question_id__id=question.id):
+                    if request.POST.get(str(answer.id)) != answer.match:
+                        fl = 1
+                        break
+                if fl == 0:
+                    points += question.points
+            # Подсчёт вопросов с radio
+            try:        # потому что студент может оставить radio невыбранным
                 obj = Answers.objects.get(pk=request.POST.get('answer_' + str(question.id)))
                 if obj.is_true:
                     points += question.points
@@ -147,15 +163,16 @@ def test(request, test_pk):
 
         student = CustomUser.objects.get(id=request.user.id)
         result = Results()
-        result.student = student
-        result.test = test
+        result.student_id = student
+        result.test_id = test
         result.points = points
         result.time = str(timedelta(seconds=test_time))
         result.save()
         #response = render(request, 'galaxy/test_result.html', {'result': result})
         return HttpResponseRedirect('/test_result/' + str(result.pk) + '/')
 
-    context = {'test': test, 'qa': qa,
+    context = {'test': test,
+               'qa': qa,
                'start_time': request.session['start_time'],
                }
 

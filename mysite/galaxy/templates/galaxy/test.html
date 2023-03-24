@@ -12,13 +12,28 @@
   <div class="form errors">{{ form.non_field_errors }}</div>
 
           {% for question, answers in qa.items %}
-          <h2>{{question.question}}</h2>
-          {% for answer in answers %}
-            <label>
-            <input type="radio" name="answer_{{question.pk}}" value="{{answer.pk}}">
-              {{ answer.answer }}
-            </label>
-          {% endfor %}
+          {% if question.question_type == 'match_type' %}
+                  <h2>{{question.question}}</h2>
+                  {% for answer, match in answers.items %}
+                        <div class="match_type">
+                        <label>{{answer.answer}}</label>
+                        <select name="{{answer.pk}}">
+                            <option value="{{answer.pk}}">Выберите пункт</option>
+                            {% for item in match %}
+                            <option value="{{item}}">{{item}}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                  {% endfor %}
+          {% else %}
+                  <h2>{{question.question}}</h2>
+                  {% for answer in answers %}
+                        <label>
+                            <input type="radio" name="answer_{{question.pk}}" value="{{answer.pk}}">
+                            {{ answer.answer }}
+                        </label>
+                  {% endfor %}
+          {% endif %}
           {% endfor %}
 
 <br><br>

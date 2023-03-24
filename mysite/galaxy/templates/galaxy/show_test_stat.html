@@ -55,10 +55,10 @@ div.table {
       {% for result in results %}
         <tr>
           <th scope="row">{{ forloop.counter }}</th>
-            <td> {{result.student}}</td>
-            <td>{{result.test}}</td>
+            <td> {{result.student_id}}</td>
+            <td>{{result.test_id}}</td>
             <td>{{result.date}}</td>
-            <td>{{result.points}} / {{ dict|get_item:result.test }}</td>
+            <td>{{result.points}} / {{ dict|get_item:result.test_id }}</td>
             <td>{{result.time}}</td>
         </tr>
 

@@ -24,11 +24,11 @@ class TestsAdmin(admin.ModelAdmin):
 
 
 class QuestionsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'test', 'points', 'question')
+    list_display = ('id', 'test_id', 'points', 'question', 'question_type')
 
 
 class AnswersAdmin(admin.ModelAdmin):
-    list_display = ('id', 'question', 'answer', 'is_true')
+    list_display = ('id', 'question_id', 'answer', 'is_true')
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
