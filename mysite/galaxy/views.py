@@ -129,7 +129,7 @@ def test(request, test_pk):
     questions_for_test = Questions.objects.filter(test_id__id=test.id)
     for item in questions_for_test:
         if item.question_type == 'match_type':      # Если вопрос на сопоставление
-            qa[item] = {key: Answers.objects.filter(question_id__id=item.id).order_by('addition').values_list('addition', flat=True)
+            qa[item] = {key: Answers.objects.filter(question_id__id=item.id).order_by('answer').values_list('answer', flat=True)
                         for key in Answers.objects.filter(question_id__id=item.id)}
         elif item.question_type == 'input_type':    # Вопрос с вводом слова
             qa[item] = Answers.objects.get(question_id__id=item.id)
@@ -147,14 +147,16 @@ def test(request, test_pk):
             if question.question_type == 'match_type':
                 fl = 0
                 for answer in Answers.objects.filter(question_id__id=question.id):
-                    if request.POST.get(str(answer.id)) != answer.addition:
+                    if request.POST.get(str(answer.id)) != answer.answer:
                         fl = 1
                         break
                 if fl == 0:
                     points += question.points
             elif question.question_type == 'input_type':
                 answer = Answers.objects.get(question_id__id=item.id)
-                if request.POST.get(str(answer.id)) != answer.answer:
+                student_answer = str(request.POST.get(str(answer.id)))
+                right_answer = str(answer.answer)
+                if student_answer.lower() != right_answer.lower():
                     points += question.points
             '''Подсчёт вопросов с radio'''
             try:        # потому что студент может оставить radio невыбранным

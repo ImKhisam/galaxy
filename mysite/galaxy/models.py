@@ -104,6 +104,7 @@ class Answers(models.Model):
     answer = models.CharField(max_length=200)
     is_true = models.BooleanField(default=False)
     addition = models.CharField(max_length=50, blank=True)
+    match = models.CharField(max_length=50, blank=True)
 
 
 class Results(models.Model):

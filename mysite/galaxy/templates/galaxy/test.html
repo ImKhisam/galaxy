@@ -14,12 +14,12 @@
           {% for question, answers in qa.items %}
           {% if question.question_type == 'match_type' %}
                   <h2>{{question.question}}</h2>
-                  {% for answer, match_list in answers.items %}
+                  {% for answer, answer_list in answers.items %}
                         <div class="match_type">
-                        <label>{{answer.answer}}</label>
+                        <label>{{answer.addition}}</label>
                         <select name="{{answer.pk}}">
                             <option>Выберите пункт</option>
-                            {% for item in match_list %}
+                            {% for item in answer_list %}
                             <option value="{{item}}">{{item}}</option>
                             {% endfor %}
                         </select>
