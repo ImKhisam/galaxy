@@ -126,36 +126,39 @@ def test(request, test_pk):
 
     test = get_object_or_404(Tests, id=test_pk)
     qa = {}
-    match = {}
     questions_for_test = Questions.objects.filter(test_id__id=test.id)
     for item in questions_for_test:
         if item.question_type == 'match_type':      # Если вопрос на сопоставление
-            match_list = Answers.objects.filter(question_id__id=item.id).order_by('match').values_list('match', flat=True)
-            qa[item] = {key: match_list for key in Answers.objects.filter(question_id__id=item.id)}
-            #match = Answers.objects.filter(question_id__id=item.id).values_list('match', flat=True)
-        else:
+            qa[item] = {key: Answers.objects.filter(question_id__id=item.id).order_by('addition').values_list('addition', flat=True)
+                        for key in Answers.objects.filter(question_id__id=item.id)}
+        elif item.question_type == 'input_type':    # Вопрос с вводом слова
+            qa[item] = Answers.objects.get(question_id__id=item.id)
+        else:                                       # Вопрос с radio
             qa[item] = Answers.objects.filter(question_id__id=item.id)
 
     if request.method == 'POST':
-        # Подсчитываем время, потраченное на тест и удаляем из сессии время старта
+        '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
         test_time = int(time.time() - request.session['start_time'])
-        #print(test_time)
         del request.session['start_time']
-        # Подсчитываем баллы за тест
+        '''Подсчитываем баллы за тест'''
         points = 0
         for question in questions_for_test:
-            # Подсчёт вопросов на сопоставление
+            '''Подсчёт вопросов на сопоставление'''
             if question.question_type == 'match_type':
                 fl = 0
                 for answer in Answers.objects.filter(question_id__id=question.id):
-                    if request.POST.get(str(answer.id)) != answer.match:
+                    if request.POST.get(str(answer.id)) != answer.addition:
                         fl = 1
                         break
                 if fl == 0:
                     points += question.points
-            # Подсчёт вопросов с radio
+            elif question.question_type == 'input_type':
+                answer = Answers.objects.get(question_id__id=item.id)
+                if request.POST.get(str(answer.id)) != answer.answer:
+                    points += question.points
+            '''Подсчёт вопросов с radio'''
             try:        # потому что студент может оставить radio невыбранным
-                obj = Answers.objects.get(pk=request.POST.get('answer_' + str(question.id)))
+                obj = Answers.objects.get(pk=request.POST.get(str(question.id)))
                 if obj.is_true:
                     points += question.points
             except:

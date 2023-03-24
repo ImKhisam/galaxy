@@ -14,22 +14,29 @@
           {% for question, answers in qa.items %}
           {% if question.question_type == 'match_type' %}
                   <h2>{{question.question}}</h2>
-                  {% for answer, match in answers.items %}
+                  {% for answer, match_list in answers.items %}
                         <div class="match_type">
                         <label>{{answer.answer}}</label>
                         <select name="{{answer.pk}}">
-                            <option value="{{answer.pk}}">Выберите пункт</option>
-                            {% for item in match %}
+                            <option>Выберите пункт</option>
+                            {% for item in match_list %}
                             <option value="{{item}}">{{item}}</option>
                             {% endfor %}
                         </select>
                         </div>
                   {% endfor %}
+          {% elif question.question_type == 'input_type'%}
+                  <h2>{{question.question}}</h2>
+                  <div class="input_type">
+                      <label>{{answers.addition}}</label>
+                      <br>
+                      <input type="text" name="{{question.pk}}">
+                  </div>
           {% else %}
                   <h2>{{question.question}}</h2>
                   {% for answer in answers %}
                         <label>
-                            <input type="radio" name="answer_{{question.pk}}" value="{{answer.pk}}">
+                            <input type="radio" name="{{question.pk}}" value="{{answer.pk}}">
                             {{ answer.answer }}
                         </label>
                   {% endfor %}

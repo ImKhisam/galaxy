@@ -91,7 +91,7 @@ class Questions(models.Model):
 
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     points = models.PositiveIntegerField()
-    question = models.CharField(max_length=600)
+    question = models.TextField()
     question_number = models.PositiveIntegerField()
     question_type = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_question_type)
 
@@ -103,7 +103,7 @@ class Answers(models.Model):
     question_id = models.ForeignKey(Questions, on_delete=models.CASCADE)
     answer = models.CharField(max_length=200)
     is_true = models.BooleanField(default=False)
-    match = models.CharField(max_length=50)
+    addition = models.CharField(max_length=50, blank=True)
 
 
 class Results(models.Model):

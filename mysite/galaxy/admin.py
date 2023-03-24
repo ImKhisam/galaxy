@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
+from django.forms import TextInput, Textarea
 
 from .forms import RegisterUserForm, CustomUserChangeForm
 from .models import *
@@ -28,6 +29,10 @@ class QuestionsAdmin(admin.ModelAdmin):
 
 
 class AnswersAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size': '60'})},
+    }
+
     list_display = ('id', 'question_id', 'answer', 'is_true')
 
 
