@@ -130,7 +130,7 @@ def test(request, test_pk):
     for item in questions_for_test:
         if item.question_type == 'match_type':      # Если вопрос на сопоставление
             qa[item] = {key: Answers.objects.filter(question_id__id=item.id).order_by('answer').values_list('answer', flat=True)
-                        for key in Answers.objects.filter(question_id__id=item.id)}
+                        for key in Answers.objects.filter(question_id__id=item.id).order_by('match')}
         elif item.question_type == 'input_type':    # Вопрос с вводом слова
             qa[item] = Answers.objects.get(question_id__id=item.id)
         else:                                       # Вопрос с radio

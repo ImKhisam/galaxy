@@ -13,14 +13,19 @@
 
           {% for question, answers in qa.items %}
           {% if question.question_type == 'match_type' %}
-                  <h2>{{question.question}}</h2>
+                  <h2>{{question.question|linebreaks}}</h2>
                   {% for answer, answer_list in answers.items %}
+                  {% if forloop.first %}
+                  {% for item in answer_list %}
+                  <h2>{{ forloop.counter }}:{{item}}</h2>
+                  {% endfor %}
+                  {% endif %}
                         <div class="match_type">
-                        <label>{{answer.addition}}</label>
+                        <label>{{answer.match}}</label>
                         <select name="{{answer.pk}}">
-                            <option>Выберите пункт</option>
+                            <option>Выберите ответ</option>
                             {% for item in answer_list %}
-                            <option value="{{item}}">{{item}}</option>
+                            <option value="{{item}}">{{ forloop.counter }}</option>
                             {% endfor %}
                         </select>
                         </div>
