@@ -1,24 +1,58 @@
 {% extends 'galaxy/base.html' %}
 
 {% block custom_styles %}
+<style>
+.test{
+    padding: 20px;
+    background-color: #000000c9;
+    width: 50%;
+    margin: auto;
+    text-align: center;
+}
+.question{
+    padding: 50px;
+}
+.question-choices{
+    font-size: 17px;
+    padding-top: 20px;
+}
+.time-counter{
+    text-align: center;
+    position: fixed;
+    right: 50px;
+    top: 20%;
+    width: 100px;
+    padding: 20px;
+    background-color: #000000c9;
+}
 
+</style>
 {% endblock %}
 
 {% block content %}
+<div class="test-parent">
+<div class="test">
 <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
-
-<form action="{% url 'test' test.pk %}" method="post">
+{% if test.media %}
+    <p>Audio</p>
+    <audio controls src="{{test.media.url}}"></audio>
+{% endif %}
+<form action="{% url 'test' test.pk %}" method="post" id="my_form">
   {% csrf_token %}
   <div class="form errors">{{ form.non_field_errors }}</div>
 
           {% for question, answers in qa.items %}
+          <div class="question">
           {% if question.question_type == 'match_type' %}
-                  <h2>{{question.question|linebreaks}}</h2>
+                  <h2>{{ forloop.counter }}. {{question.question}}</h2>
                   {% for answer, answer_list in answers.items %}
                   {% if forloop.first %}
-                  {% for item in answer_list %}
-                  <h2>{{ forloop.counter }}:{{item}}</h2>
-                  {% endfor %}
+                      {% for item in answer_list %}
+                      <h2>{{ forloop.counter }}:{{item}}</h2>
+                      {% endfor %}
+                      {% if answer.addition != 'None' %}
+                          <h2>Вывод текстов под буквами</h2>
+                      {% endif %}
                   {% endif %}
                         <div class="match_type">
                         <label>{{answer.match}}</label>
@@ -31,36 +65,45 @@
                         </div>
                   {% endfor %}
           {% elif question.question_type == 'input_type'%}
-                  <h2>{{question.question}}</h2>
+                  <h2>{{ forloop.counter }}. {{question.question}}</h2>
                   <div class="input_type">
                       <label>{{answers.addition}}</label>
                       <br>
-                      <input type="text" name="{{question.pk}}">
+                      <input type="text" name="{{answers.pk}}">
                   </div>
           {% else %}
-                  <h2>{{question.question}}</h2>
+                  <div class="question_radio">
+                  <h2>{{ forloop.counter }}. {{question.question}}</h2>
+                  <div class="question-choices">
                   {% for answer in answers %}
                         <label>
-                            <input type="radio" name="{{question.pk}}" value="{{answer.pk}}">
-                            {{ answer.answer }}
+                            <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
+                            <label for="{{answer.pk}}">
+                                <span>{{ answer.answer }}</span>
+                            </label>
                         </label>
                   {% endfor %}
+                  </div>
+                  </div>
           {% endif %}
+          </div>
           {% endfor %}
 
 <br><br>
-<input class="btn btn-success btn-lg" style="border-radius: 0%;"  type="submit" value="Submit Answers">
+<input class="btn" style="border-radius: 0%;"  type="submit" value="Submit Answers">
 </form>
 
-<p id="demo"></p>
 
+</div>
+<div class="time-counter"><p id="demo"></p></div>
+</div>
 <script>
 
   // Get today's date and time
   var now = new Date().getTime();
 
   // Set the date we're counting down to
-  var countDownDate = new Date(1000 * {{start_time}} + 30*60000).getTime();
+  var countDownDate = new Date(1000 * {{start_time}} + {{test.time_limit}}*60000).getTime();
 
 // Update the count down every 1 second
 var x = setInterval(function() {
@@ -85,8 +128,7 @@ var x = setInterval(function() {
 
   // If the count down is over, write some text
   if (distance < 0) {
-    clearInterval(x);
-    document.getElementById("demo").innerHTML = "EXPIRED";
+    document.getElementById("my_form").submit()
   }
 }, 1000);
 </script>

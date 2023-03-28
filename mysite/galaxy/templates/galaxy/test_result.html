@@ -1,7 +1,17 @@
 {% extends "galaxy/base.html" %}
-
+{% block custom_styles %}
+<style>
+.test{
+    padding: 20px;
+    background-color: #000000c9;
+    width: 50%;
+    margin: auto;
+    text-align: center;
+}
+</style>
+{% endblock %}
 {% block content %}
-
-    <p>Your result in {{result.test_id}}: {{result.points}}. You've made it in {{test_time}}</p>
-
+<div class="test">
+    <p>Your result in {{result.test_id}}: {{result.points}}/{{max_points}}. You've made it in {{test_time}}</p>
+</div>
 {% endblock %}

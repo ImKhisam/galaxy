@@ -21,7 +21,7 @@ class OlympWayAdmin(admin.ModelAdmin):
 
 
 class TestsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'type', 'part', 'test_num')
+    list_display = ('id', 'type', 'part', 'test_num', 'time_limit')
 
 
 class QuestionsAdmin(admin.ModelAdmin):

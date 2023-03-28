@@ -1,7 +1,33 @@
 {% extends "galaxy/base.html" %}
 
-{% block content %}
+{% block custom_styles %}
+<style>
+.test{
+    padding: 40px;
+    background-color: #000000c9;
+    width: 50%;
+    margin: auto;
+    text-align: center;
 
+}
+
+.outer {
+    display: flex;
+    height: 70%;
+}
+
+a {
+    text-decoration: none;
+}
+p {
+    font-size: 17px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="outer">
+<div class="test">
     <p>
         В разделе аудирования Вам предлагается прослушать
     несколько текстов и выполнить 11 заданий на понимание прослушанных
@@ -9,12 +35,13 @@
     </p>
     <p>
         Рекомендуемое время на выполнение заданий данного раздела –
-30 минут.
+{{test.time_limit}} минут.
     </p>
 
     <p>You're going to start {{test}}</p>
 <br><br>
 
-<button type="button"><a href="{% url 'test' test.pk %}">Start test</a></button>
-
+<a class="btn" href="{% url 'test' test.pk %}">Begin test</a>
+</div>
+</div>
 {% endblock %}

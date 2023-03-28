@@ -24,7 +24,7 @@ def drop_menu_test(type_of_exam):
     menu_dict = {}
 
     for item in Tests.objects.filter(type=type_of_exam).order_by('part').distinct('part'):
-        menu_dict[item] = Tests.objects.filter(type=type_of_exam, part=item.part)
+        menu_dict[item] = Tests.objects.filter(type=type_of_exam, part=item.part).order_by('test_num')
 
     return {"menu_dict": menu_dict}
 

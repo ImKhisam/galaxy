@@ -18,7 +18,7 @@ class CustomUser(AbstractUser):
         return reverse('personal_acc', kwargs={'acc_slug': self.slug})
 
 
-def content_file_name_test(instance, filename):
+def content_file_name_olymp(instance, filename):
     return '/'.join(['olymp', instance.year, instance.stage, filename])
 
 
@@ -37,16 +37,20 @@ class OlympWay(models.Model):
     year = models.CharField(max_length=255, verbose_name='Year')
     stage = models.CharField(max_length=255, verbose_name='Stage', choices=choices_in_stage)
     classes = models.CharField(max_length=255, verbose_name='Class')
-    task = models.FileField(upload_to=content_file_name_test)
-    answer = models.FileField(upload_to=content_file_name_test, blank=True)
-    audio = models.FileField(upload_to=content_file_name_test, blank=True)
-    script = models.FileField(upload_to=content_file_name_test, blank=True)
+    task = models.FileField(upload_to=content_file_name_olymp)
+    answer = models.FileField(upload_to=content_file_name_olymp, blank=True)
+    audio = models.FileField(upload_to=content_file_name_olymp, blank=True)
+    script = models.FileField(upload_to=content_file_name_olymp, blank=True)
 
     def __str__(self):
         return f"{self.year}, {self.stage}, {self.classes}"
 
     class Meta:
         ordering = ['year', 'stage']
+
+
+def content_file_name_test(instance, filename):
+    return '/'.join(['test', instance.type, instance.part, str(instance.test_num), filename])
 
 
 class Tests(models.Model):
@@ -71,6 +75,8 @@ class Tests(models.Model):
     test_num = models.IntegerField()
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
+    time_limit = models.PositiveIntegerField()
+    media = models.FileField(upload_to=content_file_name_test, blank=True)
 
     def __str__(self):
         return f"{self.type}, {self.part}, Test №{self.pk}"
@@ -103,7 +109,7 @@ class Answers(models.Model):
     question_id = models.ForeignKey(Questions, on_delete=models.CASCADE)
     answer = models.CharField(max_length=200)
     is_true = models.BooleanField(default=False)
-    addition = models.CharField(max_length=50, blank=True)
+    addition = models.TextField(default='None')
     match = models.CharField(max_length=50, blank=True)
 
 

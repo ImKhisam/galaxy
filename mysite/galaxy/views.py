@@ -130,7 +130,7 @@ def test(request, test_pk):
     for item in questions_for_test:
         if item.question_type == 'match_type':      # Если вопрос на сопоставление
             qa[item] = {key: Answers.objects.filter(question_id__id=item.id).order_by('answer').values_list('answer', flat=True)
-                        for key in Answers.objects.filter(question_id__id=item.id).order_by('match')}
+                        for key in Answers.objects.filter(question_id__id=item.id).exclude(match__exact='').order_by('match')}
         elif item.question_type == 'input_type':    # Вопрос с вводом слова
             qa[item] = Answers.objects.get(question_id__id=item.id)
         else:                                       # Вопрос с radio
@@ -139,6 +139,8 @@ def test(request, test_pk):
     if request.method == 'POST':
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
         test_time = int(time.time() - request.session['start_time'])
+        if test_time > test.time_limit * 60:
+            test_time = test.time_limit * 60
         del request.session['start_time']
         '''Подсчитываем баллы за тест'''
         points = 0
@@ -154,9 +156,9 @@ def test(request, test_pk):
                     points += question.points
             elif question.question_type == 'input_type':
                 answer = Answers.objects.get(question_id__id=item.id)
-                student_answer = str(request.POST.get(str(answer.id)))
                 right_answer = str(answer.answer)
-                if student_answer.lower() != right_answer.lower():
+                student_answer = str(request.POST.get(str(answer.id)))
+                if student_answer.lower() == right_answer.lower():
                     points += question.points
             '''Подсчёт вопросов с radio'''
             try:        # потому что студент может оставить radio невыбранным
@@ -195,26 +197,11 @@ class TestResult(DetailView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Test result'
         obj = Results.objects.get(pk=context['result'].pk)
+        max_points = Questions.objects.filter(test_id=obj.test_id).aggregate(Sum('points'))['points__sum']
         test_time = obj.time
         context['test_time'] = test_time
+        context['max_points'] = max_points
         return context
-
-
-#class ListeningTest(TemplateView):
-#    template_name = "galaxy/listening_test.html"
-
-
-#class DevSkills(LoginRequiredMixin, TemplateView):
-#    template_name = "galaxy/zaglushka.html"
-#
-#    def get_context_data(self, *, object_list=None, **kwargs):
-#        #if not self.check_access():
-#        #    return redirect('julik')
-#
-#        context = super().get_context_data(**kwargs)
-#        c_def = self.get_user_context(title='Ege')
-#        context['title'] = 'idioms'
-#        return context
 
 
 def showdoc(request, classes_id, doc_type):
