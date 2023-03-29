@@ -8,10 +8,16 @@
     margin: auto;
     text-align: center;
 }
+.outer {
+    display: flex;
+    height: 70%;
+}
 </style>
 {% endblock %}
 {% block content %}
+<div class="outer">
 <div class="test">
     <p>Your result in {{result.test_id}}: {{result.points}}/{{max_points}}. You've made it in {{test_time}}</p>
+</div>
 </div>
 {% endblock %}

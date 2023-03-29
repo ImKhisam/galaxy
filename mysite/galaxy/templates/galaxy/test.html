@@ -3,16 +3,23 @@
 {% block custom_styles %}
 <style>
 .test{
-    padding: 20px;
+    padding: 40px;
     background-color: #000000c9;
-    width: 50%;
+    width: 55%;
     margin: auto;
     text-align: center;
+}
+.test-parent{
+    padding: 30px;
 }
 .question{
     padding: 50px;
 }
 .question-choices{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    margin-top: 5%;
     font-size: 17px;
     padding-top: 20px;
 }
@@ -24,6 +31,39 @@
     width: 100px;
     padding: 20px;
     background-color: #000000c9;
+}
+/* Default radio view */
+.question-choice label{
+    padding: 20px;
+    border: 2px solid #FFFFFF;
+    display: inline-block;
+    padding: 15px 32px;
+    font-size: 15px;
+    border-radius: 2px;
+}
+/* Hide the browser's default checkbox */
+.question-choices input {
+    display: none;
+}
+/* Checked radio */
+.question-choices input:checked + label{
+    color: #54514f;
+    border: 2px solid #54514f;
+}
+
+.warning {
+    width: 30%;
+    height: 20%;
+    text-align: center;
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #242324;
+    padding: 20px;
+    border: 2px solid #FFFFFF;
+    border-radius: 5px;
 }
 
 </style>
@@ -76,12 +116,12 @@
                   <h2>{{ forloop.counter }}. {{question.question}}</h2>
                   <div class="question-choices">
                   {% for answer in answers %}
-                        <label>
+                        <div class="question-choice">
                             <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
                             <label for="{{answer.pk}}">
                                 <span>{{ answer.answer }}</span>
                             </label>
-                        </label>
+                        </div>
                   {% endfor %}
                   </div>
                   </div>
@@ -97,7 +137,14 @@
 </div>
 <div class="time-counter"><p id="demo"></p></div>
 </div>
+<div class="warning" id="warning">
+  <h2>Warning: Only 5 minutes left!</h2>
+    <input type="button" class="btn" name="answer" value="Got it" onclick="closeDiv()" />
+</div>
 <script>
+  function closeDiv() {
+   document.getElementById('warning').style.display = "none";
+}
 
   // Get today's date and time
   var now = new Date().getTime();
@@ -105,13 +152,18 @@
   // Set the date we're counting down to
   var countDownDate = new Date(1000 * {{start_time}} + {{test.time_limit}}*60000).getTime();
 
-// Update the count down every 1 second
+  // Set the warning time to 5 minutes before the end of the countdown
+  var warningTime = new Date(1000 * {{start_time}} + {{test.time_limit}}*60000 - 5*60000).getTime();
+
+  var warningShown = false;
+
+// Update the countdown every 1 second
 var x = setInterval(function() {
 
   // Get today's date and time
   var now = new Date().getTime();
 
-  // Find the distance between now and the count down date
+  // Find the distance between now and the countdown date
   var distance = countDownDate - now;
 
 
@@ -126,11 +178,19 @@ var x = setInterval(function() {
   document.getElementById("demo").innerHTML = hours + "h "
   + minutes + "m " + seconds + "s ";
 
-  // If the count down is over, write some text
+  // If the count down is over, submit form
   if (distance < 0) {
     document.getElementById("my_form").submit()
   }
+  // Check if there are 5 minutes left
+  if (now > warningTime && !warningShown) {
+    // Show the warning modal
+    warningShown = true;
+    var warningMsg = document.getElementById("warning");
+    warningMsg.style.display = "block";
+  }
 }, 1000);
+
 </script>
 
 {% endblock %}
