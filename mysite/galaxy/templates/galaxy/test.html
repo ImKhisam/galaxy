@@ -73,18 +73,25 @@
 <div class="test-parent">
 <div class="test">
 <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
-{% if test.media %}
-    <p>Audio</p>
-    <audio controls src="{{test.media.url}}"></audio>
-{% endif %}
-<form action="{% url 'test' test.pk %}" method="post" id="my_form">
-  {% csrf_token %}
-  <div class="form errors">{{ form.non_field_errors }}</div>
 
+<form action="{% url 'test' test.pk %}" method="post" id="my_form">
+{% csrf_token %}
+    <div class="form errors">{{ form.non_field_errors }}</div>
+        {% for chapter, qa in dict.items %}
+            {% if chapter.text %}
+                <div class="question">
+                {{chapter.text}}
+                </div>
+            {% endif %}
+            {% if chapter.media %}
+                <div class="question">
+                <audio controls src="{{chapter.media.url}} "></audio>
+                </div>
+            {% endif %}
           {% for question, answers in qa.items %}
           <div class="question">
           {% if question.question_type == 'match_type' %}
-                  <h2>{{ forloop.counter }}. {{question.question}}</h2>
+                  <h2>{{question.question_number}}. {{question.question}}</h2>
                   {% for answer, answer_list in answers.items %}
                   {% if forloop.first %}
                       {% for item in answer_list %}
@@ -105,15 +112,15 @@
                         </div>
                   {% endfor %}
           {% elif question.question_type == 'input_type'%}
-                  <h2>{{ forloop.counter }}. {{question.question}}</h2>
+                  <h2>{{question.question_number}}. {{question.question}}</h2>
                   <div class="input_type">
-                      <label>{{answers.addition}}</label>
+
                       <br>
                       <input type="text" name="{{answers.pk}}">
                   </div>
           {% else %}
                   <div class="question_radio">
-                  <h2>{{ forloop.counter }}. {{question.question}}</h2>
+                  <h2>{{question.question_number}}. {{question.question}}</h2>
                   <div class="question-choices">
                   {% for answer in answers %}
                         <div class="question-choice">
@@ -128,7 +135,7 @@
           {% endif %}
           </div>
           {% endfor %}
-
+      {% endfor %}
 <br><br>
 <input class="btn" style="border-radius: 0%;"  type="submit" value="Submit Answers">
 </form>

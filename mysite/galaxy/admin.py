@@ -24,8 +24,12 @@ class TestsAdmin(admin.ModelAdmin):
     list_display = ('id', 'type', 'part', 'test_num', 'time_limit')
 
 
+class ChaptersAdmin(admin.ModelAdmin):
+    list_display = ('id', 'chapter_number', 'text', 'media')
+
+
 class QuestionsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'test_id', 'points', 'question', 'question_type')
+    list_display = ('id', 'test_id', 'chapter_id', 'question_number', 'points', 'question', 'question_type')
 
 
 class AnswersAdmin(admin.ModelAdmin):
@@ -39,5 +43,6 @@ class AnswersAdmin(admin.ModelAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(OlympWay, OlympWayAdmin)
 admin.site.register(Tests, TestsAdmin)
+admin.site.register(Chapters, ChaptersAdmin)
 admin.site.register(Questions, QuestionsAdmin)
 admin.site.register(Answers, AnswersAdmin)

@@ -49,10 +49,6 @@ class OlympWay(models.Model):
         ordering = ['year', 'stage']
 
 
-def content_file_name_test(instance, filename):
-    return '/'.join(['test', instance.type, instance.part, str(instance.test_num), filename])
-
-
 class Tests(models.Model):
     GSE = 'GSE'
     USE = 'USE'
@@ -76,13 +72,26 @@ class Tests(models.Model):
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
     time_limit = models.PositiveIntegerField()
-    media = models.FileField(upload_to=content_file_name_test, blank=True)
+    #media = models.FileField(upload_to=content_file_name_test, blank=True)
 
     def __str__(self):
         return f"{self.type}, {self.part}, Test №{self.pk}"
 
     class Meta:
         ordering = ['type', 'part']
+
+
+
+
+def content_file_name_test(instance, filename):
+    return '/'.join(['test', instance.test_id.type, instance.test_id.part, str(instance.test_id.test_num), filename])
+
+
+class Chapters(models.Model):
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    chapter_number = models.PositiveIntegerField()
+    text = models.TextField(blank=True)
+    media = models.FileField(upload_to=content_file_name_test, blank=True)
 
 
 class Questions(models.Model):
@@ -95,6 +104,7 @@ class Questions(models.Model):
         (input_type, 'input_type')
     ]
 
+    chapter_id = models.ForeignKey(Chapters, on_delete=models.CASCADE)
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     points = models.PositiveIntegerField()
     question = models.TextField()
@@ -102,7 +112,7 @@ class Questions(models.Model):
     question_type = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_question_type)
 
     def __str__(self):
-        return f"{self.test_id}, Q{self.question_number}"
+        return f"{self.test_id}, {self.chapter_id}, Q{self.question_number}"
 
 
 class Answers(models.Model):

@@ -78,7 +78,8 @@ class ShowTestStat(ListView):
     model = Results
     template_name = "galaxy/show_test_stat.html"
     context_object_name = 'results'
-    extra_context = {'dict': {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum'] for key in Tests.objects.all()}}
+    extra_context = {'dict': {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+                              for key in Tests.objects.all()}}
 
     def get_queryset(self):
         return Results.objects.filter(student_id=self.request.user)
@@ -125,16 +126,20 @@ def test(request, test_pk):
         request.session['start_time'] = time.time()
 
     test = get_object_or_404(Tests, id=test_pk)
-    qa = {}
-    questions_for_test = Questions.objects.filter(test_id__id=test.id)
-    for item in questions_for_test:
-        if item.question_type == 'match_type':      # Если вопрос на сопоставление
-            qa[item] = {key: Answers.objects.filter(question_id__id=item.id).order_by('answer').values_list('answer', flat=True)
-                        for key in Answers.objects.filter(question_id__id=item.id).exclude(match__exact='').order_by('match')}
-        elif item.question_type == 'input_type':    # Вопрос с вводом слова
-            qa[item] = Answers.objects.get(question_id__id=item.id)
-        else:                                       # Вопрос с radio
-            qa[item] = Answers.objects.filter(question_id__id=item.id)
+    dict = {}
+    chapters_for_test = Chapters.objects.filter(test_id__id=test.id)
+    for chapter in chapters_for_test:
+        questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+        qa = {}
+        for question in questions_for_test:
+            if question.question_type == 'match_type':      # Если вопрос на сопоставление
+                qa[question] = {key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list('answer', flat=True)
+                                for key in Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+            elif question.question_type == 'input_type':    # Вопрос с вводом слова
+                qa[question] = Answers.objects.get(question_id__id=question.id)
+            else:                                       # Вопрос с radio
+                qa[question] = Answers.objects.filter(question_id__id=question.id)
+        dict[chapter] = qa
 
     if request.method == 'POST':
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
@@ -144,21 +149,24 @@ def test(request, test_pk):
         del request.session['start_time']
         '''Подсчитываем баллы за тест'''
         points = 0
+        questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
         for question in questions_for_test:
             '''Подсчёт вопросов на сопоставление'''
             if question.question_type == 'match_type':
                 fl = 0
-                for answer in Answers.objects.filter(question_id__id=question.id):
-                    if request.POST.get(str(answer.id)) != answer.answer:
+                for answer in Answers.objects.filter(question_id__id=question.id).exclude(match__exact=''):
+                    student_answer = request.POST.get(str(answer.id))
+                    print(student_answer)
+                    if student_answer != answer.answer:
                         fl = 1
                         break
                 if fl == 0:
                     points += question.points
             elif question.question_type == 'input_type':
-                answer = Answers.objects.get(question_id__id=item.id)
+                answer = Answers.objects.get(question_id__id=question.id)
                 right_answer = str(answer.answer)
                 student_answer = str(request.POST.get(str(answer.id)))
-                if student_answer.lower() == right_answer.lower():
+                if student_answer == right_answer:
                     points += question.points
             '''Подсчёт вопросов с radio'''
             try:        # потому что студент может оставить radio невыбранным
@@ -179,7 +187,7 @@ def test(request, test_pk):
         return HttpResponseRedirect('/test_result/' + str(result.pk) + '/')
 
     context = {'test': test,
-               'qa': qa,
+               'dict': dict,
                'start_time': request.session['start_time'],
                }
 
