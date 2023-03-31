@@ -49,6 +49,10 @@ class OlympWay(models.Model):
         ordering = ['year', 'stage']
 
 
+def content_file_name_test(instance, filename):
+    return '/'.join(['test', instance.type, instance.part, str(instance.test_num), filename])
+
+
 class Tests(models.Model):
     GSE = 'GSE'
     USE = 'USE'
@@ -71,27 +75,33 @@ class Tests(models.Model):
     test_num = models.IntegerField()
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
+    start_time = models.FloatField(default=0)
+    test_info = models.TextField(default="Текст, который выводится перед началом теста")
     time_limit = models.PositiveIntegerField()
-    #media = models.FileField(upload_to=content_file_name_test, blank=True)
+    media = models.FileField(upload_to=content_file_name_test, blank=True)
 
     def __str__(self):
-        return f"{self.type}, {self.part}, Test №{self.pk}"
+        return f"{self.type}, {self.part}, Test №{self.test_num}"
 
     class Meta:
         ordering = ['type', 'part']
 
 
-
-
-def content_file_name_test(instance, filename):
-    return '/'.join(['test', instance.test_id.type, instance.test_id.part, str(instance.test_id.test_num), filename])
+def content_file_name_chapter(instance, filename):
+    return '/'.join(['test', instance.test_id.type, instance.test_id.part, \
+                     str(instance.test_id.test_num), "Chapter" + instance.chapter_number, filename])
 
 
 class Chapters(models.Model):
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     chapter_number = models.PositiveIntegerField()
+    info = models.TextField(blank=True)
+    text_name = models.CharField(max_length=50, blank=True)
     text = models.TextField(blank=True)
-    media = models.FileField(upload_to=content_file_name_test, blank=True)
+    media = models.FileField(upload_to=content_file_name_chapter, blank=True)
+
+    def __str__(self):
+        return f"{self.test_id}, Chapter #{self.chapter_number}"
 
 
 class Questions(models.Model):
@@ -104,10 +114,11 @@ class Questions(models.Model):
         (input_type, 'input_type')
     ]
 
-    chapter_id = models.ForeignKey(Chapters, on_delete=models.CASCADE)
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    chapter_id = models.ForeignKey(Chapters, on_delete=models.CASCADE)
     points = models.PositiveIntegerField()
     question = models.TextField()
+    addition = models.CharField(max_length=50, blank=True)
     question_number = models.PositiveIntegerField()
     question_type = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_question_type)
 

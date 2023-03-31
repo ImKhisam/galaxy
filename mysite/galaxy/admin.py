@@ -25,7 +25,7 @@ class TestsAdmin(admin.ModelAdmin):
 
 
 class ChaptersAdmin(admin.ModelAdmin):
-    list_display = ('id', 'chapter_number', 'text', 'media')
+    list_display = ('id', 'test_id', 'chapter_number', 'text', 'media')
 
 
 class QuestionsAdmin(admin.ModelAdmin):
@@ -37,7 +37,7 @@ class AnswersAdmin(admin.ModelAdmin):
         models.CharField: {'widget': TextInput(attrs={'size': '60'})},
     }
 
-    list_display = ('id', 'question_id', 'answer', 'is_true')
+    list_display = ('id', 'question_id', 'answer', 'match', 'is_true')
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

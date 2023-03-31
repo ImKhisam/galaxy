@@ -14,7 +14,6 @@ from .forms import *
 from django.db.models import Sum
 
 
-
 class Index(TemplateView):
     template_name = "galaxy/index.html"
 
@@ -85,31 +84,8 @@ class ShowTestStat(ListView):
         return Results.objects.filter(student_id=self.request.user)
 
 
-#class Gse(LoginRequiredMixin, TemplateView):
-#    template_name = "galaxy/zaglushka.html"
-#
-#    def get_context_data(self, *, object_list=None, **kwargs):
-#        if not self.check_access():
-#            return redirect('julik')
-#
-#        context = super().get_context_data(**kwargs)
-#        c_def = self.get_user_context(title='Oge')
-#        return dict(list(context.items()) + list(c_def.items()))
-
-
-#class Use(LoginRequiredMixin, TemplateView):
-#    template_name = "galaxy/zaglushka.html"
-#
-#    def get_context_data(self, *, object_list=None, **kwargs):
-#        if not self.check_access():
-#            return redirect('julik')
-#
-#        context = super().get_context_data(**kwargs)
-#        c_def = self.get_user_context(title='Ege')
-#        return dict(list(context.items()) + list(c_def.items()))
-
-
-class TestPreview(DetailView):
+class TestPreview(LoginRequiredMixin, DetailView):
+    login_url = reverse_lazy('login')
     model = Tests
     template_name = "galaxy/test_preview.html"
     pk_url_kwarg = 'test_pk'
@@ -122,11 +98,12 @@ class TestPreview(DetailView):
 
 
 def test(request, test_pk):
-    if 'start_time' not in request.session:
-        request.session['start_time'] = time.time()
-
     test = get_object_or_404(Tests, id=test_pk)
-    dict = {}
+    if test.start_time == 0:
+        test.start_time = time.time()
+        test.save()
+
+    content_dict = {}
     chapters_for_test = Chapters.objects.filter(test_id__id=test.id)
     for chapter in chapters_for_test:
         questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
@@ -139,40 +116,39 @@ def test(request, test_pk):
                 qa[question] = Answers.objects.get(question_id__id=question.id)
             else:                                       # Вопрос с radio
                 qa[question] = Answers.objects.filter(question_id__id=question.id)
-        dict[chapter] = qa
+        content_dict[chapter] = qa
 
     if request.method == 'POST':
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
-        test_time = int(time.time() - request.session['start_time'])
+        test_time = int(time.time() - test.start_time)
         if test_time > test.time_limit * 60:
             test_time = test.time_limit * 60
-        del request.session['start_time']
+        test.start_time = 0
+        test.save()
         '''Подсчитываем баллы за тест'''
-        points = 0
+        total_test_points = 0
         questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
         for question in questions_for_test:
             '''Подсчёт вопросов на сопоставление'''
             if question.question_type == 'match_type':
-                fl = 0
+                question_points = question.points
                 for answer in Answers.objects.filter(question_id__id=question.id).exclude(match__exact=''):
                     student_answer = request.POST.get(str(answer.id))
-                    print(student_answer)
                     if student_answer != answer.answer:
-                        fl = 1
-                        break
-                if fl == 0:
-                    points += question.points
+                        question_points -= 1
+                if question_points > 0:
+                    total_test_points += question_points
             elif question.question_type == 'input_type':
                 answer = Answers.objects.get(question_id__id=question.id)
                 right_answer = str(answer.answer)
                 student_answer = str(request.POST.get(str(answer.id)))
                 if student_answer == right_answer:
-                    points += question.points
+                    total_test_points += question.points
             '''Подсчёт вопросов с radio'''
             try:        # потому что студент может оставить radio невыбранным
                 obj = Answers.objects.get(pk=request.POST.get(str(question.id)))
                 if obj.is_true:
-                    points += question.points
+                    total_test_points += question.points
             except:
                 pass
 
@@ -180,15 +156,14 @@ def test(request, test_pk):
         result = Results()
         result.student_id = student
         result.test_id = test
-        result.points = points
+        result.points = total_test_points
         result.time = str(timedelta(seconds=test_time))
         result.save()
-        #response = render(request, 'galaxy/test_result.html', {'result': result})
         return HttpResponseRedirect('/test_result/' + str(result.pk) + '/')
 
     context = {'test': test,
-               'dict': dict,
-               'start_time': request.session['start_time'],
+               'content_dict': content_dict,
+               'start_time': test.start_time,
                }
 
     response = render(request, 'galaxy/test.html', context)
