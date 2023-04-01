@@ -22,11 +22,11 @@
             </div>
         {% endif %}
         {% if chapter.text_name %}
-            <div class="text_name">
-                {{chapter.text_name}}
+            <div class="chapter-text-name">
+                <h3>{{chapter.text_name}}</h3>
             </div>
-            <div class="text">
-                {{chapter.text}}
+            <div class="chapter-text">
+                <p>{{chapter.text}}</p>
             </div>
         {% endif %}
         {% if chapter.media %}
@@ -36,7 +36,6 @@
             </div>
         {% endif %}
         {% if test.media and forloop.first %}
-            <br><br>
             <div class="question">
                 <audio hidden autoplay>
                     <source src="{{test.media.url}}">
@@ -92,7 +91,7 @@
                                 {% endif %}
                             {% endfor %}
                             </div>
-                {% elif question.question_type == 'input_type'%}
+                {% elif question.question_type == 'input_type'%}    <!-- Input type question -->
                     <div class="input-outer">
                         <div class="input-question">
                             <p class="question-text">{{question.question_number}}. {{question.question}}</p>
@@ -101,10 +100,10 @@
                             <input type="text" name="{{answers.pk}}">
                         </div>
                         <div class="input-addition">
-                            <p class="question-text">{{question.addition}}</p>
+                            <p class="input-addition-text">{{question.addition}}</p>
                         </div>
                     </div>
-                {% else %} <!-- Single choice type question -->
+                {% elif question.question_type == 'single_choice_type' %} <!-- Single choice type question -->
                     <div class="question_radio">
                         <p class="question-text">{{question.question_number}}. {{question.question}}</p>
                         <div class="question-choices">
@@ -116,6 +115,34 @@
                                         </label>
                                 </div>
                             {% endfor %}
+                        </div>
+                    </div>
+                {% else %}  <!-- True/False type question -->
+                    <div class="question_true_false">
+                        <p class="question-text">{{question.question_number}}. {{question.question}}</p>
+                        <div class="question-choices">
+                            <div class="question-choice">
+                                <input type="radio" id="True{{question.pk}}" name="{{question.pk}}" value="True">
+                                <label for="True{{question.pk}}">
+                                    <span class="center">True</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="question-choices">
+                            <div class="question-choice">
+                                <input type="radio" id="False{{question.pk}}" name="{{question.pk}}" value="False">
+                                <label for="False{{question.pk}}">
+                                    <span class="center">False</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="question-choices">
+                            <div class="question-choice">
+                                <input type="radio" id="Not stated{{question.pk}}" name="{{question.pk}}" value="Not stated">
+                                <label for="Not stated{{question.pk}}">
+                                    <span class="center">Not stated</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 {% endif %}

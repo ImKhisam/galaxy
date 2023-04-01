@@ -77,6 +77,7 @@ nav ul ul ul {
     background-color: #000000c9;
     transition-duration: 0.4s;
     font-size: 17px;
+    text-decoration: none;
 }
 .btn:hover {
     background-color: #000000c9;

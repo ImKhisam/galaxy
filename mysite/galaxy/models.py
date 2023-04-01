@@ -108,10 +108,12 @@ class Questions(models.Model):
     single_choice_type = 'single_choice_type'
     match_type = 'match_type'
     input_type = 'input_type'
+    true_false_type = 'true_false_type'
     choices_in_question_type = [
         (single_choice_type, 'single_choice_type'),
         (match_type, 'match_type'),
-        (input_type, 'input_type')
+        (input_type, 'input_type'),
+        (true_false_type, 'true_false_type')
     ]
 
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)

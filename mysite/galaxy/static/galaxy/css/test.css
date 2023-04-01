@@ -11,7 +11,7 @@ h2{
     padding: 0px 40px;
 }
 .test{
-    padding: 40px;
+    padding: 60px;
     color: black;
     background-color: #ffffff;
     width: 60%;
@@ -26,10 +26,11 @@ h2{
     text-align: left;
     text-indent: 25px;
     margin-left: 40px;
+
 }
 
 .match-answer{
-    font-size: 20px;
+        font-size: 23px;
 }
 .matches{
     display: flex;
@@ -193,9 +194,20 @@ option{
     padding: 10px;
     margin-bottom: 60px;
 }
-
+.chapter-text-name{
+    text-align: center;
+    font-size: 30px;
+    font-style: ;
+}
+.chapter-text{
+    white-space: break-spaces;
+    font-size: 27px;
+    padding: 0px 80px;
+    text-indent: 25px;
+}
 .question-text{
     font-size: 25px;
+
 }
 .input-outer{
     display: flex;
@@ -209,7 +221,13 @@ option{
 }
 .input-type input{
     margin: auto;
+    font-size: 20px;
 }
 .input-addition{
     width: 25%;
+    display: flex;
+}
+.input-addition-text{
+    font-size: 25px;
+    margin: auto;
 }

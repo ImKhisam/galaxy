@@ -114,7 +114,7 @@ def test(request, test_pk):
                                 for key in Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
             elif question.question_type == 'input_type':    # Вопрос с вводом слова
                 qa[question] = Answers.objects.get(question_id__id=question.id)
-            else:                                       # Вопрос с radio
+            else:                                       # Вопрос с radio или True/False
                 qa[question] = Answers.objects.filter(question_id__id=question.id)
         content_dict[chapter] = qa
 
@@ -129,8 +129,7 @@ def test(request, test_pk):
         total_test_points = 0
         questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
         for question in questions_for_test:
-            '''Подсчёт вопросов на сопоставление'''
-            if question.question_type == 'match_type':
+            if question.question_type == 'match_type':          # Подсчёт вопросов на сопоставление
                 question_points = question.points
                 for answer in Answers.objects.filter(question_id__id=question.id).exclude(match__exact=''):
                     student_answer = request.POST.get(str(answer.id))
@@ -138,17 +137,26 @@ def test(request, test_pk):
                         question_points -= 1
                 if question_points > 0:
                     total_test_points += question_points
-            elif question.question_type == 'input_type':
+            elif question.question_type == 'input_type':        # Подсчет вопросов с вводом
                 answer = Answers.objects.get(question_id__id=question.id)
-                right_answer = str(answer.answer)
+                answers = str(answer.answer)
+                print(answers)
+                right_answers = list(answers.split(','))
+                print(right_answers)
                 student_answer = str(request.POST.get(str(answer.id)))
-                if student_answer == right_answer:
+                if student_answer in right_answers:
                     total_test_points += question.points
-            '''Подсчёт вопросов с radio'''
+            elif question.question_type == 'true_false_type':   # Подсчет вопросов с True/False
+                try:
+                    if request.POST.get(str(question.id)) == Questions.objects.get(id=question.id).addition:
+                        total_test_points += question.points
+                except:
+                    pass
+                pass
             try:        # потому что студент может оставить radio невыбранным
                 obj = Answers.objects.get(pk=request.POST.get(str(question.id)))
                 if obj.is_true:
-                    total_test_points += question.points
+                    total_test_points += question.points        # Подсчет вопросов с выбором
             except:
                 pass
 
