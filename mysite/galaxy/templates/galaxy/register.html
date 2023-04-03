@@ -1,5 +1,14 @@
 {% extends 'galaxy/base.html' %}
 
+{% block custom_styles %}
+<style>
+.invalid-feedback{
+    margin-top: 10px;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="modal">
 <h1>{{ title }}</h1>
@@ -12,8 +21,73 @@
 <div class="form-error">{{ f.errors }}</div>
 {% endfor %}
 
-    <button type="submit">Register</button>
+    <button id="registerBtn" type="submit">Register</button>
 </form>
 
 </div>
 {% endblock %}
+
+{% block javascript %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // catch the form's submit event
+            $('#id_username').keyup(function () {
+                // create an AJAX call
+                $.ajax({
+                    data: $(this).serialize(), // get the form data
+                    url: "{% url 'validate_username' %}",
+                    // on success
+                    success: function (response) {
+                        if (response.is_taken == true) {
+                            $('#id_username').removeClass('is-valid').addClass('is-invalid');
+                            $('#id_username').after('<div class="invalid-feedback d-block" id="usernameError">This username is not available!</div>')
+                            $('#registerBtn').prop('disabled', true); // disable the button
+                        }
+                        else {
+                            $('#id_username').removeClass('is-invalid').addClass('is-valid');
+                            $('#usernameError').remove();
+                            $('#registerBtn').prop('disabled', false); // enable the button
+
+                        }
+
+                    },
+                    // on error
+                    error: function (response) {
+                        // alert the error if any error occured
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+
+                return false;
+            });
+             $('#id_email').keyup(function () {
+                $.ajax({
+                    data: $(this).serialize(), // get the form data
+                    url: "{% url 'validate_email' %}",
+                    success: function (response) {
+                        if (response.is_taken == true) {
+                            $('#id_username').removeClass('is-valid').addClass('is-invalid');
+                            $('#id_username').after('<div class="invalid-feedback d-block" id="usernameError">This username is not available!</div>')
+                            $('#registerBtn').prop('disabled', true); // disable the button
+                        }
+                        else {
+                            $('#id_username').removeClass('is-invalid').addClass('is-valid');
+                            $('#usernameError').remove();
+                            $('#registerBtn').prop('disabled', false); // enable the button
+
+                        }
+
+                    },
+                    // on error
+                    error: function (response) {
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+
+                return false;
+            });
+        })
+    </script>
+    {% endblock javascript %}

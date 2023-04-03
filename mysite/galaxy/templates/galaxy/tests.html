@@ -42,27 +42,33 @@ div.table {
 <div class="parent">
   <div class="table">
       <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Type</th>
-          <th scope="col">Part</th>
-          <th scope="col">Total questions</th>
-          <th scope="col">Link</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for test in tests %}
-        <tr>
-          <th scope="row">{{ forloop.counter }}</th>
-            <td> {{test.type}}</td>
-            <td>{{test.part}}</td>
-            <td>{{test.test_num}}</td>
-            <td><a href="#">Open</a></td>
-        </tr>
-
-      {% endfor %}
-      </tbody>
+          <thead>
+              <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Part</th>
+                  <th scope="col">Total questions</th>
+                  <th scope="col">Link</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for test in tests %}
+              <tr>
+                  <th scope="row">{{ forloop.counter }}</th>
+                  <td> {{test.type}}</td>
+                  <td>{{test.part}}</td>
+                  <td>{{test.test_num}}</td>
+                  <td><a href="#">Open</a></td>
+              </tr>
+          {% endfor %}
+              <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td><a href="{% url 'add_test' %}">Add test</a> </td>
+              </tr>
+          </tbody>
       </table>
   </div>
 </div>

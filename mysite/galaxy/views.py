@@ -1,15 +1,17 @@
 import os
 import time
+import json
 from datetime import datetime, timedelta
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, TemplateView, DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
-from django.http import FileResponse, Http404, HttpResponseRedirect
+from django.http import FileResponse, Http404, HttpResponseRedirect, JsonResponse
 from .forms import *
 from django.db.models import Sum
 
@@ -21,10 +23,6 @@ class Index(TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Main Page'
         return context
-
-
-class SignUp(TemplateView):
-    template_name = "galaxy/sign_up.html"
 
 
 class RegisterUser(CreateView):
@@ -42,6 +40,23 @@ class RegisterUser(CreateView):
         login(self.request, user)       # при успешной регистрации сразу логинит
         return redirect('personal_acc', acc_slug=self.request.user.slug)
 
+
+def validate_username(request):
+    """Check username availability"""
+    username = request.GET.get('username', None)
+    response = {
+        'is_taken': CustomUser.objects.filter(username__iexact=username).exists()
+    }
+    return JsonResponse(response)
+
+
+#class EmailValidationView(View):
+#    def post(self, request):
+#        data = json.loads(request.body)
+#        email = data['email']
+#        if CustomUser.objects.filter(email__iexact=email).exists():
+#            return JsonResponse({'email_error': 'sorry email is already taken'})
+#        return JsonResponse({'username_valid': True})
 
 class LoginUser(LoginView):
     form_class = LoginUserForm
@@ -245,5 +260,22 @@ class ShowTests(ListView):
         context['title'] ='tests'
         return context
 
-    #def get_queryset(self):
-    #    return Tests.objects.all()
+
+class AddTest(View):
+    def get(self, request, *args, **kwargs):
+        test_form = TestAddForm()
+        chapter_forms = [ChapterAddForm(prefix=str(i)) for i in range(4)]
+        return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
+
+    def post(self, request, *args, **kwargs):
+        test_form = TestAddForm(request.POST)
+        chapter_forms = [ChapterAddForm(request.POST, prefix=str(i)) for i in range(4)]
+        if test_form.is_valid() and all([form.is_valid() for form in chapter_forms]):
+            test = test_form.save()
+            for form in chapter_forms:
+                chapter = form.save(commit=False)
+                chapter.test_id = test
+                chapter.save()
+            return redirect('tests')
+        else:
+            return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
