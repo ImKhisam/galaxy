@@ -2,6 +2,7 @@ import os
 import time
 import json
 from datetime import datetime, timedelta
+from django.forms import formset_factory
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
@@ -298,3 +299,36 @@ class AddTest(View):
             return redirect('tests')
         else:
             return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
+
+
+def add_test_and_chapters(request):
+    test_form = TestAddForm()
+    chapter_formset = formset_factory(ChapterAddForm, extra=1)
+
+    if request.method == 'POST':
+        test_form = TestAddForm(request.POST, request.FILES)
+        chapter_formset = chapter_formset(request.POST, request.FILES)
+
+        if test_form.is_valid() and chapter_formset.is_valid():
+            testing = test_form.save(commit=False)
+            test_type = testing.type
+            test_num = Tests.objects.filter(type=test_type).count() + 1
+            testing.test_num = test_num
+            # Save the Test
+            testing.save()
+            # Save the Chapters
+
+            for chapter_form in chapter_formset.forms:
+                if chapter_form.has_changed():
+                    chapter = chapter_form.save(commit=False)
+                    chapter.test_id = testing
+                    chapter.save()
+
+            return redirect('tests')
+
+    context = {
+        'test_form': test_form,
+        'chapter_formset': chapter_formset,
+    }
+
+    return render(request, 'galaxy/add_test.html', context)

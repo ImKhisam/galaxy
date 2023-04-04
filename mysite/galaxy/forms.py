@@ -39,3 +39,6 @@ class ChapterAddForm(forms.ModelForm):
     class Meta:
         model = Chapters
         fields = ['chapter_number', 'info', 'text_name', 'text', 'media']
+        widgets = {
+            'media': forms.ClearableFileInput(attrs={'multiple': True}),
+        }

@@ -22,5 +22,5 @@ urlpatterns = [
     path('show_test_stat', ShowTestStat.as_view(), name='show_test_stat'),
 
     path('tests/', ShowTests.as_view(), name='tests'),
-    path('add_test/', AddTest.as_view(), name='add_test'),
+    path('add_test/', add_test_and_chapters, name='add_test'),
     ]

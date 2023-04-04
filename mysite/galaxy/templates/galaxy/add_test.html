@@ -1,13 +1,75 @@
 {% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+<style>
+.test{
+    padding: 60px;
+    color: black;
+    background-color: #ffffff;
+    width: 60%;
+    margin: auto;
+    text-align: left;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-  <h2>Add a test</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ test_form.as_p }}
-    {% for form in chapter_forms %}
-      {{ form.as_p }}
+<div class="test">
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  {{ test_form.as_p }}
+
+  <h3>Chapters:</h3>
+  {{ chapter_formset.management_form }}
+
+  <div id="chapters">
+    {% for chapter_form in chapter_formset.forms %}
+      <div class="chapter">
+        {{ chapter_form.as_p }}
+      </div>
     {% endfor %}
-    <input type="submit" value="Submit">
-  </form>
+  </div>
+
+  <button id="add-chapter" type="button">Add chapter</button>
+
+  <button type="submit">Save</button>
+</form>
+</div>
 {% endblock %}
+
+
+{% block javascript %}
+<script>
+  const addButton = document.querySelector('#add-chapter');
+  const chaptersDiv = document.querySelector('#chapters');
+  let chapterCount = {{ chapter_formset.total_form_count }};
+  const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+
+
+  addButton.addEventListener('click', () => {
+    const chapterHtml = `
+      <div class="chapter">
+        {{ chapter_formset.empty_form.as_p }}
+      </div>
+    `;
+
+    chaptersDiv.insertAdjacentHTML('beforeend', chapterHtml);
+    chapterCount++;
+
+    const chapterForm = document.querySelectorAll('.chapter')[chapterCount-1];
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete chapter';
+    chapterForm.appendChild(deleteButton);
+
+    deleteButton.addEventListener('click', () => {
+      chapterForm.remove();
+      chapterCount--;
+      totalFormsInput.value = chapterCount;
+    });
+    totalFormsInput.value = chapterCount;
+  });
+</script>
+
+{% endblock javascript %}
