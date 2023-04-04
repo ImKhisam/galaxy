@@ -76,7 +76,6 @@ class Tests(models.Model):
     test_num = models.IntegerField()
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
-    start_time = models.FloatField(default=0)
     test_info = models.TextField(default="Текст, который выводится перед началом теста")
     time_limit = models.PositiveIntegerField()
     media = models.FileField(upload_to=content_file_name_test, blank=True)
@@ -86,6 +85,12 @@ class Tests(models.Model):
 
     class Meta:
         ordering = ['type', 'part']
+
+
+class TestTimings(models.Model):
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    start_time = models.FloatField(default=0)
 
 
 def content_file_name_chapter(instance, filename):

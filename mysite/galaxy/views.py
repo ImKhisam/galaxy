@@ -108,15 +108,31 @@ class TestPreview(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        test = context['test']
+        user = self.request.user
+        try:
+            unfinished_try = TestTimings.objects.get(test_id=test, user_id=user)
+            unfinished_try = 1
+        except:
+            unfinished_try = 0
+
         context['title'] = 'Test preview'
+        context['unfinished_try'] = unfinished_try
         return context
 
 
 def test(request, test_pk):
     test = get_object_or_404(Tests, id=test_pk)
-    if test.start_time == 0:
-        test.start_time = time.time()
-        test.save()
+    user = request.user
+    try:
+        time_obj = TestTimings.objects.get(test_id=test, user_id=user)
+    except:
+        time_obj = TestTimings()
+        time_obj.test_id = test
+        time_obj.user_id = user
+        time_obj.start_time = time.time()
+        time_obj.save()
+    start_time = time_obj.start_time
 
     content_dict = {}
     chapters_for_test = Chapters.objects.filter(test_id__id=test.id)
@@ -135,11 +151,10 @@ def test(request, test_pk):
 
     if request.method == 'POST':
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
-        test_time = int(time.time() - test.start_time)
+        test_time = int(time.time() - start_time)
         if test_time > test.time_limit * 60:
             test_time = test.time_limit * 60
-        test.start_time = 0
-        test.save()
+        time_obj.delete()
         '''Подсчитываем баллы за тест'''
         total_test_points = 0
         questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
@@ -186,7 +201,7 @@ def test(request, test_pk):
 
     context = {'test': test,
                'content_dict': content_dict,
-               'start_time': test.start_time,
+               'start_time': start_time,
                }
 
     response = render(request, 'galaxy/test.html', context)
@@ -264,17 +279,21 @@ class ShowTests(ListView):
 class AddTest(View):
     def get(self, request, *args, **kwargs):
         test_form = TestAddForm()
-        chapter_forms = [ChapterAddForm(prefix=str(i)) for i in range(4)]
+        chapter_forms = [ChapterAddForm(prefix=str(i)) for i in range(2)]
         return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
 
     def post(self, request, *args, **kwargs):
         test_form = TestAddForm(request.POST)
-        chapter_forms = [ChapterAddForm(request.POST, prefix=str(i)) for i in range(4)]
+        chapter_forms = [ChapterAddForm(request.POST, prefix=str(i)) for i in range(2)]
         if test_form.is_valid() and all([form.is_valid() for form in chapter_forms]):
-            test = test_form.save()
+            testing = test_form.save(commit=False)
+            test_type = testing.type
+            test_num = Tests.objects.filter(type=test_type).count() + 1
+            testing.test_num = test_num
+            testing.save()
             for form in chapter_forms:
                 chapter = form.save(commit=False)
-                chapter.test_id = test
+                chapter.test_id = testing
                 chapter.save()
             return redirect('tests')
         else:

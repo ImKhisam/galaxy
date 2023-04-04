@@ -28,7 +28,7 @@ p {
 {% block content %}
 <div class="outer">
     <div class="test">
-        {% if test.start_time == 0 %}
+        {% if unfinished_try == 0 %}
             <p>
                 {{test.test_info}}
             </p>
