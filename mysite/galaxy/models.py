@@ -148,10 +148,3 @@ class Results(models.Model):
     date = models.DateTimeField(auto_now=True)
     points = models.CharField(max_length=20)
     time = models.CharField(max_length=50)
-
-
-#class Option(models.Model):
-#    text = models.CharField(max_length=255)
-#    question = models.ForeignKey(Questions, on_delete=models.CASCADE, related_name='options')
-#    match = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='matches')
-

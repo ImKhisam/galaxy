@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 from django.contrib.auth.models import User
 from .models import *
+from django.forms.models import inlineformset_factory
 
 
 class LoginUserForm(AuthenticationForm):
@@ -42,3 +43,15 @@ class ChapterAddForm(forms.ModelForm):
         widgets = {
             'media': forms.ClearableFileInput(attrs={'multiple': True}),
         }
+
+
+class QuestionAddForm(forms.ModelForm):
+    class Meta:
+        model: Questions
+        fields = []
+
+
+class AnswerAddForm(forms.ModelForm):
+    class Meta:
+        model: Answers
+        fields = []

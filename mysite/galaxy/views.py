@@ -2,7 +2,7 @@ import os
 import time
 import json
 from datetime import datetime, timedelta
-from django.forms import formset_factory
+from django.forms import formset_factory, modelform_factory
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
@@ -303,7 +303,7 @@ class AddTest(View):
 
 def add_test_and_chapters(request):
     test_form = TestAddForm()
-    chapter_formset = formset_factory(ChapterAddForm, extra=1)
+    chapter_formset = formset_factory(ChapterAddForm, extra=0)
 
     if request.method == 'POST':
         test_form = TestAddForm(request.POST, request.FILES)
@@ -312,7 +312,8 @@ def add_test_and_chapters(request):
         if test_form.is_valid() and chapter_formset.is_valid():
             testing = test_form.save(commit=False)
             test_type = testing.type
-            test_num = Tests.objects.filter(type=test_type).count() + 1
+            test_part = testing.part
+            test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
             testing.test_num = test_num
             # Save the Test
             testing.save()
@@ -324,7 +325,7 @@ def add_test_and_chapters(request):
                     chapter.test_id = testing
                     chapter.save()
 
-            return redirect('tests')
+            return redirect('add_q_and_a', testing.id)
 
     context = {
         'test_form': test_form,
@@ -332,3 +333,13 @@ def add_test_and_chapters(request):
     }
 
     return render(request, 'galaxy/add_test.html', context)
+
+
+def add_questions_and_answers(request, test_id):
+    test_obj = Tests.objects.get(id=test_id)
+    chapters = Chapters.objects.filter(test_id=test_obj)
+    context = {
+        'test_obj': test_obj,
+        'chapters': chapters,
+    }
+    return render(request, 'galaxy/add_q_and_a.html', context)

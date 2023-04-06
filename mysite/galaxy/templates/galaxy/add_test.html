@@ -11,65 +11,70 @@
     margin: auto;
     text-align: left;
 }
+
+.hidden{
+  display: none;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="test">
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-
-  {{ test_form.as_p }}
-
-  <h3>Chapters:</h3>
-  {{ chapter_formset.management_form }}
-
-  <div id="chapters">
-    {% for chapter_form in chapter_formset.forms %}
-      <div class="chapter">
-        {{ chapter_form.as_p }}
-      </div>
-    {% endfor %}
-  </div>
-
-  <button id="add-chapter" type="button">Add chapter</button>
-
-  <button type="submit">Save</button>
-</form>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ test_form.as_p }}
+        <h3>Chapters:</h3>
+        {{ chapter_formset.management_form }}
+        <div id="chapters">
+            {% for chapter_form in chapter_formset %}
+                  <div class="chapter">
+                      {{ chapter_form.as_p }}
+                  </div>
+            {% endfor %}
+        </div>
+        <div id="empty-form" class="hidden">{{ chapter_formset.empty_form.as_p }}</div>
+        <button id="add-chapter" type="button">Add chapter</button>
+        <button type="submit">Save</button>
+    </form>
 </div>
 {% endblock %}
 
 
 {% block javascript %}
 <script>
-  const addButton = document.querySelector('#add-chapter');
-  const chaptersDiv = document.querySelector('#chapters');
-  let chapterCount = {{ chapter_formset.total_form_count }};
-  const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+  const addChapterButton = document.getElementById('add-chapter');
+  const totalForms = document.getElementById('id_form-TOTAL_FORMS');
 
+  addChapterButton.addEventListener('click', add_new_chapter)
 
-  addButton.addEventListener('click', () => {
-    const chapterHtml = `
-      <div class="chapter">
-        {{ chapter_formset.empty_form.as_p }}
-      </div>
-    `;
+  function add_new_chapter(event) {
+      if (event) {
+          event.preventDefault()
+      }
+      const currentChapterForms = document.getElementsByClassName('chapter');
+      const currentChapterCount = currentChapterForms.length // + 1
+      const formChapters = document.getElementById('chapters')
+      const copyEmptyFormEl = document.getElementById('empty-form').cloneNode(true)
+      copyEmptyFormEl.setAttribute('class', 'chapter')
+      copyEmptyFormEl.setAttribute('id', `form-${currentChapterCount}`)
+      const regex = new RegExp('__prefix__', 'g')
+      copyEmptyFormEl.innerHTML = copyEmptyFormEl.innerHTML.replace(regex, currentChapterCount)
 
-    chaptersDiv.insertAdjacentHTML('beforeend', chapterHtml);
-    chapterCount++;
+      // Create and append the "Delete chapter" button
 
-    const chapterForm = document.querySelectorAll('.chapter')[chapterCount-1];
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete chapter';
-    chapterForm.appendChild(deleteButton);
+      const deleteChapterButton = document.createElement('button')
+      deleteChapterButton.type = 'button'
+      deleteChapterButton.innerText = 'Delete chapter'
+      deleteChapterButton.addEventListener('click', () => {
+        copyEmptyFormEl.remove()
+        totalForms.setAttribute('value', currentChapterForms.length - 1)
+      })
+      copyEmptyFormEl.append(deleteChapterButton)
 
-    deleteButton.addEventListener('click', () => {
-      chapterForm.remove();
-      chapterCount--;
-      totalFormsInput.value = chapterCount;
-    });
-    totalFormsInput.value = chapterCount;
-  });
+      totalForms.setAttribute('value', currentChapterCount + 1)
+      formChapters.append(copyEmptyFormEl)
+  }
+
 </script>
 
 {% endblock javascript %}

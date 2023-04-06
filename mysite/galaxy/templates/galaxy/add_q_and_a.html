@@ -1,0 +1,33 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+<style>
+.test{
+    padding: 60px;
+    color: black;
+    background-color: #ffffff;
+    width: 60%;
+    margin: auto;
+    text-align: left;
+}
+
+.hidden{
+  display: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test">
+    <p>Add questions and answers to {{ test_obj }}</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% for chapter in chapters %}
+            <div class="chapter">
+                <p>adding questions for {{chapter}}</p>
+            </div>
+        {% endfor %}
+    </form>
+</div>
+{% endblock content %}
