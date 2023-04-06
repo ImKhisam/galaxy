@@ -23,5 +23,6 @@ urlpatterns = [
 
     path('tests/', ShowTests.as_view(), name='tests'),
     path('add_test/', add_test_and_chapters, name='add_test'),
-    path('add_q_and_a/<int:test_id>', add_questions_and_answers, name='add_q_and_a'),
+    #path('add_q_and_a/<int:test_id>', add_questions_and_answers, name='add_q_and_a'),
+    path('add_q_and_a/<int:test_id>', QuestionsAndAnswersView.as_view(), name='add_q_and_a'),
     ]

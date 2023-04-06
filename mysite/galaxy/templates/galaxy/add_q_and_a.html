@@ -3,6 +3,9 @@
 
 {% block custom_styles %}
 <style>
+h1{
+    text-align: center;
+}
 .test{
     padding: 60px;
     color: black;
@@ -20,7 +23,7 @@
 
 {% block content %}
 <div class="test">
-    <p>Add questions and answers to {{ test_obj }}</p>
+    <h1>Add questions and answers to {{ test_obj }}</h1>
 
     <form method="post" enctype="multipart/form-data">
         {% for chapter in chapters %}

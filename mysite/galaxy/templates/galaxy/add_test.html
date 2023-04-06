@@ -3,6 +3,9 @@
 
 {% block custom_styles %}
 <style>
+h1{
+    text-align: center;
+}
 .test{
     padding: 60px;
     color: black;
@@ -20,6 +23,7 @@
 
 {% block content %}
 <div class="test">
+    <h1>Adding new test</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ test_form.as_p }}
@@ -60,8 +64,15 @@
       const regex = new RegExp('__prefix__', 'g')
       copyEmptyFormEl.innerHTML = copyEmptyFormEl.innerHTML.replace(regex, currentChapterCount)
 
-      // Create and append the "Delete chapter" button
+      // Autofill chapter_number field
+      const chapterNumberField = copyEmptyFormEl.querySelector('#id_form-' + currentChapterCount + '-chapter_number');
+      if (chapterNumberField) {
+        chapterNumberField.value = currentChapterCount + 1;
+  }
 
+
+
+      // Create and append the "Delete chapter" button
       const deleteChapterButton = document.createElement('button')
       deleteChapterButton.type = 'button'
       deleteChapterButton.innerText = 'Delete chapter'

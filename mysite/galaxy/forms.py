@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, User
 from django.contrib.auth.models import User
 from .models import *
 from django.forms.models import inlineformset_factory
+from django.forms import modelformset_factory
 
 
 class LoginUserForm(AuthenticationForm):
@@ -48,10 +49,28 @@ class ChapterAddForm(forms.ModelForm):
 class QuestionAddForm(forms.ModelForm):
     class Meta:
         model: Questions
-        fields = []
+        fields = ['question_number', 'question_type', 'question', 'addition', 'points']
 
 
 class AnswerAddForm(forms.ModelForm):
     class Meta:
         model: Answers
-        fields = []
+        fields = ['answer', 'is_true', 'addition', 'match']
+
+
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answers
+        fields = ['answer', 'is_true', 'addition', 'match']
+        exclude = ('question_id',)
+
+
+AnswerFormSet = inlineformset_factory(Questions, Answers, form=AnswerForm, extra=1, can_delete=False, fk_name='question_id', fields=('answer', 'is_true', 'addition', 'match'))
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Questions
+        fields = ['test_id', 'chapter_id', 'points', 'question', 'addition', 'question_number', 'question_type']
+
+
+QuestionFormSet = inlineformset_factory(Tests, Questions, form=QuestionForm, extra=1, can_delete=False, fields=('chapter_id', 'points', 'question', 'addition', 'question_number', 'question_type'))

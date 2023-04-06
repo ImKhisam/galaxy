@@ -9,7 +9,7 @@ from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import CreateView, TemplateView, DetailView, ListView
+from django.views.generic import CreateView, TemplateView, DetailView, ListView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponseRedirect, JsonResponse
@@ -338,8 +338,69 @@ def add_test_and_chapters(request):
 def add_questions_and_answers(request, test_id):
     test_obj = Tests.objects.get(id=test_id)
     chapters = Chapters.objects.filter(test_id=test_obj)
+    question_formset = formset_factory(QuestionAddForm, extra=0)
+    chapter_formset = formset_factory(ChapterAddForm, extra=0)
+
+    if request.method == 'POST':
+        pass
+
     context = {
         'test_obj': test_obj,
         'chapters': chapters,
     }
     return render(request, 'galaxy/add_q_and_a.html', context)
+
+
+def test_questions(request, test_id):
+    QuestionFormSet = modelformset_factory(Questions, fields=('question_number', 'question_type', 'question', 'addition', 'points'), extra=1)
+    AnswerFormSet = inlineformset_factory(Questions, Answers, fields=('answer', 'is_true', 'addition', 'match'), extra=1)
+
+    if request.method == 'POST':
+        question_formset = QuestionFormSet(request.POST, prefix='questions')
+        answer_formset = AnswerFormSet(request.POST, prefix='answers')
+        if question_formset.is_valid() and answer_formset.is_valid():
+            question_instances = question_formset.save()
+            answer_instances = answer_formset.save(commit=False)
+            for question_instance in question_instances:
+                for answer_instance in answer_instances:
+                    if answer_instance.question == question_instance:
+                        answer_instance.save()
+            return render(request, 'success.html')
+    else:
+        question_formset = QuestionFormSet(prefix='questions')
+        answer_formset = AnswerFormSet(prefix='answers')
+
+    return render(request, 'galaxy/add_question_test.html', {
+        'question_formset': question_formset,
+        'answer_formset': answer_formset,
+    })
+
+
+class QuestionsAndAnswersView(FormView):
+    template_name = 'galaxy/add_question_test.html'
+    form_class = QuestionFormSet
+    success_url = reverse_lazy('success')
+
+    def get_context_data(self, **kwargs):
+        data = super(QuestionsAndAnswersView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            data['question_formset'] = QuestionFormSet(self.request.POST, prefix='question')
+            data['answer_formset'] = AnswerFormSet(self.request.POST, prefix='answer')
+        else:
+            data['question_formset'] = QuestionFormSet(prefix='question')
+            data['answer_formset'] = AnswerFormSet(prefix='answer')
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        question_formset = context['question_formset']
+        answer_formset = context['answer_formset']
+        if question_formset.is_valid() and answer_formset.is_valid():
+            self.object = form.save()
+            question_formset.instance = self.object
+            question_formset.save()
+            answer_formset.instance = self.object
+            answer_formset.save()
+            return HttpResponseRedirect(self.get_success_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
