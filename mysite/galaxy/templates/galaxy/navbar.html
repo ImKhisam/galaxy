@@ -62,12 +62,13 @@
               <ul>
                 {% if request.user.is_authenticated %}
                     {% if request.user.is_confirmed %}
-                        {% if request.user.role == 'Teacher' or request.user.is_staff %} <!-- Confirmed teacher of stuff -->
+                        {% if request.user.role == 'Teacher' or request.user.is_staff %} <!-- Confirmed teacher or stuff -->
                             <li><a href="#">{{user.username}}</a>
                                 <ul>
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'tests' %}">Tests</a></li>
                                     <li><a href="{% url 'show_test_stat' %}">Results</a></li>
+                                    <li><a href="{% url 'show_tasks_to_check' %}">Check tests</a></li>
                                 </ul>
                             </li>
                             <li><a href="{% url 'logout' %}">Log out</a></li>

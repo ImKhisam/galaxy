@@ -10,7 +10,7 @@
 <div class="test">
 <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
 
-<form action="{% url 'test' test.pk %}" method="post" id="my_form">
+<form action="{% url 'test' test.pk %}" method="post" id="my_form" enctype="multipart/form-data">
 {% csrf_token %}
     <div class="form errors">
         {{ form.non_field_errors }}
@@ -117,7 +117,7 @@
                             {% endfor %}
                         </div>
                     </div>
-                {% else %}  <!-- True/False type question -->
+                {% elif question.question_type == 'true_false_type' %}  <!-- True/False type question -->
                     <div class="question_true_false">
                         <p class="question-text">{{question.question_number}}. {{question.question}}</p>
                         <div class="question-choices">
@@ -144,6 +144,14 @@
                                 </label>
                             </div>
                         </div>
+                    </div>
+                {% else %}      <!-- File adding type question -->
+                    <div class="question_file_add">
+                        <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
+                    </div>
+                    <div class="add_file">
+                        <label for="media1">Answer:</label>
+                        <input type="file" name="media1" id="media1">
                     </div>
                 {% endif %}
             </div>

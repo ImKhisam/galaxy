@@ -1,0 +1,25 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Add Question</h1>
+
+<h2>{{ chapter.name }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ question_form.as_p }}
+
+    <table>
+        {{ answer_formset.management_form }}
+        {% for form in answer_formset %}
+            <div class="answer">
+                {{ form.as_p }}
+            </div>
+        {% endfor %}
+    </table>
+
+    <button type="submit">Save</button>
+</form>
+
+{% endblock %}

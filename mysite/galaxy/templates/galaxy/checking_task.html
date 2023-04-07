@@ -1,0 +1,38 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet" />
+{% endblock %}
+
+
+{% block content %}
+<div class="test-parent">
+    <div class="test">
+        <form action="{% url 'checking_task' task.id %}" method="post" id="my_form">
+        {% csrf_token %}
+            <h1>Checking task in {{task.test_id}}</h1>
+            <h2>Task:</h2>
+            <p class="question_writing_text">{{task.question_id.question}}</p>
+            <h2>Max. points for this task: {{task.question_id.points}}</h2>
+            <h2>Student answer:</h2>
+            {% if task.test_id.part == 'Writing' %}
+                <p><img class="task_check_photo" src="{{task.media1.url}}"></p>
+                {% if task.media2 %}
+                    <p><img  src="{{task.media2.url}}"></p>
+                {% endif %}
+            {% elif task.test_id.part == 'Speaking' %}
+                <audio controls src="{{task.media1.url}}"></audio>
+            {% endif %}
+            <div style="display: flex">
+                <div class="mark_input">
+                    {{ form.as_p }}
+                </div>
+            </div>
+            <div style="display: flex">
+                <input class="btn" style="border-radius: 0%;margin: auto"  type="submit" value="Submit Mark">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

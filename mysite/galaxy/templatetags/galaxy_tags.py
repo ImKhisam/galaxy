@@ -29,7 +29,12 @@ def drop_menu_test(type_of_exam):
     return {"menu_dict": menu_dict}
 
 
-@register.filter
+@register.filter                        #
 def get_item(dictionary, key):
     return dictionary.get(key)
+
+
+@register.filter(name='multiply')       # нумерация результатов исходя из страницы
+def multiply(value, arg):
+    return value * arg
 

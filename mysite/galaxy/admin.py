@@ -40,9 +40,14 @@ class AnswersAdmin(admin.ModelAdmin):
     list_display = ('id', 'question_id', 'answer', 'match', 'is_true')
 
 
+class ResultsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'student_id', 'test_id', 'date', 'points', 'time', 'media')
+
+
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(OlympWay, OlympWayAdmin)
 admin.site.register(Tests, TestsAdmin)
 admin.site.register(Chapters, ChaptersAdmin)
 admin.site.register(Questions, QuestionsAdmin)
 admin.site.register(Answers, AnswersAdmin)
+admin.site.register(Results, ResultsAdmin)

@@ -231,3 +231,24 @@ option{
     font-size: 25px;
     margin: auto;
 }
+.question_writing_text{
+    white-space: break-spaces;
+    font-size: 27px;
+}
+h2{
+    text-align: center;
+}
+.mark_input{
+    margin: auto;
+    padding: 40px;
+    font-size: 25px;
+}
+.mark_input input{
+    font-size: 25px;
+    width: 50px;
+    text-align: center;
+}        
+.task_check_photo{
+    width: 100%;
+    margin: auto;
+}

@@ -1,0 +1,50 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="container">
+  <h1> Create New Survey </h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ question_formset.management_form }}
+    {{ question_formset.non_form_errors }}
+    {{ survey_form.as_p }}
+    <table id='myForm1'>
+      {% for question_form in question_formset.forms %}
+        {{ question_form }}
+
+        {% if question_form.nested %}
+          {{ question_form.nested.management_form }}
+          {{ question_form.nested.non_form_errors }}
+          <div id='myForm2'>
+          {% for choice_form in question_form.nested.forms %}
+            {{ choice_form }}
+          {% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </table>
+
+    <button type="save">Save</button>
+  </form>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+  $(function(){
+    $('#myForm1').formset({
+      prefix: '{{ question_formset.prefix }}',
+      formCssClass: 'dynamic-question_formset',
+      addText: 'add question'
+    });
+    $('#myForm2').formset({
+      prefix: '{{ choice_form.prefix }}',
+      formCssClass: 'dynamic-choice_form',
+      addText: 'add choice'
+    });
+  })
+</script>
+{% endblock %}

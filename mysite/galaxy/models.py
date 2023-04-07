@@ -95,7 +95,7 @@ class TestTimings(models.Model):
 
 def content_file_name_chapter(instance, filename):
     return '/'.join(['test', instance.test_id.type, instance.test_id.part, \
-                     str(instance.test_id.test_num), "Chapter" + instance.chapter_number, filename])
+                     str(instance.test_id.test_num), "Chapter" + str(instance.chapter_number), filename])
 
 
 class Chapters(models.Model):
@@ -115,11 +115,13 @@ class Questions(models.Model):
     match_type = 'match_type'
     input_type = 'input_type'
     true_false_type = 'true_false_type'
+    file_adding_type = 'file_adding_type'
     choices_in_question_type = [
         (single_choice_type, 'single_choice_type'),
         (match_type, 'match_type'),
         (input_type, 'input_type'),
-        (true_false_type, 'true_false_type')
+        (true_false_type, 'true_false_type'),
+        (file_adding_type, 'file_adding_type')
     ]
 
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
@@ -147,4 +149,19 @@ class Results(models.Model):
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
     points = models.CharField(max_length=20)
-    time = models.CharField(max_length=50)
+    time = models.CharField(max_length=50, blank=True)
+
+
+def content_file_name_check(instance, filename):
+    return '/'.join(['test', 'TasksToCheck', str(instance.student_id), str(instance.test_id.type),\
+                     str(instance.test_id.part), str(instance.test_id.test_num), filename])
+
+
+class TasksToCheck(models.Model):
+    student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    question_id = models.ForeignKey(Questions, on_delete=models.CASCADE)
+    media1 = models.FileField(upload_to=content_file_name_check, blank=True)
+    media2 = models.FileField(upload_to=content_file_name_check, blank=True)
+    is_checked = models.BooleanField(default=False)
+    points = models.CharField(max_length=20, default=0)

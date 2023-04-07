@@ -2,6 +2,8 @@ import os
 import time
 import json
 from datetime import datetime, timedelta
+
+from django.db import transaction
 from django.forms import formset_factory, modelform_factory
 
 from django.contrib.auth import login, logout
@@ -90,6 +92,7 @@ class PersonalAcc(LoginRequiredMixin, DetailView):
 
 
 class ShowTestStat(ListView):
+    paginate_by = 15
     model = Results
     template_name = "galaxy/show_test_stat.html"
     context_object_name = 'results'
@@ -151,54 +154,78 @@ def test(request, test_pk):
         content_dict[chapter] = qa
 
     if request.method == 'POST':
+        student = CustomUser.objects.get(id=request.user.id)
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
         test_time = int(time.time() - start_time)
         if test_time > test.time_limit * 60:
             test_time = test.time_limit * 60
         time_obj.delete()
-        '''Подсчитываем баллы за тест'''
+        '''Подсчитываем баллы за тест для 3х категорий'''
         total_test_points = 0
         questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
         for question in questions_for_test:
-            if question.question_type == 'match_type':          # Подсчёт вопросов на сопоставление
-                question_points = question.points
-                for answer in Answers.objects.filter(question_id__id=question.id).exclude(match__exact=''):
-                    student_answer = request.POST.get(str(answer.id))
-                    if student_answer != answer.answer:
-                        question_points -= 1
-                if question_points > 0:
-                    total_test_points += question_points
-            elif question.question_type == 'input_type':        # Подсчет вопросов с вводом
-                answer = Answers.objects.get(question_id__id=question.id)
-                answers = str(answer.answer)
-                print(answers)
-                right_answers = list(answers.split(','))
-                print(right_answers)
-                student_answer = str(request.POST.get(str(answer.id)))
-                if student_answer in right_answers:
-                    total_test_points += question.points
-            elif question.question_type == 'true_false_type':   # Подсчет вопросов с True/False
-                try:
-                    if request.POST.get(str(question.id)) == Questions.objects.get(id=question.id).addition:
+            if test.part not in ['Writing', 'Speaking']:
+                if question.question_type == 'match_type':          # Подсчёт вопросов на сопоставление
+                    question_points = question.points
+                    for answer in Answers.objects.filter(question_id__id=question.id).exclude(match__exact=''):
+                        student_answer = request.POST.get(str(answer.id))
+                        if student_answer != answer.answer:
+                            question_points -= 1
+                    if question_points > 0:
+                        total_test_points += question_points
+                elif question.question_type == 'input_type':        # Подсчет вопросов с вводом
+                    answer = Answers.objects.get(question_id__id=question.id)
+                    answers = str(answer.answer)
+                    print(answers)
+                    right_answers = list(answers.split(','))
+                    print(right_answers)
+                    student_answer = str(request.POST.get(str(answer.id)))
+                    if student_answer in right_answers:
                         total_test_points += question.points
+                elif question.question_type == 'true_false_type':   # Подсчет вопросов с True/False
+                    try:
+                        if request.POST.get(str(question.id)) == Questions.objects.get(id=question.id).addition:
+                            total_test_points += question.points
+                    except:
+                        pass
+                    pass
+                try:        # потому что студент может оставить radio невыбранным
+                    obj = Answers.objects.get(pk=request.POST.get(str(question.id)))
+                    if obj.is_true:
+                        total_test_points += question.points        # Подсчет вопросов с выбором
                 except:
                     pass
-                pass
-            try:        # потому что студент может оставить radio невыбранным
-                obj = Answers.objects.get(pk=request.POST.get(str(question.id)))
-                if obj.is_true:
-                    total_test_points += question.points        # Подсчет вопросов с выбором
-            except:
-                pass
+            else:       # Writing and Speaking
+                save_task = TasksToCheck()
+                try:
+                    media1 = request.FILES['media1']
+                    save_task.media1 = media1
+                except:
+                    pass
+                save_task.student_id = student
+                save_task.test_id = test
+                save_task.question_id = question
+                try:
+                    media2 = request.FILES['media2']
+                    save_task.media2 = media2
+                except:
+                    pass
+                save_task.save()
+                '''Создание пустого результата для дальнейшего заполнения баллами после проверки'''
+                result = Results()
+                result.student_id = student
+                result.test_id = test
+                result.points = total_test_points
+                result.save()
+                return HttpResponseRedirect('/test_result_wo_points/')
 
-        student = CustomUser.objects.get(id=request.user.id)
         result = Results()
         result.student_id = student
         result.test_id = test
         result.points = total_test_points
         result.time = str(timedelta(seconds=test_time))
         result.save()
-        return HttpResponseRedirect('/test_result/' + str(result.pk) + '/')
+        return HttpResponseRedirect('/test_result_with_points/' + str(result.pk) + '/')
 
     context = {'test': test,
                'content_dict': content_dict,
@@ -209,7 +236,16 @@ def test(request, test_pk):
     return response
 
 
-class TestResult(DetailView):
+class TestResultWOPoints(TemplateView):
+    template_name = "galaxy/test_result_wo_points.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Wait for results'
+        return context
+
+
+class TestResultWithPoints(DetailView):
     model = Results
     template_name = "galaxy/test_result.html"
     pk_url_kwarg = 'res_pk'
@@ -277,28 +313,66 @@ class ShowTests(ListView):
         return context
 
 
-class AddTest(View):
-    def get(self, request, *args, **kwargs):
-        test_form = TestAddForm()
-        chapter_forms = [ChapterAddForm(prefix=str(i)) for i in range(2)]
-        return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
+class ShowTasksToCheck(ListView):
+    model = TasksToCheck
+    template_name = "galaxy/tasks_to_check.html"
+    context_object_name = 'tasks'
+
+    def get_queryset(self):
+        return TasksToCheck.objects.filter(is_checked=False)
+
+
+class CheckingTask(DetailView):
+    model = TasksToCheck
+    template_name = 'galaxy/checking_task.html'
+    pk_url_kwarg = 'task_id'
+    context_object_name = 'task'
 
     def post(self, request, *args, **kwargs):
-        test_form = TestAddForm(request.POST)
-        chapter_forms = [ChapterAddForm(request.POST, prefix=str(i)) for i in range(2)]
-        if test_form.is_valid() and all([form.is_valid() for form in chapter_forms]):
-            testing = test_form.save(commit=False)
-            test_type = testing.type
-            test_num = Tests.objects.filter(type=test_type).count() + 1
-            testing.test_num = test_num
-            testing.save()
-            for form in chapter_forms:
-                chapter = form.save(commit=False)
-                chapter.test_id = testing
-                chapter.save()
-            return redirect('tests')
-        else:
-            return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
+        form = TaskCheckForm(request.POST)
+        if form.is_valid():
+            obj = self.get_object()
+            obj.points = form.cleaned_data['points']
+            obj.is_checked = True
+            obj.save()
+        return redirect('show_tasks_to_check')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'checking task'
+        context['form'] = TaskCheckForm()
+        return context
+
+
+#def download(request, document_id):
+#    document = get_object_or_404(Document, pk=document_id)
+#    response = HttpResponse(document.document, content_type='application/pdf')
+#    response['Content-Disposition'] = f'attachment; filename="{document.document.name}"'
+#    return response
+
+
+#class AddTest(View):
+#    def get(self, request, *args, **kwargs):
+#        test_form = TestAddForm()
+#        chapter_forms = [ChapterAddForm(prefix=str(i)) for i in range(2)]
+#        return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
+#
+#    def post(self, request, *args, **kwargs):
+#        test_form = TestAddForm(request.POST)
+#        chapter_forms = [ChapterAddForm(request.POST, prefix=str(i)) for i in range(2)]
+#        if test_form.is_valid() and all([form.is_valid() for form in chapter_forms]):
+#            testing = test_form.save(commit=False)
+#            test_type = testing.type
+#            test_num = Tests.objects.filter(type=test_type).count() + 1
+#            testing.test_num = test_num
+#            testing.save()
+#            for form in chapter_forms:
+#                chapter = form.save(commit=False)
+#                chapter.test_id = testing
+#                chapter.save()
+#            return redirect('tests')
+#        else:
+#            return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
 
 
 def add_test_and_chapters(request):
@@ -325,7 +399,7 @@ def add_test_and_chapters(request):
                     chapter.test_id = testing
                     chapter.save()
 
-            return redirect('add_q_and_a', testing.id)
+            return redirect('add_q_and_a', chapter.id)
 
     context = {
         'test_form': test_form,
@@ -335,72 +409,86 @@ def add_test_and_chapters(request):
     return render(request, 'galaxy/add_test.html', context)
 
 
-def add_questions_and_answers(request, test_id):
-    test_obj = Tests.objects.get(id=test_id)
-    chapters = Chapters.objects.filter(test_id=test_obj)
-    question_formset = formset_factory(QuestionAddForm, extra=0)
-    chapter_formset = formset_factory(ChapterAddForm, extra=0)
+#def sof(request, test_id):
+#    chapter = Chapters()
+#    if request.method == 'POST':
+#        survey_form = ChapterForm(request.POST, instance=chapter)
+#        question_formset = QuestionFormset(
+#            request.POST, prefix='questions', instance=chapter)
+#
+#        if survey_form.is_valid() and question_formset.is_valid():
+#            survey_form.save()
+#            question_formset.save()
+#            # url = '/preview/{}'.format(survey.pk)
+#            # return HttpResponseRedirect(url)
+#    else:
+#        survey_form = ChapterForm(instance=chapter)
+#        question_formset = QuestionFormset(instance=chapter, prefix='questions')
+#
+#    context = {
+#        'survey_form': survey_form,
+#        'question_formset': question_formset,
+#    }
+#
+#    return render(request, 'galaxy/sof.html', context)
+
+
+#class QuestionsAndAnswersView(FormView):
+#    template_name = 'galaxy/add_question_test.html'
+#    form_class = QuestionFormSet
+#    success_url = reverse_lazy('success')
+#
+#    def get_context_data(self, **kwargs):
+#        data = super(QuestionsAndAnswersView, self).get_context_data(**kwargs)
+#        if self.request.POST:
+#            data['question_formset'] = QuestionFormSet(self.request.POST, prefix='question')
+#            data['answer_formset'] = AnswerFormSet(self.request.POST, prefix='answer')
+#        else:
+#            data['question_formset'] = QuestionFormSet(prefix='question')
+#            data['answer_formset'] = AnswerFormSet(prefix='answer')
+#        return data
+#
+#    def form_valid(self, form):
+#        context = self.get_context_data()
+#        question_formset = context['question_formset']
+#        answer_formset = context['answer_formset']
+#        if question_formset.is_valid() and answer_formset.is_valid():
+#            self.object = form.save()
+#            question_formset.instance = self.object
+#            question_formset.save()
+#            answer_formset.instance = self.object
+#            answer_formset.save()
+#            return HttpResponseRedirect(self.get_success_url())
+#        else:
+#            return self.render_to_response(self.get_context_data(form=form))
+
+
+def add_questions_to_chapter(request, chapter_id):
+    chapter = get_object_or_404(Chapters, id=chapter_id)
 
     if request.method == 'POST':
-        pass
+        question_form = QuestionForm(request.POST)
+        answer_formset = AnswerFormSet(request.POST)
+
+        if question_form.is_valid() and answer_formset.is_valid():
+            question = question_form.save(commit=False)
+            question.chapter = chapter
+            question.save()
+
+            answers = answer_formset.save(commit=False)
+            for answer in answers:
+                answer.question = question
+                answer.save()
+
+            return redirect('chapter_detail', chapter_id=chapter.id)
+
+    else:
+        question_form = QuestionForm()
+        answer_formset = AnswerFormSet()
 
     context = {
-        'test_obj': test_obj,
-        'chapters': chapters,
-    }
-    return render(request, 'galaxy/add_q_and_a.html', context)
-
-
-def test_questions(request, test_id):
-    QuestionFormSet = modelformset_factory(Questions, fields=('question_number', 'question_type', 'question', 'addition', 'points'), extra=1)
-    AnswerFormSet = inlineformset_factory(Questions, Answers, fields=('answer', 'is_true', 'addition', 'match'), extra=1)
-
-    if request.method == 'POST':
-        question_formset = QuestionFormSet(request.POST, prefix='questions')
-        answer_formset = AnswerFormSet(request.POST, prefix='answers')
-        if question_formset.is_valid() and answer_formset.is_valid():
-            question_instances = question_formset.save()
-            answer_instances = answer_formset.save(commit=False)
-            for question_instance in question_instances:
-                for answer_instance in answer_instances:
-                    if answer_instance.question == question_instance:
-                        answer_instance.save()
-            return render(request, 'success.html')
-    else:
-        question_formset = QuestionFormSet(prefix='questions')
-        answer_formset = AnswerFormSet(prefix='answers')
-
-    return render(request, 'galaxy/add_question_test.html', {
-        'question_formset': question_formset,
+        'chapter': chapter,
+        'question_form': question_form,
         'answer_formset': answer_formset,
-    })
-
-
-class QuestionsAndAnswersView(FormView):
-    template_name = 'galaxy/add_question_test.html'
-    form_class = QuestionFormSet
-    success_url = reverse_lazy('success')
-
-    def get_context_data(self, **kwargs):
-        data = super(QuestionsAndAnswersView, self).get_context_data(**kwargs)
-        if self.request.POST:
-            data['question_formset'] = QuestionFormSet(self.request.POST, prefix='question')
-            data['answer_formset'] = AnswerFormSet(self.request.POST, prefix='answer')
-        else:
-            data['question_formset'] = QuestionFormSet(prefix='question')
-            data['answer_formset'] = AnswerFormSet(prefix='answer')
-        return data
-
-    def form_valid(self, form):
-        context = self.get_context_data()
-        question_formset = context['question_formset']
-        answer_formset = context['answer_formset']
-        if question_formset.is_valid() and answer_formset.is_valid():
-            self.object = form.save()
-            question_formset.instance = self.object
-            question_formset.save()
-            answer_formset.instance = self.object
-            answer_formset.save()
-            return HttpResponseRedirect(self.get_success_url())
-        else:
-            return self.render_to_response(self.get_context_data(form=form))
+    }
+    return render(request, 'galaxy/add_questions_to_chapter.html', context)

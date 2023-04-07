@@ -1,0 +1,25 @@
+{% extends "galaxy/base.html" %}
+{% block custom_styles %}
+<style>
+.test{
+    padding: 20px;
+    background-color: #000000c9;
+    width: 50%;
+    margin: auto;
+    text-align: center;
+}
+.outer {
+    display: flex;
+    height: 70%;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="outer">
+<div class="test">
+    <p>Teacher will check your answers</p>
+    <br><br>
+    <a class="btn" href="{% url 'home'%}">Nice</a>
+</div>
+</div>
+{% endblock %}

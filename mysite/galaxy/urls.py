@@ -18,11 +18,14 @@ urlpatterns = [
 
     path('test_preview/<int:test_pk>/', TestPreview.as_view(), name='test_preview'),
     path('test/<int:test_pk>/', test, name='test'),
-    path('test_result/<int:res_pk>/', TestResult.as_view(), name='test_result'),
+    path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
+    path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
     path('show_test_stat', ShowTestStat.as_view(), name='show_test_stat'),
 
     path('tests/', ShowTests.as_view(), name='tests'),
     path('add_test/', add_test_and_chapters, name='add_test'),
     #path('add_q_and_a/<int:test_id>', add_questions_and_answers, name='add_q_and_a'),
-    path('add_q_and_a/<int:test_id>', QuestionsAndAnswersView.as_view(), name='add_q_and_a'),
+    path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
+    path('show_tasks_to_check/', ShowTasksToCheck.as_view(), name='show_tasks_to_check'),
+    path('checking_task/<int:task_id>', CheckingTask.as_view(), name='checking_task'),
     ]

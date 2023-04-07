@@ -2,8 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 from django.contrib.auth.models import User
 from .models import *
-from django.forms.models import inlineformset_factory
-from django.forms import modelformset_factory
+from django.forms.models import inlineformset_factory, BaseInlineFormSet, modelform_factory
+from django.forms import ModelForm, modelformset_factory
 
 
 class LoginUserForm(AuthenticationForm):
@@ -46,31 +46,64 @@ class ChapterAddForm(forms.ModelForm):
         }
 
 
-class QuestionAddForm(forms.ModelForm):
+class TaskCheckForm(forms.ModelForm):
     class Meta:
-        model: Questions
-        fields = ['question_number', 'question_type', 'question', 'addition', 'points']
+        model = TasksToCheck
+        fields = ['points']
 
 
-class AnswerAddForm(forms.ModelForm):
-    class Meta:
-        model: Answers
-        fields = ['answer', 'is_true', 'addition', 'match']
 
 
-class AnswerForm(forms.ModelForm):
-    class Meta:
-        model = Answers
-        fields = ['answer', 'is_true', 'addition', 'match']
-        exclude = ('question_id',)
+#class ChapterForm(ModelForm):
+#    class Meta:
+#        model = Chapters
+#        fields = [
+#            'test_id',
+#            'chapter_number',
+#        ]
+#
+#
+##class BaseQuestionFormset(BaseInlineFormSet):
+#
+#    def add_fields(self, form, index):
+#        super(BaseQuestionFormset, self).add_fields(form, index)
+#        form.nested = AnswerFormset(
+#            instance=form.instance,
+#            data=form.data if form.is_bound else None,
+#            files=form.files if form.is_bound else None)
+#
+#    def is_valid(self):
+#        result = super(BaseQuestionFormset, self).is_valid()
+#        print(result)
+#        if self.is_bound:
+#            for form in self.forms:
+#                if hasattr(form, 'nested'):
+#                    result = result and form.nested.is_valid()
+#
+#        return result
+#
+#    def save(self, commit=True):
+#        for form in self.forms:
+#            form.save(commit=commit)
+#        result = super(BaseQuestionFormset, self).save(commit=commit)
+#
+#        for form in self.forms:
+#            if hasattr(form, 'nested'):
+#                if not self._should_delete_form(form):
+#                    form.nested.save(commit=commit)
+#
+#        return result
+#
+#
+#QuestionFormset = inlineformset_factory(
+#    parent_model=Chapters, model=Questions, fields='__all__',
+#    formset=BaseQuestionFormset, extra=1)
+#
+#AnswerFormset = inlineformset_factory(
+#    parent_model=Questions, model=Answers,
+#    fields='__all__', extra=1)
+#
+#QuestionForm = modelform_factory(Questions, fields=['question_number', 'question_type', 'question', 'addition', 'points'])
+#AnswerForm = modelform_factory(Answers, fields=['answer', 'is_true', 'addition', 'match'])
 
 
-AnswerFormSet = inlineformset_factory(Questions, Answers, form=AnswerForm, extra=1, can_delete=False, fk_name='question_id', fields=('answer', 'is_true', 'addition', 'match'))
-
-class QuestionForm(forms.ModelForm):
-    class Meta:
-        model = Questions
-        fields = ['test_id', 'chapter_id', 'points', 'question', 'addition', 'question_number', 'question_type']
-
-
-QuestionFormSet = inlineformset_factory(Tests, Questions, form=QuestionForm, extra=1, can_delete=False, fields=('chapter_id', 'points', 'question', 'addition', 'question_number', 'question_type'))
