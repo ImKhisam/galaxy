@@ -94,16 +94,28 @@ class PersonalAcc(LoginRequiredMixin, DetailView):
         return context
 
 
-class ShowTestStat(ListView):
+class ShowResults(ListView):
     paginate_by = 15
     model = Results
-    template_name = "galaxy/show_test_stat.html"
+    template_name = "galaxy/show_results.html"
     context_object_name = 'results'
     extra_context = {'dict': {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
                               for key in Tests.objects.all()}}
 
     def get_queryset(self):
         return Results.objects.filter(student_id=self.request.user)
+
+
+class ResultPreview(DetailView):
+    model = Results
+    template_name = 'galaxy/result_preview.html'
+    pk_url_kwarg = 'result_pk'
+    context_object_name = 'result'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Result commentary'
+        return context
 
 
 class TestPreview(LoginRequiredMixin, DetailView):
@@ -373,6 +385,7 @@ class CheckingTest(DetailView):
         result.student_id = test_to_check.student_id
         result.test_id = test_to_check.test_id
         result.points = sum_points_for_test
+        result.commentary = request.POST.get('commentary')
         result.save()
 
         return redirect('show_tests_to_check')

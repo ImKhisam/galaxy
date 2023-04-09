@@ -20,7 +20,8 @@ urlpatterns = [
     path('test/<int:test_pk>/', test, name='test'),
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
-    path('show_test_stat', ShowTestStat.as_view(), name='show_test_stat'),
+    path('show_results', ShowResults.as_view(), name='show_results'),
+    path('result_preview/<int:result_pk>', ResultPreview.as_view(), name='result_preview'),
 
     path('tests/', ShowTests.as_view(), name='tests'),
     path('add_test/', add_test_and_chapters, name='add_test'),

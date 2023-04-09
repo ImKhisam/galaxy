@@ -86,6 +86,7 @@ div.table {
           <th scope="col">Date</th>
           <th scope="col">Points</th>
           <th scope="col">Time</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -99,6 +100,7 @@ div.table {
             <td>{{result.date}}</td>
             <td>{{result.points}} / {{ dict|get_item:result.test_id }}</td>
             <td>{{result.time}}</td>
+            <td><a href="{% url 'result_preview' result.id %}">Open</a> </td>
         </tr>
 
       {% endfor %}

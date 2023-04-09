@@ -150,6 +150,7 @@ class Results(models.Model):
     date = models.DateTimeField(auto_now=True)
     points = models.CharField(max_length=20)
     time = models.CharField(max_length=50, blank=True)
+    commentary = models.TextField(max_length=600, blank=True)
 
 
 class TestsToCheck(models.Model):

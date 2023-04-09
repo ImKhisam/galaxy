@@ -37,10 +37,14 @@
                 <div style="display: flex">
                     <div class="mark_input">
                         <label for="{{task.pk}}">Mark: </label>
-                        <input type="text" name="{{task.pk}}" id="{{task.pk}}">
+                        <input type="number" name="{{task.pk}}" id="{{task.pk}}" min="0" max="{{task.question_id.points}}">
                     </div>
                 </div>
             {% endfor %}
+            <div class="result_commentary">
+                <label for="commentary">Commentary: </label>
+                <input type="text" name="commentary" id="commentary">
+            </div>
             <div style="display: flex">
                 <input class="btn" style="border-radius: 0%;margin: auto"  type="submit" value="Submit Mark">
             </div>

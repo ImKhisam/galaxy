@@ -67,7 +67,7 @@
                                 <ul>
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'tests' %}">Tests</a></li>
-                                    <li><a href="{% url 'show_test_stat' %}">Your results</a></li>
+                                    <li><a href="{% url 'show_results' %}">My results</a></li>
                                     <li><a href="{% url 'show_tests_to_check' %}">Tests to check</a></li>
                                 </ul>
                             </li>
@@ -76,7 +76,7 @@
                             <li><a href="#">{{user.username}}</a>
                                 <ul>
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
-                                    <li><a href="{% url 'show_test_stat' %}">Your results</a></li>
+                                    <li><a href="{% url 'show_results' %}">My results</a></li>
                                 </ul>
                             <li><a href="{% url 'logout' %}">Log out</a></li>
                         {% endif %}
