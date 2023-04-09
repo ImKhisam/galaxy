@@ -73,7 +73,7 @@ div.table {
 {% endblock %}
 
 {% block content %}
-<h1>Tasks to check</h1>
+<h1>Tests to check</h1>
 
 <div class="parent">
   <div class="table">
@@ -83,14 +83,12 @@ div.table {
           <th scope="col">#</th>
           <th scope="col">Student</th>
           <th scope="col">Test</th>
-          <th scope="col">Media1</th>
-          <th scope="col">Media2</th>
           <th scope="col">Is checked</th>
           <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
-      {% for task in tasks %}
+      {% for test_to_check in tests_to_check %}
         <tr>
             {% if page_obj.number %}
                 {% with offset=page_obj.number|add:'-1'|multiply:15 %}
@@ -99,12 +97,10 @@ div.table {
             {% else %}
                 <th scope="row">{{ forloop.counter }}</th>
             {% endif %}
-            <td> {{task.student_id}}</td>
-            <td>{{task.test_id}}</td>
-            <td>{{task.media1}}</td>
-            <td>{{task.media2}}</td>
-            <td>{{task.is_checked}}</td>
-            <td><a href="{% url 'checking_task' task.id %}">Open</a></td>
+            <td> {{test_to_check.student_id}}</td>
+            <td>{{test_to_check.test_id}}</td>
+            <td>{{test_to_check.is_checked}}</td>
+            <td><a href="{% url 'checking_test' test_to_check.id %}">Open</a></td>
         </tr>
 
       {% endfor %}

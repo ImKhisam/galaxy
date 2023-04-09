@@ -150,8 +150,12 @@
                         <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
                     </div>
                     <div class="add_file">
-                        <label for="media1">Answer:</label>
-                        <input type="file" name="media1" id="media1">
+                        <label for="{{question.pk}}_media1">Answer:</label>
+                        <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                        {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
+                        <label for="{{question.pk}}_media2">Additional:</label>
+                        <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>

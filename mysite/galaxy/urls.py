@@ -26,6 +26,6 @@ urlpatterns = [
     path('add_test/', add_test_and_chapters, name='add_test'),
     #path('add_q_and_a/<int:test_id>', add_questions_and_answers, name='add_q_and_a'),
     path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
-    path('show_tasks_to_check/', ShowTasksToCheck.as_view(), name='show_tasks_to_check'),
-    path('checking_task/<int:task_id>', CheckingTask.as_view(), name='checking_task'),
+    path('show_tests_to_check/', ShowTestsToCheck.as_view(), name='show_tests_to_check'),
+    path('checking_test/<int:test_to_check_id>', CheckingTest.as_view(), name='checking_test'),
     ]

@@ -1,0 +1,50 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet" />
+{% endblock %}
+
+
+{% block content %}
+<div class="test-parent">
+    <div class="test">
+        <form action="{% url 'checking_test' test_to_check.id %}" method="post" id="my_form">
+        {% csrf_token %}
+            <h1>Checking test {{test_to_check}}</h1>
+            {% for task in tasks_to_check %}
+                <h2>Task: {{ task.question_id.question_number }} </h2>
+                <p class="question_writing_text">{{ task.question_id.question }}</p>
+
+                <h2>Student answer:</h2>
+                {% if task.test_to_check_id.test_id.part == 'Writing' %}
+                    {% if task.media1 %}
+                        <p><img class="task_check_photo" src="{{task.media1.url}}"></p>
+                    {% else %}
+                        <p>Student forget to load his answer</p>
+                    {% endif %}
+                    {% if task.media2 %}
+                        <p><img  src="{{task.media2.url}}"></p>
+                    {% endif %}
+                {% elif task.test_to_check_id.test_id.part == 'Speaking' %}
+                    {% if task.media1 %}
+                        <audio controls src="{{task.media1.url}}"></audio>
+                    {% else %}
+                        <p>Student forget to load his answer</p>
+                    {% endif %}
+                {% endif %}
+                <h2>Max. points for this task: {{task.question_id.points}}</h2>
+                <div style="display: flex">
+                    <div class="mark_input">
+                        <label for="{{task.pk}}">Mark: </label>
+                        <input type="text" name="{{task.pk}}" id="{{task.pk}}">
+                    </div>
+                </div>
+            {% endfor %}
+            <div style="display: flex">
+                <input class="btn" style="border-radius: 0%;margin: auto"  type="submit" value="Submit Mark">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

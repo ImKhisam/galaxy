@@ -17,6 +17,7 @@ from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponseRedirect, JsonResponse
 from .forms import *
 from django.db.models import Sum
+from django.core.mail import send_mail
 
 
 class Index(TemplateView):
@@ -24,7 +25,9 @@ class Index(TemplateView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        tests_to_check = TestsToCheck.objects.filter(is_checked=False)
         context['title'] = 'Main Page'
+        context['tests_to_check'] = tests_to_check
         return context
 
 
@@ -137,7 +140,7 @@ def test(request, test_pk):
         time_obj.start_time = time.time()
         time_obj.save()
     start_time = time_obj.start_time
-
+    '''Формируем наполнение страницы'''
     content_dict = {}
     chapters_for_test = Chapters.objects.filter(test_id__id=test.id)
     for chapter in chapters_for_test:
@@ -154,12 +157,20 @@ def test(request, test_pk):
         content_dict[chapter] = qa
 
     if request.method == 'POST':
-        student = CustomUser.objects.get(id=request.user.id)
+        #student = CustomUser.objects.get(id=request.user.id)
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
         test_time = int(time.time() - start_time)
         if test_time > test.time_limit * 60:
             test_time = test.time_limit * 60
         time_obj.delete()
+
+        '''Создаем объект теста для проверки'''
+        if test.part in ['Writing', 'Speaking']:
+            test_to_check = TestsToCheck()
+            test_to_check.test_id = test
+            test_to_check.student_id = user
+            test_to_check.save()
+
         '''Подсчитываем баллы за тест для 3х категорий'''
         total_test_points = 0
         questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
@@ -196,31 +207,46 @@ def test(request, test_pk):
                 except:
                     pass
             else:       # Writing and Speaking
-                save_task = TasksToCheck()
+                #'''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''
+                #if 'no_attached_files' in request.session:
+                #    del request.session['no_attached_files']
+                #if len(request.FILES) == 0:
+                #    request.session['no_attached_files'] = 1
+                #    break
+                '''Создаем объект задания для проверки'''
+                task_to_check = TasksToCheck()
                 try:
-                    media1 = request.FILES['media1']
-                    save_task.media1 = media1
+                    media1_index = str(question.id) + '_media1'
+                    media1 = request.FILES[media1_index]
+                    task_to_check.media1 = media1
                 except:
                     pass
-                save_task.student_id = student
-                save_task.test_id = test
-                save_task.question_id = question
                 try:
-                    media2 = request.FILES['media2']
-                    save_task.media2 = media2
+                    media2_index = str(question.id) + '_media2'
+                    media2 = request.FILES[media2_index]
+                    task_to_check.media2 = media2
                 except:
                     pass
-                save_task.save()
-                '''Создание пустого результата для дальнейшего заполнения баллами после проверки'''
-                result = Results()
-                result.student_id = student
-                result.test_id = test
-                result.points = total_test_points
-                result.save()
-                return HttpResponseRedirect('/test_result_wo_points/')
+                task_to_check.test_to_check_id = test_to_check
+                task_to_check.question_id = question
+                task_to_check.save()
 
+        if test.part in ['Writing', 'Speaking']:
+            stdnt = test_to_check.student_id.first_name + '' + test_to_check.student_id.last_name
+            message = stdnt + ' passed test that you need to check '
+            send_mail(
+                "New Test to check",
+                message,
+                "galaxy.english@yandex.kz",
+                ["caramellapes@yandex.ru"],
+                fail_silently=False,
+            )
+
+            return HttpResponseRedirect('/test_result_wo_points/')
+
+        '''Создаем объект результата попытки выполнения теста'''
         result = Results()
-        result.student_id = student
+        result.student_id = user
         result.test_id = test
         result.points = total_test_points
         result.time = str(timedelta(seconds=test_time))
@@ -313,34 +339,50 @@ class ShowTests(ListView):
         return context
 
 
-class ShowTasksToCheck(ListView):
-    model = TasksToCheck
-    template_name = "galaxy/tasks_to_check.html"
-    context_object_name = 'tasks'
+class ShowTestsToCheck(ListView):
+    model = TestsToCheck
+    template_name = "galaxy/tests_to_check.html"
+    context_object_name = 'tests_to_check'
 
     def get_queryset(self):
-        return TasksToCheck.objects.filter(is_checked=False)
+        return TestsToCheck.objects.filter(is_checked=False)
 
 
-class CheckingTask(DetailView):
-    model = TasksToCheck
-    template_name = 'galaxy/checking_task.html'
-    pk_url_kwarg = 'task_id'
-    context_object_name = 'task'
+class CheckingTest(DetailView):
+    model = TestsToCheck
+    template_name = 'galaxy/checking_test.html'
+    pk_url_kwarg = 'test_to_check_id'
+    context_object_name = 'test_to_check'
 
     def post(self, request, *args, **kwargs):
-        form = TaskCheckForm(request.POST)
-        if form.is_valid():
-            obj = self.get_object()
-            obj.points = form.cleaned_data['points']
-            obj.is_checked = True
-            obj.save()
-        return redirect('show_tasks_to_check')
+        pk = self.kwargs.get('test_to_check_id')
+        test_to_check = TestsToCheck.objects.get(id=pk)
+        tasks_to_check = TasksToCheck.objects.filter(test_to_check_id=test_to_check)
+        sum_points_for_test = 0
+        for task in tasks_to_check:
+            index = str(task.id)
+            task.points = request.POST.get(index)
+            sum_points_for_test += int(request.POST.get(index))
+            task.save()
+        test_to_check.is_checked = True
+        test_to_check.save()
+
+        '''Создание результата для отображения у ученика'''
+        result = Results()
+        result.student_id = test_to_check.student_id
+        result.test_id = test_to_check.test_id
+        result.points = sum_points_for_test
+        result.save()
+
+        return redirect('show_tests_to_check')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'checking task'
+        context['title'] = 'checking test'
         context['form'] = TaskCheckForm()
+        test_to_check = context['test_to_check']
+        tasks_to_check = TasksToCheck.objects.filter(test_to_check_id=test_to_check)
+        context['tasks_to_check'] = tasks_to_check
         return context
 
 

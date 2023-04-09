@@ -152,16 +152,20 @@ class Results(models.Model):
     time = models.CharField(max_length=50, blank=True)
 
 
+class TestsToCheck(models.Model):
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    #date = models.DateTimeField(auto_now=True)
+    is_checked = models.BooleanField(default=False)
+
+
 def content_file_name_check(instance, filename):
-    return '/'.join(['test', 'TasksToCheck', str(instance.student_id), str(instance.test_id.type),\
-                     str(instance.test_id.part), str(instance.test_id.test_num), filename])
+    return '/'.join(['test', 'TestsToCheck', str(instance.question_id), filename])
 
 
 class TasksToCheck(models.Model):
-    student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    test_to_check_id = models.ForeignKey(TestsToCheck, on_delete=models.CASCADE)
     question_id = models.ForeignKey(Questions, on_delete=models.CASCADE)
     media1 = models.FileField(upload_to=content_file_name_check, blank=True)
     media2 = models.FileField(upload_to=content_file_name_check, blank=True)
-    is_checked = models.BooleanField(default=False)
     points = models.CharField(max_length=20, default=0)

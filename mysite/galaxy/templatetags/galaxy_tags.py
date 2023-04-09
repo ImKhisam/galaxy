@@ -29,7 +29,7 @@ def drop_menu_test(type_of_exam):
     return {"menu_dict": menu_dict}
 
 
-@register.filter                        #
+@register.filter                        # отображение баллов в результатах
 def get_item(dictionary, key):
     return dictionary.get(key)
 
