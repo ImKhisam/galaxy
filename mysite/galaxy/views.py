@@ -164,6 +164,13 @@ def test(request, test_pk):
             test_time = test.time_limit * 60
         time_obj.delete()
 
+        '''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''
+        if 'no_attached_files' in request.session:
+            del request.session['no_attached_files']
+        if len(request.FILES) == 0:
+            request.session['no_attached_files'] = 1
+            return HttpResponseRedirect('/test_result_wo_points/')
+
         '''Создаем объект теста для проверки'''
         if test.part in ['Writing', 'Speaking']:
             test_to_check = TestsToCheck()
@@ -207,12 +214,6 @@ def test(request, test_pk):
                 except:
                     pass
             else:       # Writing and Speaking
-                #'''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''
-                #if 'no_attached_files' in request.session:
-                #    del request.session['no_attached_files']
-                #if len(request.FILES) == 0:
-                #    request.session['no_attached_files'] = 1
-                #    break
                 '''Создаем объект задания для проверки'''
                 task_to_check = TasksToCheck()
                 try:
@@ -232,7 +233,7 @@ def test(request, test_pk):
                 task_to_check.save()
 
         if test.part in ['Writing', 'Speaking']:
-            stdnt = test_to_check.student_id.first_name + '' + test_to_check.student_id.last_name
+            stdnt = test_to_check.student_id.first_name + ' ' + test_to_check.student_id.last_name
             message = stdnt + ' passed test that you need to check '
             send_mail(
                 "New Test to check",

@@ -173,6 +173,9 @@
   <h2>Warning: Only 5 minutes left!</h2>
     <input type="button" class="btn" name="answer" value="Got it" onclick="closeDiv()" />
 </div>
+{% endblock %}
+
+{% block javascript %}
 <script>
   function closeDiv() {
    document.getElementById('warning').style.display = "none";
@@ -225,4 +228,4 @@ var x = setInterval(function() {
 
 </script>
 
-{% endblock %}
+{% endblock javascript%}

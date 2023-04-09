@@ -21,7 +21,7 @@
                     {% if task.media1 %}
                         <p><img class="task_check_photo" src="{{task.media1.url}}"></p>
                     {% else %}
-                        <p>Student forget to load his answer</p>
+                        <p>Student forgot to load his answer</p>
                     {% endif %}
                     {% if task.media2 %}
                         <p><img  src="{{task.media2.url}}"></p>
@@ -30,7 +30,7 @@
                     {% if task.media1 %}
                         <audio controls src="{{task.media1.url}}"></audio>
                     {% else %}
-                        <p>Student forget to load his answer</p>
+                        <p>Student forgot to load his answer</p>
                     {% endif %}
                 {% endif %}
                 <h2>Max. points for this task: {{task.question_id.points}}</h2>
@@ -48,3 +48,14 @@
     </div>
 </div>
 {% endblock %}
+
+{% block javascript %}
+<script>
+    const input = document.getElementById('myInput');
+  input.addEventListener('input', function() {
+    if (input.value.length > 10) {
+      input.value = input.value.slice(0, 10);
+    }
+  });
+</script>
+{% endblock javascript%}
