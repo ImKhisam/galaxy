@@ -149,12 +149,16 @@
                     <div class="question_file_add">
                         <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
                     </div>
-                    <div class="add_file">
-                        <label for="{{question.pk}}_media1">Answer:</label>
-                        <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                    <div class="add-files">
+                        <div class="file">
+                            <label for="{{question.pk}}_media1">Answer:</label>
+                            <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                        </div>
                         {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
-                        <label for="{{question.pk}}_media2">Additional:</label>
-                        <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                        <div class="file">
+                            <label for="{{question.pk}}_media2">Additional:</label>
+                            <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                        </div>
                         {% endif %}
                     </div>
                 {% endif %}
@@ -163,7 +167,9 @@
     {% endfor %}
     <br><br>
     <div style="display: flex">
-        <input class="btn" style="border-radius: 0%;margin: auto"  type="submit" value="Submit Answers">
+        <button class="btn btn5" type="submit">
+            <span>Submit Answers</span>
+        </button>
     </div>
 </form>
 </div>

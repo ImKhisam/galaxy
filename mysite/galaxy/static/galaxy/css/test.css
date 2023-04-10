@@ -175,20 +175,49 @@ option{
 }
 
 .btn {
-    color: #000000;
-    border: 2px solid #000000;
-    display: inline-block;
-    padding: 15px 32px;
-    font-size: 15px;
-    border-radius: 2px;
     background-color: #ffffff;
-    transition-duration: 0.4s;
-    font-size: 17px;
+  width: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.8s ease;
+  position: relative;
+  border: 2px solid #000000;
+  margin: auto;
+  font-size: 20px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 }
-.btn:hover {
-    background-color: var(--dark-transparent);
-    color: #ffffff;
-    border: 2px solid var(--gray-hover);
+.btn::before,
+.btn::after {
+  position: absolute;
+  display: block;
+  content: "";
+  width: 100%;
+  height: 100%;
+}
+.btn5 {
+  overflow: hidden;
+  transition: all 300ms ease;
+}
+.btn5:after {
+  width: 300%;
+  height: 300%;
+  left: -300%;
+  transform: rotate(0deg);
+  background-color: #000000;
+  transition: all 500ms ease;
+}
+.btn5 span{
+  margin: 20px;
+}
+.btn5:hover span{
+  color: #ffffff;
+  z-index: 10;
+  font-weight: 500;
+}
+.btn5:hover::after {
+  left: -100%;
 }
 
 .chapter-info{
@@ -262,5 +291,16 @@ h2{
 }    
 .commentary{
     margin: auto;
+    font-size: 20px;
+}
+.add-files{
+    display: flex;
+    margin-top: 40px;
+}
+.file{
+    margin: auto;
+    font-size: 27px;
+}
+.file input{
     font-size: 20px;
 }

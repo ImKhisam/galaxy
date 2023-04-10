@@ -84,8 +84,7 @@ nav ul ul ul {
 }
 
 .btn {
-  height: 60px;
-  width: 150px;
+  width: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -116,6 +115,9 @@ nav ul ul ul {
   transform: rotate(0deg);
   background-color: #ffffff;
   transition: all 500ms ease;
+}
+.btn5 span{
+  margin: 20px;
 }
 .btn5:hover span{
   color: #000000;
