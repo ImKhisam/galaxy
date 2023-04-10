@@ -1,26 +1,41 @@
+:root {
+  --dark-transparent: #000000e3;
+  --gray-hover: #54514f;
+}
 header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 20px;
 }
 
 .logo {
-  width: 100px;
+  padding: 0;
+}
+.menu-left{
+  display: flex;
+}
+.menu-right{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 nav ul {
   list-style: none;
-  background-color: #000000c9;
+  background-color: var(--dark-transparent);
   margin: 0;
   padding: 0;
   display: flex;
+  font-size: 18px;
+  justify-content: space-between;
 }
-
 nav li {
   position: relative;
   padding-right: 40px;
   padding-left: 40px;
+  display: flex;
+}
+.first-row{
+  height: 70px;
 }
 
 nav a {
@@ -28,7 +43,7 @@ nav a {
   padding: 10px;
   color: #ffffff;
   text-decoration: none;
-  font-size: 18px;
+  margin: auto;
 }
 
 nav a:hover {
@@ -69,37 +84,54 @@ nav ul ul ul {
 }
 
 .btn {
-    color: white;
-    border: 2px solid #FFFFFF;
-    display: inline-block;
-    padding: 15px 32px;
-    font-size: 15px;
-    border-radius: 2px;
-    background-color: #000000c9;
-    transition-duration: 0.4s;
-    font-size: 17px;
-    text-decoration: none;
-    margin: auto;
-    margin-top: 30px;
+  height: 60px;
+  width: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.8s ease;
+  position: relative;
+  border: 2px solid #ffffff;
+  margin: auto;
+  font-size: 20px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 }
-.btn:hover {
-    background-color: #000000c9;
-    color: #54514f;
-    border: 2px solid #54514f;
+.btn::before,
+.btn::after {
+  position: absolute;
+  display: block;
+  content: "";
+  width: 100%;
+  height: 100%;
 }
+.btn5 {
+  overflow: hidden;
+  transition: all 300ms ease;
+}
+.btn5:after {
+  width: 300%;
+  height: 300%;
+  left: -300%;
+  transform: rotate(0deg);
+  background-color: #ffffff;
+  transition: all 500ms ease;
+}
+.btn5:hover span{
+  color: #000000;
+  z-index: 10;
+  font-weight: 500;
+}
+.btn5:hover::after {
+  left: -100%;
+}
+
 a {
     text-decoration: none;
 }
 a:hover {
-  color: #54514f;
+  color: var(--gray-hover);
 }
 .table{
   font-size: 18px;
-}
-h1{
-  text-align: center;
-}
-form{
-  padding-top: 10px;
-  font-size: 20px;
 }

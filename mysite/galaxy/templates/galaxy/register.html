@@ -43,12 +43,12 @@
                         if (response.is_taken == true) {
                             $('#id_username').removeClass('is-valid').addClass('is-invalid');
                             $('#id_username').after('<div class="invalid-feedback d-block" id="usernameError">This username is not available!</div>')
-                            $('#registerBtn').prop('disabled', true); // disable the button
+                            $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button'); // disable the button
                         }
                         else {
                             $('#id_username').removeClass('is-invalid').addClass('is-valid');
                             $('#usernameError').remove();
-                            $('#registerBtn').prop('disabled', false); // enable the button
+                            $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn'); // enable the button
 
                         }
 

@@ -1,3 +1,8 @@
+:root {
+  --dark-transparent: #000000e3;
+  --gray-hover: #54514f;
+}
+
 html, body {
     
     margin: 0;
@@ -14,9 +19,9 @@ body {
 }
 
 .logo {
-    background: url('../images/logo.png') no-repeat 10px 5px;
+    background: url('../images/logo(2).png') no-repeat;
     width: 70px;
-    height: 60px;
+    height: 70px;
 } 
 
 a {
@@ -56,7 +61,7 @@ nav ul ul li {
 
 .modal{
   padding: 30px;
-  background-color: #000000c9;
+  background-color: var(--dark-transparent);
   position: fixed; top: 50%; left: 50%;
   -webkit-transform: translate(-50%, -50%);
   -ms-transform: translate(-50%, -50%);
@@ -71,4 +76,35 @@ h1{
 form{
   padding-top: 10px;
   font-size: 20px;
+}
+.disabled_button{
+    color: var(--dark-transparent);
+    border: 2px solid #FFFFFF;
+    display: inline-block;
+    padding: 15px 32px;
+    font-size: 15px;
+    border-radius: 2px;
+    background-color: var(--dark-transparent);
+    transition-duration: 0.4s;
+    font-size: 17px;
+    text-decoration: none;
+    margin: auto;
+    margin-top: 30px;
+}
+.disabled_button:hover {
+    background-color: var(--dark-transparent);
+}
+.dark-frame{
+    padding: 40px;
+    background-color: var(--dark-transparent);
+    width: 50%;
+    margin: auto;
+    text-align: center;
+}
+.outer {
+    display: flex;
+    height: 70%;
+}
+.dark-frame p {
+    font-size: 20px;
 }

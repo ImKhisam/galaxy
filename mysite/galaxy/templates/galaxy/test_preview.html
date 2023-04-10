@@ -2,32 +2,13 @@
 
 {% block custom_styles %}
 <style>
-.test{
-    padding: 40px;
-    background-color: #000000c9;
-    width: 50%;
-    margin: auto;
-    text-align: center;
 
-}
-
-.outer {
-    display: flex;
-    height: 70%;
-}
-
-a {
-    text-decoration: none;
-}
-p {
-    font-size: 17px;
-}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="outer">
-    <div class="test">
+    <div class="dark-frame">
         {% if unfinished_try == 0 %}
             <p>
                 {{test.test_info}}
@@ -37,7 +18,9 @@ p {
             </p>
             <br><br>
 
-            <a class="btn" href="{% url 'test' test.pk %}">Begin test</a>
+            <a class="btn btn5" href="{% url 'test' test.pk %}">
+                <span>Begin test</span>
+            </a>
         {% else %}
             <p>
                 Вы не завершили предыдущюю попытку.
