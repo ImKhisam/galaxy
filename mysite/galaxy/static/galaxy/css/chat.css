@@ -28,6 +28,7 @@ nav a {
   padding: 10px;
   color: #ffffff;
   text-decoration: none;
+  font-size: 18px;
 }
 
 nav a:hover {
@@ -78,9 +79,27 @@ nav ul ul ul {
     transition-duration: 0.4s;
     font-size: 17px;
     text-decoration: none;
+    margin: auto;
+    margin-top: 30px;
 }
 .btn:hover {
     background-color: #000000c9;
     color: #54514f;
     border: 2px solid #54514f;
+}
+a {
+    text-decoration: none;
+}
+a:hover {
+  color: #54514f;
+}
+.table{
+  font-size: 18px;
+}
+h1{
+  text-align: center;
+}
+form{
+  padding-top: 10px;
+  font-size: 20px;
 }

@@ -11,7 +11,7 @@
     <div class="test">
         <form action="{% url 'checking_test' test_to_check.id %}" method="post" id="my_form">
         {% csrf_token %}
-            <h1>Checking test {{test_to_check}}</h1>
+            <h1>Checking test {{test_to_check.test_id}}</h1>
             {% for task in tasks_to_check %}
                 <h2>Task: {{ task.question_id.question_number }} </h2>
                 <p class="question_writing_text">{{ task.question_id.question }}</p>
@@ -41,9 +41,9 @@
                     </div>
                 </div>
             {% endfor %}
+            <h2>Commentary:</h2>
             <div class="result_commentary">
-                <label for="commentary">Commentary: </label>
-                <input type="text" name="commentary" id="commentary">
+                <textarea class="commentary" name="commentary" rows="15" cols="70"></textarea>
             </div>
             <div style="display: flex">
                 <input class="btn" style="border-radius: 0%;margin: auto"  type="submit" value="Submit Mark">

@@ -14,6 +14,7 @@ class LoginUserForm(AuthenticationForm):
 class RegisterUserForm(UserCreationForm):
     first_name = forms.CharField(label='First name', widget=forms.TextInput(attrs={'class': 'form-input'}))
     last_name = forms.CharField(label='Last name', widget=forms.TextInput(attrs={'class': 'form-input'}))
+    role = forms.ChoiceField(label='Role', choices= ((None, 'Choose role'), ('Student', 'Student'), ('Teacher', 'Teacher')), widget=forms.Select(attrs={'class': 'form-choice'}))
     username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-input'}))
     email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-input'}))
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-input'}))

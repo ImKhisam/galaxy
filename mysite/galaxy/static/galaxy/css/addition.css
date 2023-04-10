@@ -29,10 +29,13 @@ nav ul ul li {
 }
 
 .form-input {
-    width: 300px;
-    font-size: 16px;
+    width: 250px;
+    font-size: 18px;
 }
-
+.form-choice {
+    width: 150px;
+    font-size: 18px;
+}
 .form-label {
     display: inline-block;
     min-width: 150px;
@@ -52,10 +55,20 @@ nav ul ul li {
 }
 
 .modal{
-  padding: 20px;
+  padding: 30px;
   background-color: #000000c9;
   position: fixed; top: 50%; left: 50%;
   -webkit-transform: translate(-50%, -50%);
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
+}
+.center{
+    display: flex;
+}
+h1{
+  text-align: center;
+}
+form{
+  padding-top: 10px;
+  font-size: 20px;
 }

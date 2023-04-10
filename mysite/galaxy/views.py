@@ -64,6 +64,7 @@ def validate_username(request):
 #            return JsonResponse({'email_error': 'sorry email is already taken'})
 #        return JsonResponse({'username_valid': True})
 
+
 class LoginUser(LoginView):
     form_class = LoginUserForm
     template_name = 'galaxy/login.html'
@@ -99,11 +100,19 @@ class ShowResults(ListView):
     model = Results
     template_name = "galaxy/show_results.html"
     context_object_name = 'results'
-    extra_context = {'dict': {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
-                              for key in Tests.objects.all()}}
+    #extra_context = {'dict': {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+    #                          for key in Tests.objects.all()}}
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'My results'
+        context['dict'] = {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+                           for key in Tests.objects.all()}
+        return context
 
     def get_queryset(self):
         return Results.objects.filter(student_id=self.request.user)
+
 
 
 class ResultPreview(DetailView):
