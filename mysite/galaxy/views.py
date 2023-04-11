@@ -19,6 +19,11 @@ from django.http import FileResponse, Http404, HttpResponseRedirect, JsonRespons
 from .forms import *
 from django.db.models import Sum
 from django.core.mail import send_mail
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
+from .utils import generate_token
 
 
 class Index(TemplateView):
@@ -42,10 +47,48 @@ class RegisterUser(CreateView):
         context['title'] = 'Registration'
         return context
 
+    @staticmethod
+    def send_email_activation(user, request):
+        site = get_current_site(request)
+        email_subject = 'Confirm your email'
+        email_body = render_to_string('galaxy/email_verify_template.html', {
+            'user': user,
+            'domain': site,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': generate_token.make_token(user)
+        })
+
+        send_mail(
+            email_subject,
+            email_body,
+            "galaxy.english@yandex.kz",
+            [user.email],
+            fail_silently=False,
+        )
+
     def form_valid(self, form):
         user = form.save()              # сохраняем форму в бд
-        login(self.request, user)       # при успешной регистрации сразу логинит
-        return redirect('personal_acc', acc_slug=self.request.user.slug)
+        self.send_email_activation(user, self.request)
+        return redirect('email_check_page')     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! прямой редирект?????
+
+
+def email_check_page(request):                  # !!!!!!!!!!!!!!!!!!!!!!!!! буз этой функции?
+    return render(request, 'galaxy/email_check_page.html')
+
+
+def verify_email(request, uid64, token):        # попадаем сюда из письма на почту
+    try:
+        uid = force_str(urlsafe_base64_decode(uid64))
+        user = CustomUser.objects.get(pk=uid)
+    except Exception as e:
+        user = None
+
+    if user and generate_token.check_token(user, token):
+        user.is_email_verified = True
+        user.save()
+        return redirect(reverse_lazy('login'))
+
+    return render(request, 'galaxy/email_verification_failed.html', {'user': user})
 
 
 def validate_username(request):
@@ -55,7 +98,6 @@ def validate_username(request):
         'is_taken': CustomUser.objects.filter(username__iexact=username).exists()
     }
     return JsonResponse(response)
-
 
 
 def email_validation(request):
@@ -74,34 +116,6 @@ def email_validation(request):
     return JsonResponse(response)
 
 
-#def email_validation(request):
-#    email = request.GET.get('email', None)
-#    try:
-#        validate_email(email)
-#    except ValidationError as e:
-#        return JsonResponse({'email_error': e})
-#
-#    if CustomUser.objects.filter(email__iexact=email).exists():
-#        return JsonResponse({'email_error': 'sorry email is already taken'})
-#
-#    return JsonResponse({'email_valid': True})
-
-
-#class EmailValidationView(View):
-#    def post(self, request):
-#        data = json.loads(request.body)
-#        email = data['email']
-#        try:
-#            validate_email(email)
-#        except ValidationError as e:
-#            return JsonResponse({'email_error': e})
-#
-#        if CustomUser.objects.filter(email__iexact=email).exists():
-#            return JsonResponse({'email_error': 'sorry email is already taken'})
-#
-#        return JsonResponse({'username_valid': True})
-
-
 class LoginUser(LoginView):
     form_class = LoginUserForm
     template_name = 'galaxy/login.html'
@@ -112,6 +126,10 @@ class LoginUser(LoginView):
         return context
 
     def get_success_url(self):          # при успешном логине перенаправляет
+        if not self.request.user.is_email_verified:
+            logout(self.request)
+            return reverse_lazy('email_check_page')
+
         return reverse_lazy('personal_acc', kwargs={'acc_slug': self.request.user.slug})
 
 
@@ -149,7 +167,6 @@ class ShowResults(ListView):
 
     def get_queryset(self):
         return Results.objects.filter(student_id=self.request.user)
-
 
 
 class ResultPreview(DetailView):
@@ -289,7 +306,7 @@ def test(request, test_pk):
                 task_to_check.test_to_check_id = test_to_check
                 task_to_check.question_id = question
                 task_to_check.save()
-
+        '''Уведомляем учителя о том, что студент выполнил тест, который нуждается в проверке'''
         if test.part in ['Writing', 'Speaking']:
             stdnt = test_to_check.student_id.first_name + ' ' + test_to_check.student_id.last_name
             message = stdnt + ' passed test that you need to check '
