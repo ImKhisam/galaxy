@@ -73,7 +73,7 @@ class Tests(models.Model):
         (Writing, 'Writing'),
         (Speaking, 'Speaking'),
     ]
-    test_num = models.IntegerField()
+    test_num = models.PositiveIntegerField()
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
     test_info = models.TextField(default="Текст, который выводится перед началом теста")

@@ -1,25 +1,16 @@
 {% extends "galaxy/base.html" %}
 {% block custom_styles %}
 <style>
-.test{
-    padding: 20px;
-    background-color: #000000c9;
-    width: 50%;
-    margin: auto;
-    text-align: center;
-}
-.outer {
-    display: flex;
-    height: 70%;
-}
+
 </style>
+
 {% endblock %}
 {% block content %}
 <div class="outer">
-<div class="test">
+<div class="dark-frame">
     <p>Your result in {{result.test_id}}: {{result.points}}/{{max_points}}. You've made it in {{test_time}}</p>
     <br><br>
-    <a class="btn btn5" href="{% url 'show_test_stat'%}">
+    <a class="btn btn5" href="{% url 'show_results'%}">
         <span>Nice</span>
     </a>
 </div>

@@ -20,7 +20,9 @@
                 <div class="form-error">{{ f.errors }}</div>
             {% endfor %}
             <div class="center">
-                <button class="btn" id="registerBtn" type="submit">Register</button>
+                <button class="btn btn5" id="registerBtn" type="submit">
+                    <span>Register</span>
+                </button>
             </div>
         </form>
 
@@ -63,6 +65,42 @@
                 return false;
             });
             // email valid
+            // email validation
+        $('#id_email').keyup(function () {
+            // create an AJAX call
+            $.ajax({
+                data: $(this).serialize(), // get the form data
+                url: "{% url 'email_validation' %}",
+                // on success
+                success: function (response) {
+                    if (response.is_taken == true) {
+                        $('#id_email').removeClass('is-valid').addClass('is-invalid');
+                        $('#id_email').after('<div class="invalid-feedback d-block" id="emailError">This email is already registered!</div>')
+                        $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button'); // disable the button
+                    }
+                    else {
+                        $('#id_email').removeClass('is-invalid').addClass('is-valid');
+                        $('#emailError').remove();
+                        if (response.is_valid == true) {
+                            $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn'); // enable the button
+                        } else {
+                            $('#id_email').removeClass('is-valid').addClass('is-invalid');
+                            $('#id_email').after('<div class="invalid-feedback d-block" id="emailError">Please enter a valid email address.</div>')
+                            $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button'); // disable the button
+                        }
+                    }
+
+                },
+                // on error
+                error: function (response) {
+                    // alert the error if any error occured
+                    console.log(response.responseJSON.errors)
+                }
+            });
+
+            return false;
+        });
+
         })
     </script>
     {% endblock javascript %}

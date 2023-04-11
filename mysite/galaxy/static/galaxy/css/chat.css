@@ -20,12 +20,13 @@ header {
 }
 
 nav ul {
+  font-family: 'Bebas Neue', cursive;
   list-style: none;
   background-color: var(--dark-transparent);
   margin: 0;
   padding: 0;
   display: flex;
-  font-size: 18px;
+  font-size: 22px;
   justify-content: space-between;
 }
 nav li {
@@ -84,6 +85,8 @@ nav ul ul ul {
 }
 
 .btn {
+  color: #ffffff;
+  background-color: transparent;
   width: fit-content;
   display: flex;
   justify-content: center;

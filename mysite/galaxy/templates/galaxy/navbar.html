@@ -2,6 +2,12 @@
 {% load galaxy_tags %}
 {% load content_for_evrbd_tags %}
 
+{% block custom_styles %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+{% endblock custom_styles %}
+
 <header>
     <nav>
         <ul>
@@ -15,11 +21,7 @@
                     </li>
                     <li  class="first-row"><a href="#">USE</a>
                         <ul>
-                            <li><a href="#">Listening</a></li>
-                            <li><a href="#">Reading</a></li>
-                            <li><a href="#">Grammar & Vocabulary</a></li>
-                            <li><a href="#">Writing</a></li>
-                            <li><a href="#">Speaking</a></li>
+                            {% drop_menu_test 'USE' %}
                         </ul>
                     </li>
                     <li class="first-row"><a href="#">Olymp Way</a>

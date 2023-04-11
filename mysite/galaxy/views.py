@@ -3,7 +3,8 @@ import time
 import json
 from datetime import datetime, timedelta
 
-from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.forms import formset_factory, modelform_factory
 
 from django.contrib.auth import login, logout
@@ -56,12 +57,48 @@ def validate_username(request):
     return JsonResponse(response)
 
 
+
+def email_validation(request):
+    """Check email availability and validate email"""
+    email = request.GET.get('email', None)
+    try:
+        validate_email(email)
+        is_valid = True
+    except ValidationError:
+        is_valid = False
+
+    response = {
+        'is_taken': CustomUser.objects.filter(email__iexact=email).exists(),
+        'is_valid': is_valid
+    }
+    return JsonResponse(response)
+
+
+#def email_validation(request):
+#    email = request.GET.get('email', None)
+#    try:
+#        validate_email(email)
+#    except ValidationError as e:
+#        return JsonResponse({'email_error': e})
+#
+#    if CustomUser.objects.filter(email__iexact=email).exists():
+#        return JsonResponse({'email_error': 'sorry email is already taken'})
+#
+#    return JsonResponse({'email_valid': True})
+
+
 #class EmailValidationView(View):
 #    def post(self, request):
 #        data = json.loads(request.body)
 #        email = data['email']
+#        try:
+#            validate_email(email)
+#        except ValidationError as e:
+#            return JsonResponse({'email_error': e})
+#
 #        if CustomUser.objects.filter(email__iexact=email).exists():
 #            return JsonResponse({'email_error': 'sorry email is already taken'})
+#
 #        return JsonResponse({'username_valid': True})
 
 
@@ -188,7 +225,7 @@ def test(request, test_pk):
         '''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''
         if 'no_attached_files' in request.session:
             del request.session['no_attached_files']
-        if len(request.FILES) == 0:
+        if test.part in ['Writing', 'Speaking'] and len(request.FILES) == 0:
             request.session['no_attached_files'] = 1
             return HttpResponseRedirect('/test_result_wo_points/')
 
@@ -295,7 +332,7 @@ class TestResultWOPoints(TemplateView):
 
 class TestResultWithPoints(DetailView):
     model = Results
-    template_name = "galaxy/test_result.html"
+    template_name = "galaxy/test_result_with_points.html"
     pk_url_kwarg = 'res_pk'
     context_object_name = 'result'
 

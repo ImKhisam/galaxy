@@ -1,22 +1,12 @@
 {% extends "galaxy/base.html" %}
 {% block custom_styles %}
 <style>
-.test{
-    padding: 20px;
-    background-color: #000000c9;
-    width: 50%;
-    margin: auto;
-    text-align: center;
-}
-.outer {
-    display: flex;
-    height: 70%;
-}
+
 </style>
 {% endblock %}
 {% block content %}
 <div class="outer">
-<div class="test">
+<div class="dark-frame">
     {% if request.session.no_attached_files %}
     <p>You didn't attach any files. Be attentive next time.</p>
     {% else %}
