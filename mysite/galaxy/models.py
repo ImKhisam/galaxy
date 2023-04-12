@@ -10,7 +10,7 @@ class CustomUser(AbstractUser):
     is_email_verified = models.BooleanField(default=False)
     role_choice = ((None, 'Choose role'), ('Student', 'Student'), ('Teacher', 'Teacher'))
     role = models.CharField(max_length=100, choices=role_choice)
-    is_confirmed = models.BooleanField(default=False)
+    is_confirmed = models.BooleanField()
     slug = AutoSlugField(populate_from='username')
 
     def __str__(self):

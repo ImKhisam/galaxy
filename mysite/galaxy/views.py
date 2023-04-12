@@ -20,7 +20,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
-from .utils import generate_token
+from .utils import generate_token, ConfirmMixin
 
 
 class Index(TemplateView):
@@ -139,7 +139,8 @@ class LoginUser(LoginView):
             logout(self.request)
             return reverse_lazy('email_check_page')
 
-        return reverse_lazy('personal_acc', kwargs={'acc_slug': self.request.user.slug})
+        #return reverse_lazy('personal_acc', kwargs={'acc_slug': self.request.user.slug})
+        return reverse_lazy('home')
 
 
 def logout_user(request):
@@ -415,7 +416,7 @@ def julik(request):
 
 class ShowTests(ListView):
     model = Tests
-    template_name = "galaxy/tests.html"
+    template_name = "galaxy/show_tests.html"
     context_object_name = 'tests'
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -425,12 +426,48 @@ class ShowTests(ListView):
 
 
 class ShowTestsToCheck(ListView):
+    paginate_by = 15
     model = TestsToCheck
-    template_name = "galaxy/tests_to_check.html"
+    template_name = "galaxy/show_tests_to_check.html"
     context_object_name = 'tests_to_check'
 
     def get_queryset(self):
         return TestsToCheck.objects.filter(is_checked=False)
+
+
+class ShowConfirmedStudents(ConfirmMixin, ListView):
+    template_name = "galaxy/show_confirmed_students.html"
+
+    def get_queryset(self):
+        return self.foo(True)
+
+
+class ShowStudentsToConfirm(ConfirmMixin, ListView):
+    template_name = "galaxy/show_students_to_confirm.html"
+
+    def get_queryset(self):
+        return self.foo(None)
+
+
+class ShowDeniedStudents(ConfirmMixin, ListView):
+    template_name = "galaxy/show_denied_students.html"
+
+    def get_queryset(self):
+        return self.foo(False)
+
+
+def deny_student(request, student_id, template):
+    student = CustomUser.objects.get(id=student_id)
+    student.is_confirmed = False
+    student.save()
+    return redirect(reverse_lazy(template))
+
+
+def confirm_student(request, student_id, template):
+    student = CustomUser.objects.get(id=student_id)
+    student.is_confirmed = True
+    student.save()
+    return redirect(reverse_lazy(template))
 
 
 class CheckingTest(DetailView):

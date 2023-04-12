@@ -1,5 +1,8 @@
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import six
+from django.db.models import Q
+
+from galaxy.models import CustomUser
 
 
 class TokenGenerator(PasswordResetTokenGenerator):
@@ -9,3 +12,19 @@ class TokenGenerator(PasswordResetTokenGenerator):
 
 
 generate_token = TokenGenerator()
+
+
+class ConfirmMixin:
+    paginate_by = 15
+    model = CustomUser
+    context_object_name = 'students'
+
+    def foo(self, value):
+        query = self.request.GET.get('q')
+        if query:
+            return CustomUser.objects.filter(role='Student', is_confirmed=value).filter(
+                Q(username__icontains=query) |
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query)
+            )
+        return CustomUser.objects.filter(role='Student', is_confirmed=value)

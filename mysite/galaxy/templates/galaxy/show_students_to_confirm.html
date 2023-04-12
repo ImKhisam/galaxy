@@ -1,0 +1,84 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
+{% endblock custom_styles %}
+
+{% block content %}
+<h1><a href="{% url 'show_confirmed_students' %}">Confirmed students</a>  |  <span class="current">Not confirmed students</span>  |  <a href="{% url 'show_denied_students' %}">Denied students</a></h1>
+<div class="parent">
+    <form method="get">
+        <div class="search-button">
+            <input type="text" name="q" placeholder="Search users">
+            <button class="btn btn5" type="submit"><span>Search</span></button>
+            {% if request.GET.q %}
+                <a href="{% url 'show_confirmed_students' %}" class="btn btn5"><span>Reset search</span></a>
+            {% endif %}
+        </div>
+    </form>
+    <br><br><br>
+</div>
+<div class="parent">
+  <div class="table">
+      <table class="table">
+      <thead>
+          <tr>
+              <th scope="col">#</th>
+              <th scope="col">Name</th>
+              <th scope="col">Surname</th>
+              <th scope="col">Username</th>
+              <th scope="col">Action</th>
+          </tr>
+      </thead>
+      <tbody>
+      {% for student in students %}
+          <tr>
+              {% if page_obj.number %}
+                  {% with offset=page_obj.number|add:'-1'|multiply:15 %}
+                  <th scope="row">{{ forloop.counter|add:offset }}</th>
+                  {% endwith %}
+              {% else %}
+                  <th scope="row">{{ forloop.counter }}</th>
+              {% endif %}
+              <td> {{student.first_name}}</td>
+              <td>{{student.last_name}}</td>
+              <td>{{student.username}}</td>
+              <td>
+                  <div style="display: inline-flex; width: 80%;">
+                    <a class="btn btn5" href="{% url 'confirm_student' student.id 'show_students_to_confirm' %}"><span>Confirm student</span></a>
+                    <a class="btn btn5" href="{% url 'deny_student' student.id 'show_students_to_confirm' %}"><span>Deny student</span></a>
+                  </div>
+              </td>
+          </tr>
+
+      {% endfor %}
+      </tbody>
+      </table>
+  </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a class="pagination-number" href="?page={{ page_obj.previous_page_number }}"><</a>
+    {% else %}
+    <span class="pagination-number pagination-current"><</span>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <span class="pagination-number pagination-current">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a class="pagination-number" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a class="pagination-number" href="?page={{ page_obj.next_page_number }}">></a>
+    {% else %}
+    <span class="pagination-number pagination-current">></span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
