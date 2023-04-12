@@ -34,7 +34,7 @@
 
     <script>
         $(document).ready(function () {
-            // catch the form's submit event
+            // username validation
             $('#id_username').keyup(function () {
                 // create an AJAX call
                 $.ajax({
@@ -64,72 +64,81 @@
 
                 return false;
             });
-            // email valid
-            // email validation
+        // email validation
         $('#id_email').keyup(function () {
             // create an AJAX call
             $.ajax({
-                data: $(this).serialize(), // get the form data
-                url: "{% url 'email_validation' %}",
-                // on success
+                data: $(this).serialize(),
+                url: "{% url 'validate_email' %}",
                 success: function (response) {
                     if (response.is_taken == true) {
                         $('#id_email').removeClass('is-valid').addClass('is-invalid');
                         $('#id_email').after('<div class="invalid-feedback d-block" id="emailError">This email is already registered!</div>')
-                        $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button'); // disable the button
+                        $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button');
                     }
                     else {
                         $('#id_email').removeClass('is-invalid').addClass('is-valid');
                         $('#emailError').remove();
                         if (response.is_valid == true) {
-                            $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn'); // enable the button
+                            $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn');
                         } else {
                             $('#id_email').removeClass('is-valid').addClass('is-invalid');
                             $('#id_email').after('<div class="invalid-feedback d-block" id="emailError">Please enter a valid email address.</div>')
-                            $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button'); // disable the button
+                            $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button');
                         }
                     }
-
                 },
                 // on error
                 error: function (response) {
-                    // alert the error if any error occured
                     console.log(response.responseJSON.errors)
                 }
             });
-
             return false;
         });
+        // check equals pass
+
+         $('#id_password2').keyup(function () {
+            var password1 = $('#id_password1').val();
+            var password2 = $(this).val();
+            if (password1 != password2) {
+                $('#id_password2').removeClass('is-valid').addClass('is-invalid');
+                $('#passwordError').remove();
+                $('#id_password2').after('<div class="invalid-feedback d-block" id="passwordError">Passwords do not match!</div>')
+                $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button'); // disable the button
+            }
+            else {
+                $('#id_password2').removeClass('is-invalid').addClass('is-valid');
+                $('#passwordError').remove();
+                $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn'); // enable the button
+            }
+         });
+
+
 
         })
     </script>
 {% endblock javascript %}
 
-<!--
-$('#id_email').keyup(function () {
-               $.ajax({
-                   data: $(this).serialize(), // get the form data
-                   url: "{% url 'validate_email' %}",
-                   success: function (response) {
-                       if (response.is_taken == true) {
-                           $('#id_username').removeClass('is-valid').addClass('is-invalid');
-                           $('#id_username').after('<div class="invalid-feedback d-block" id="usernameError">This username is not available!</div>')
-                           $('#registerBtn').prop('disabled', true); // disable the button
-                       }
-                       else {
-                           $('#id_username').removeClass('is-invalid').addClass('is-valid');
-                           $('#usernameError').remove();
-                           $('#registerBtn').prop('disabled', false); // enable the button
-
-                       }
-
-                   },
-                   // on error
-                   error: function (response) {
-                       console.log(response.responseJSON.errors)
-                   }
-               });
-
-               return false;
+$('#id_password2').keyup(function() {
+            $.ajax({
+                data: {
+                  'password1': $('#id_password1').val(),
+                  'password2': $('#id_password2').val(),
+                },
+                url: "{% url 'validate_password' %}",
+                success: function(response) {
+                    if (response.matches == false) {
+                        $('#id_password2').removeClass('is-valid').addClass('is-invalid');
+                        $('#id_password2').after('<div class="invalid-feedback d-block" id="passwordError">Passwords do not match!</div>');
+                        $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button');
+                    } else {
+                        $('#id_password2').removeClass('is-invalid').addClass('is-valid');
+                        $('#passwordError').remove();
+                        $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn');
+                    }
+                },
+                error: function(response) {
+                  console.log(response.responseJSON.errors)
+                }
             });
--->
+        });

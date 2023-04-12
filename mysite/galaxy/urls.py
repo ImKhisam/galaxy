@@ -3,9 +3,10 @@ from .views import *
 
 urlpatterns = [
     path('', Index.as_view(), name='home'),
-    path('register/', RegisterUser.as_view(), name='register'), # old sign up
+    path('register/', SignUp.as_view(), name='register'),
     path('validate_username', validate_username, name='validate_username'),
-    path('email_validation', email_validation, name='email_validation'),
+    path('validate_email', validate_email, name='validate_email'),
+    path('validate_password', validate_password, name='validate_password'),
     path('verify_email/<uid64>/<token>', verify_email, name='verify'),
     path('email_check_page/', email_check_page, name='email_check_page'),
     path('login/', LoginUser.as_view(), name='login'),
@@ -15,7 +16,7 @@ urlpatterns = [
     path('julik/', julik, name='julik'),
     path('show_doc/<int:classes_id>/<doc_type>/', showdoc, name='show_doc'),
     path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio'),
-    #path('listening_test/', ListeningTest.as_view(), name='listening_test'),
+
 
 
     path('test_preview/<int:test_pk>/', TestPreview.as_view(), name='test_preview'),

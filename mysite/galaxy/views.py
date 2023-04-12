@@ -2,9 +2,6 @@ import os
 import time
 import json
 from datetime import datetime, timedelta
-
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
 from django.forms import formset_factory, modelform_factory
 
 from django.contrib.auth import login, logout
@@ -37,14 +34,14 @@ class Index(TemplateView):
         return context
 
 
-class RegisterUser(CreateView):
-    form_class = RegisterUserForm
-    template_name = 'galaxy/register.html'
+class SignUp(CreateView):
+    form_class = SignUpForm
+    template_name = 'galaxy/sign_up.html'
     success_url = reverse_lazy('personal_acc')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Registration'
+        context['title'] = 'Sign Up'
         return context
 
     @staticmethod
@@ -69,7 +66,7 @@ class RegisterUser(CreateView):
     def form_valid(self, form):
         user = form.save()              # сохраняем форму в бд
         self.send_email_activation(user, self.request)
-        return redirect('email_check_page')     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! прямой редирект?????
+        return render(self.request, 'galaxy/email_check_page.html')     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! прямой редирект?????
 
 
 def email_check_page(request):                  # !!!!!!!!!!!!!!!!!!!!!!!!! буз этой функции?
@@ -100,7 +97,9 @@ def validate_username(request):
     return JsonResponse(response)
 
 
-def email_validation(request):
+def validate_email(request):
+    from django.core.exceptions import ValidationError
+    from django.core.validators import validate_email
     """Check email availability and validate email"""
     email = request.GET.get('email', None)
     try:
@@ -112,6 +111,16 @@ def email_validation(request):
     response = {
         'is_taken': CustomUser.objects.filter(email__iexact=email).exists(),
         'is_valid': is_valid
+    }
+    return JsonResponse(response)
+
+
+def validate_password(request):
+    """Check if password1 matches password2"""
+    password1 = request.GET.get('password1', None)
+    password2 = request.GET.get('password2', None)
+    response = {
+        'matches': password1 == password2
     }
     return JsonResponse(response)
 

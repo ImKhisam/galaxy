@@ -3,12 +3,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.forms import TextInput, Textarea
 
-from .forms import RegisterUserForm, CustomUserChangeForm
+from .forms import SignUpForm, CustomUserChangeForm
 from .models import *
 
 
 class CustomUserAdmin(UserAdmin):
-    add_form = RegisterUserForm
+    add_form = SignUpForm
     form = CustomUserChangeForm
     model = CustomUser
 
