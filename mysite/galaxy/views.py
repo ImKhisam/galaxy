@@ -270,7 +270,7 @@ def test(request, test_pk):
             if test.part not in ['Writing', 'Speaking']:
                 if question.question_type == 'match_type':          # Подсчёт вопросов на сопоставление
                     question_points = question.points
-                    for answer in Answers.objects.filter(question_id__id=question.id).exclude(match__exact=''):
+                    for answer in Answers.objects.filter(question_id__id=question.id).exclude(match__exact=''): # ??перебираем только "правильные" ответы, отрезая пустышку без match
                         student_answer = request.POST.get(str(answer.id))
                         if student_answer != answer.answer:
                             question_points -= 1

@@ -18,8 +18,8 @@
             {% endif %}
         </div>
     </form>
-    <br><br><br>
 </div>
+<br>
 <div class="parent">
   <div class="table">
       <table class="table">
@@ -47,7 +47,6 @@
               <td>{{student.username}}</td>
               <td><a class="btn btn5" href="{% url 'confirm_student' student.id 'show_denied_students' %}"><span>Confirm student</span></a></td>
           </tr>
-
       {% endfor %}
       </tbody>
       </table>

@@ -45,7 +45,24 @@
         {% for question, answers in qa.items %}
             <div class="question">
                 {% if question.question_type == 'match_type' %}
-                    <p class="question-text">{{question.question_number}}. {{question.question}}</p>
+                    {% if test.type == 'USE' and test.part == 'Listening' and question.question_number == 2 %}
+                        <p class="question-text">{{question.question_number}}. {{question.question}}</p>
+                        <div class="matches">
+                            {% for answer, answer_list in answers.items %}
+                                <div class="select-wrapper listening-select">
+                                    <label>{{answer.match}}</label>
+                                    <select name="{{answer.pk}}">
+                                        <option>Выберите ответ</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    {% else %}
+                        <p class="question-text">{{question.question_number}}. {{question.question}}</p>
                         {% for answer, answer_list in answers.items %}
                             {% if forloop.first %}
                                 <div class="match-answers">
@@ -55,8 +72,8 @@
                                     <br><br>
                                 </div>
                             {% endif %}
-                            {% if answer.addition != 'None' %} <!-- Reading test match question-->
-                                <div class="reading-match-element">
+                            {% if answer.addition != 'None' %}
+                                <div class="reading-match-element"><!-- Reading test match question-->
                                     <div class="outer-addition">
                                         <div class="reading-addition left-align">
                                             <p>{{answer.match}}. {{answer.addition}}</p>
@@ -90,7 +107,8 @@
                                     </div>
                                 {% endif %}
                             {% endfor %}
-                            </div>
+                        </div>
+                    {% endif %}
                 {% elif question.question_type == 'input_type'%}    <!-- Input type question -->
                     <div class="input-outer">
                         <div class="input-question">
@@ -177,7 +195,9 @@
 </div>
 <div class="warning" id="warning">
   <h2>Warning: Only 5 minutes left!</h2>
-    <input type="button" class="btn" name="answer" value="Got it" onclick="closeDiv()" />
+    <button class="btn btn5" onclick="closeDiv()">
+        <span>Got it</span>
+    </button>
 </div>
 {% endblock %}
 
