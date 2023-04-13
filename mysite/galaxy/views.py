@@ -549,21 +549,22 @@ def add_test_and_chapters(request):
         chapter_formset = chapter_formset(request.POST, request.FILES)
 
         if test_form.is_valid() and chapter_formset.is_valid():
-            testing = test_form.save(commit=False)
-            test_type = testing.type
-            test_part = testing.part
+            test_obj = test_form.save(commit=False)
+            test_type = test_obj.type
+            test_part = test_obj.part
             test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
-            testing.test_num = test_num
+            test_obj.test_num = test_num
             # Save the Test
-            testing.save()
+            test_obj.save()
             # Save the Chapters
 
             for chapter_form in chapter_formset.forms:
                 if chapter_form.has_changed():
                     chapter = chapter_form.save(commit=False)
-                    chapter.test_id = testing
+                    chapter.test_id = test_obj
                     chapter.save()
 
+            #return redirect('add_q_and_a', chapter.id)
             return redirect('add_q_and_a', chapter.id)
 
     context = {
@@ -572,6 +573,39 @@ def add_test_and_chapters(request):
     }
 
     return render(request, 'galaxy/add_test.html', context)
+
+
+def add_q_and_a(request, chapter_id):
+    question_form = QuestionAddForm()
+    answer_formset = formset_factory(AnswerAddForm, extra=0)
+    chapter = Chapters.objects.get(id=chapter_id)
+
+    if request.method == 'POST':
+        question_form = QuestionAddForm(request.POST, request.FILES)
+        answer_formset = answer_formset(request.POST, request.FILES)
+
+        if question_form.is_valid() and answer_formset.is_valid():
+            question_obj = question_form.save(commit=False)
+            question_obj.test_id = chapter.test_id
+            question_obj.chapter_id = chapter
+            # Save the question
+            question_obj.save()
+
+            # Save the Chapters
+            for answer_form in answer_formset.forms:
+                if answer_form.has_changed():
+                    answer_obj = answer_form.save(commit=False)
+                    answer_obj.question_id = question_obj
+                    answer_obj.save()
+
+            return redirect('home')
+
+    context = {
+        'question_form': question_form,
+        'answer_formset': answer_formset,
+    }
+
+    return render(request, 'galaxy/add_q_and_a.html', context)
 
 
 #def sof(request, test_id):
@@ -628,32 +662,32 @@ def add_test_and_chapters(request):
 #            return self.render_to_response(self.get_context_data(form=form))
 
 
-def add_questions_to_chapter(request, chapter_id):
-    chapter = get_object_or_404(Chapters, id=chapter_id)
-
-    if request.method == 'POST':
-        question_form = QuestionForm(request.POST)
-        answer_formset = AnswerFormSet(request.POST)
-
-        if question_form.is_valid() and answer_formset.is_valid():
-            question = question_form.save(commit=False)
-            question.chapter = chapter
-            question.save()
-
-            answers = answer_formset.save(commit=False)
-            for answer in answers:
-                answer.question = question
-                answer.save()
-
-            return redirect('chapter_detail', chapter_id=chapter.id)
-
-    else:
-        question_form = QuestionForm()
-        answer_formset = AnswerFormSet()
-
-    context = {
-        'chapter': chapter,
-        'question_form': question_form,
-        'answer_formset': answer_formset,
-    }
-    return render(request, 'galaxy/add_questions_to_chapter.html', context)
+#def add_question_to_chapter(request, chapter_id):
+#    chapter = get_object_or_404(Chapters, id=chapter_id)
+#
+#    if request.method == 'POST':
+#        question_form = QuestionForm(request.POST)
+#        answer_formset = AnswerFormSet(request.POST)
+#
+#        if question_form.is_valid() and answer_formset.is_valid():
+#            question = question_form.save(commit=False)
+#            question.chapter = chapter
+#            question.save()
+#
+#            answers = answer_formset.save(commit=False)
+#            for answer in answers:
+#                answer.question = question
+#                answer.save()
+#
+#            return redirect('chapter_detail', chapter_id=chapter.id)
+#
+#    else:
+#        question_form = QuestionForm()
+#        answer_formset = AnswerFormSet()
+#
+#    context = {
+#        'chapter': chapter,
+#        'question_form': question_form,
+#        'answer_formset': answer_formset,
+#    }
+#    return render(request, 'galaxy/add_questions_to_chapter.html', context)

@@ -47,11 +47,22 @@ class ChapterAddForm(forms.ModelForm):
         }
 
 
-class TaskCheckForm(forms.ModelForm):
+class TaskCheckForm(forms.ModelForm):       # выставление баллов?
     class Meta:
         model = TasksToCheck
         fields = ['points']
 
+
+class QuestionAddForm(forms.ModelForm):
+    class Meta:
+        model = Questions
+        fields = ['question_number', 'question', 'question_type', 'addition', 'points']
+
+
+class AnswerAddForm(forms.ModelForm):
+    class Meta:
+        model = Answers
+        fields = ['answer', 'is_true', 'addition', 'match']
 
 
 

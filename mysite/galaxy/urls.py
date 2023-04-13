@@ -36,6 +36,6 @@ urlpatterns = [
 
     path('show_tests/', ShowTests.as_view(), name='show_tests'),
     path('add_test/', add_test_and_chapters, name='add_test'),
-    #path('add_q_and_a/<int:test_id>', add_questions_and_answers, name='add_q_and_a'),
-    path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
+    path('add_q_and_a/<int:chapter_id>', add_q_and_a, name='add_q_and_a'),
+    #path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
     ]
