@@ -35,7 +35,7 @@ class CustomUserChangeForm(UserChangeForm):
 class TestAddForm(forms.ModelForm):
     class Meta:
         model = Tests
-        fields = ['type', 'part', 'test_info', 'time_limit', 'media']
+        fields = ['type', 'part', 'test_info', 'media']
 
 
 class ChapterAddForm(forms.ModelForm):

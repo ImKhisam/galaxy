@@ -20,7 +20,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
-from .utils import generate_token, ConfirmMixin
+from .utils import generate_token, ConfirmMixin, AddTestTimeLimit
 
 
 class Index(TemplateView):
@@ -191,10 +191,10 @@ class ResultPreview(DetailView):
         return context
 
 
-class TestPreview(LoginRequiredMixin, DetailView):
+class TestDetails(LoginRequiredMixin, DetailView):
     login_url = reverse_lazy('login')
     model = Tests
-    template_name = "galaxy/test_preview.html"
+    template_name = "galaxy/test_details.html"
     pk_url_kwarg = 'test_pk'
     context_object_name = 'test'
 
@@ -442,8 +442,8 @@ class ShowConfirmedStudents(ConfirmMixin, ListView):
         return self.foo(True)
 
 
-class ShowStudentsToConfirm(ConfirmMixin, ListView):
-    template_name = "galaxy/show_students_to_confirm.html"
+class ShowPendingStudents(ConfirmMixin, ListView):
+    template_name = "galaxy/show_pending_students.html"
 
     def get_queryset(self):
         return self.foo(None)
@@ -516,28 +516,42 @@ class CheckingTest(DetailView):
 #    return response
 
 
-#class AddTest(View):
-#    def get(self, request, *args, **kwargs):
-#        test_form = TestAddForm()
-#        chapter_forms = [ChapterAddForm(prefix=str(i)) for i in range(2)]
-#        return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
-#
-#    def post(self, request, *args, **kwargs):
-#        test_form = TestAddForm(request.POST)
-#        chapter_forms = [ChapterAddForm(request.POST, prefix=str(i)) for i in range(2)]
-#        if test_form.is_valid() and all([form.is_valid() for form in chapter_forms]):
-#            testing = test_form.save(commit=False)
-#            test_type = testing.type
-#            test_num = Tests.objects.filter(type=test_type).count() + 1
-#            testing.test_num = test_num
-#            testing.save()
-#            for form in chapter_forms:
-#                chapter = form.save(commit=False)
-#                chapter.test_id = testing
-#                chapter.save()
-#            return redirect('tests')
-#        else:
-#            return render(request, 'galaxy/add_test.html', {'test_form': test_form, 'chapter_forms': chapter_forms})
+class AddTestAndChaptersView(AddTestTimeLimit, View):
+    def get(self, request, *args, **kwargs):
+        test_form = TestAddForm()
+        chapter_formset = formset_factory(ChapterAddForm, extra=0)
+        context = {
+            'test_form': test_form,
+            'chapter_formset': chapter_formset,
+        }
+        return render(request, 'galaxy/add_test.html', context)
+
+    def post(self, request, *args, **kwargs):
+        test_form = TestAddForm(request.POST, request.FILES)
+        chapter_formset = formset_factory(ChapterAddForm, extra=0)(request.POST, request.FILES)
+
+        if test_form.is_valid() and chapter_formset.is_valid():
+            test_obj = test_form.save(commit=False)
+            test_type = test_obj.type
+            test_part = test_obj.part
+            test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
+            test_obj.test_num = test_num
+            test_obj.save()                                     # Save the Test
+            self.add_test_time_limit(test_obj)
+
+            for chapter_form in chapter_formset.forms:          # Save the Chapters
+                if chapter_form.has_changed():
+                    chapter = chapter_form.save(commit=False)
+                    chapter.test_id = test_obj
+                    chapter.save()
+
+            return redirect('add_q_and_a', chapter.id)
+
+        context = {
+            'test_form': test_form,
+            'chapter_formset': chapter_formset,
+        }
+        return render(request, 'galaxy/add_test.html', context)
 
 
 def add_test_and_chapters(request):
@@ -554,17 +568,14 @@ def add_test_and_chapters(request):
             test_part = test_obj.part
             test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
             test_obj.test_num = test_num
-            # Save the Test
-            test_obj.save()
-            # Save the Chapters
+            test_obj.save()                                 # Save the Test
 
-            for chapter_form in chapter_formset.forms:
+            for chapter_form in chapter_formset.forms:      # Save the Chapters
                 if chapter_form.has_changed():
                     chapter = chapter_form.save(commit=False)
                     chapter.test_id = test_obj
                     chapter.save()
 
-            #return redirect('add_q_and_a', chapter.id)
             return redirect('add_q_and_a', chapter.id)
 
     context = {

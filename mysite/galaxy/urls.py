@@ -20,7 +20,7 @@ urlpatterns = [
 
     path('show_results', ShowResults.as_view(), name='show_results'),
     path('show_confirmed_students/', ShowConfirmedStudents.as_view(), name='show_confirmed_students'),
-    path('show_students_to_confirm/', ShowStudentsToConfirm.as_view(), name='show_students_to_confirm'),
+    path('show_pending_students/', ShowPendingStudents.as_view(), name='show_pending_students'),
     path('show_denied_students/', ShowDeniedStudents.as_view(), name='show_denied_students'),
     path('deny_student/<int:student_id>/<template>', deny_student, name='deny_student'),
     path('confirm_student/<int:student_id>/<template>', confirm_student, name='confirm_student'),
@@ -28,14 +28,14 @@ urlpatterns = [
     path('checking_test/<int:test_to_check_id>', CheckingTest.as_view(), name='checking_test'),
 
 
-    path('test_preview/<int:test_pk>/', TestPreview.as_view(), name='test_preview'),
+    path('test_details/<int:test_pk>/', TestDetails.as_view(), name='test_details'),
     path('test/<int:test_pk>/', test, name='test'),
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
     path('result_preview/<int:result_pk>', ResultPreview.as_view(), name='result_preview'),
 
     path('show_tests/', ShowTests.as_view(), name='show_tests'),
-    path('add_test/', add_test_and_chapters, name='add_test'),
+    path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
     path('add_q_and_a/<int:chapter_id>', add_q_and_a, name='add_q_and_a'),
     #path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
     ]

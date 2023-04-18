@@ -28,3 +28,20 @@ class ConfirmMixin:
                 Q(last_name__icontains=query)
             )
         return CustomUser.objects.filter(role='Student', is_confirmed=value)
+
+
+class AddTestTimeLimit:
+    dict = {'GSEListening': 30,
+            'GSEReading': 30,
+            'GSEGrammar and Vocabulary': 30,
+            'GSESpeaking': 15,
+            'GSEWriting': 30,
+            'USEListening': 30,
+            'USEReading': 30,
+            'USEGrammar and Vocabulary': 40,
+            'USESpeaking': 17,
+            'USEWriting': 90}
+
+    def add_test_time_limit(self, testobject):
+        testobject.time_limit = self.dict[testobject.type + testobject.part]
+        testobject.save()

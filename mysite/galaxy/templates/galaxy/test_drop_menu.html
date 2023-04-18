@@ -2,7 +2,7 @@
     <li><a href="#">{{key.part}}</a>
     <ul  class="dropdown">
         {% for test in value %}
-        <li><a href="{% url 'test_preview' test.pk %}">Test {{ test.test_num }}</a>
+        <li><a href="{% url 'test_details' test.pk %}">Test {{ test.test_num }}</a>
         {% endfor %}
     </ul>
     </li>

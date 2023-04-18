@@ -7,7 +7,7 @@
 {% endblock custom_styles %}
 
 {% block content %}
-<h1><a href="{% url 'show_confirmed_students' %}">Confirmed students</a>  |  <span class="current">Not confirmed students</span>  |  <a href="{% url 'show_denied_students' %}">Denied students</a></h1>
+<h1><a href="{% url 'show_confirmed_students' %}">Confirmed students</a>  |  <span class="current">Pending students</span>  |  <a href="{% url 'show_denied_students' %}">Denied students</a></h1>
 <div class="parent">
     <form method="get">
         <div class="search-button">
