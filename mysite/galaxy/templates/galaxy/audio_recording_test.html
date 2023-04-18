@@ -1,0 +1,69 @@
+{% extends 'galaxy/base.html' %}
+
+{% block content %}
+  <h1>Record Audio</h1>
+    <button id="recordButton">Record</button>
+    <button id="stopButton" disabled>Stop</button>
+    <p id="status">Click the Record button to start recording.</p>
+    <p id="timer">00:00</p>
+    <audio id="audioPlayback" controls></audio>
+    <script>
+      let mediaRecorder;
+      let recordedChunks = [];
+      let startTime;
+      let timerInterval;
+
+      const recordButton = document.getElementById('recordButton');
+      const stopButton = document.getElementById('stopButton');
+      const status = document.getElementById('status');
+      const timer = document.getElementById('timer');
+      const audioPlayback = document.getElementById('audioPlayback');
+
+      recordButton.addEventListener('click', startRecording);
+      stopButton.addEventListener('click', stopRecording);
+
+      function startRecording() {
+        const constraints = { audio: true };
+        navigator.mediaDevices.getUserMedia(constraints)
+          .then(function(stream) {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.addEventListener('dataavailable', function(event) {
+              recordedChunks.push(event.data);
+            });
+            mediaRecorder.addEventListener('stop', function() {
+              const blob = new Blob(recordedChunks);
+              recordedChunks = [];
+              const url = URL.createObjectURL(blob);
+              audioPlayback.src = url;
+              status.textContent = 'Recording stopped. Click the Play button to listen.';
+              recordButton.disabled = false;
+              stopButton.disabled = true;
+            });
+            startTime = Date.now();
+            status.textContent = 'Recording...';
+            recordButton.disabled = true;
+            stopButton.disabled = false;
+            mediaRecorder.start();
+            timerInterval = setInterval(updateTimer, 1000);
+            setTimeout(stopRecording, 120000); // Stop recording after 2 minutes
+          })
+          .catch(function(err) {
+            console.error('Failed to get user media', err);
+            status.textContent = 'Failed to start recording.';
+          });
+      }
+
+      function stopRecording() {
+        mediaRecorder.stop();
+        clearInterval(timerInterval);
+        timer.textContent = '00:00';
+      }
+
+      function updateTimer() {
+        const elapsedTime = new Date(Date.now() - startTime);
+        const minutes = elapsedTime.getUTCMinutes().toString().padStart(2, '0');
+        const seconds = elapsedTime.getUTCSeconds().toString().padStart(2, '0');
+        timer.textContent = `${minutes}:${seconds}`;
+      }
+    </script>
+{% endblock %}
