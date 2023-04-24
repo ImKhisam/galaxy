@@ -2,6 +2,8 @@ import os
 import time
 import json
 from datetime import datetime, timedelta
+
+import requests
 from django.forms import formset_factory, modelform_factory
 
 from django.contrib.auth import login, logout
@@ -20,7 +22,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
-from .utils import generate_token, ConfirmMixin, AddTestTimeLimit
+from .utils import generate_token, ConfirmMixin, AddTestConstValues
 
 
 class Index(TemplateView):
@@ -218,31 +220,16 @@ def test(request, test_pk):
     user = request.user
     try:
         time_obj = TestTimings.objects.get(test_id=test, user_id=user)
-    except:
+    except Exception as err:
+        print(err)      # TestTimings matching query does not exist.
         time_obj = TestTimings()
         time_obj.test_id = test
         time_obj.user_id = user
         time_obj.start_time = time.time()
         time_obj.save()
     start_time = time_obj.start_time
-    '''Формируем наполнение страницы'''
-    content_dict = {}
-    chapters_for_test = Chapters.objects.filter(test_id__id=test.id)
-    for chapter in chapters_for_test:
-        questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
-        qa = {}
-        for question in questions_for_test:
-            if question.question_type == 'match_type':      # Если вопрос на сопоставление
-                qa[question] = {key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list('answer', flat=True)
-                                for key in Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
-            elif question.question_type == 'input_type':    # Вопрос с вводом слова
-                qa[question] = Answers.objects.get(question_id__id=question.id)
-            else:                                       # Вопрос с radio или True/False
-                qa[question] = Answers.objects.filter(question_id__id=question.id)
-        content_dict[chapter] = qa
 
     if request.method == 'POST':
-        #student = CustomUser.objects.get(id=request.user.id)
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
         test_time = int(time.time() - start_time)
         if test_time > test.time_limit * 60:
@@ -298,6 +285,7 @@ def test(request, test_pk):
                         total_test_points += question.points        # Подсчет вопросов с выбором
                 except:
                     pass
+
             else:       # Writing and Speaking
                 '''Создаем объект задания для проверки'''
                 task_to_check = TasksToCheck()
@@ -316,6 +304,7 @@ def test(request, test_pk):
                 task_to_check.test_to_check_id = test_to_check
                 task_to_check.question_id = question
                 task_to_check.save()
+
         '''Уведомляем учителя о том, что студент выполнил тест, который нуждается в проверке'''
         if test.part in ['Writing', 'Speaking']:
             stdnt = test_to_check.student_id.first_name + ' ' + test_to_check.student_id.last_name
@@ -338,6 +327,25 @@ def test(request, test_pk):
         result.time = str(timedelta(seconds=test_time))
         result.save()
         return HttpResponseRedirect('/test_result_with_points/' + str(result.pk) + '/')
+
+    '''Формируем наполнение страницы'''
+    content_dict = {}
+    chapters_for_test = Chapters.objects.filter(test_id__id=test.id)
+    for chapter in chapters_for_test:
+        questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+        qa = {}
+        for question in questions_for_test:
+            if question.question_type == 'match_type':  # Если вопрос на сопоставление
+                qa[question] = {
+                    key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list('answer',
+                                                                                                            flat=True)
+                    for key in
+                    Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+            elif question.question_type == 'input_type':  # Вопрос с вводом слова
+                qa[question] = Answers.objects.get(question_id__id=question.id)
+            else:  # Вопрос с radio или True/False
+                qa[question] = Answers.objects.filter(question_id__id=question.id)
+        content_dict[chapter] = qa
 
     context = {'test': test,
                'content_dict': content_dict,
@@ -516,7 +524,7 @@ class CheckingTest(DetailView):
 #    return response
 
 
-class AddTestAndChaptersView(AddTestTimeLimit, View):
+class AddTestAndChaptersView(AddTestConstValues, View):
     def get(self, request, *args, **kwargs):
         test_form = TestAddForm()
         chapter_formset = formset_factory(ChapterAddForm, extra=0)
@@ -537,7 +545,7 @@ class AddTestAndChaptersView(AddTestTimeLimit, View):
             test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
             test_obj.test_num = test_num
             test_obj.save()                                     # Save the Test
-            self.add_test_time_limit(test_obj)
+            self.add_test_const_values(test_obj)
 
             for chapter_form in chapter_formset.forms:          # Save the Chapters
                 if chapter_form.has_changed():
@@ -554,36 +562,36 @@ class AddTestAndChaptersView(AddTestTimeLimit, View):
         return render(request, 'galaxy/add_test.html', context)
 
 
-def add_test_and_chapters(request):
-    test_form = TestAddForm()
-    chapter_formset = formset_factory(ChapterAddForm, extra=0)
-
-    if request.method == 'POST':
-        test_form = TestAddForm(request.POST, request.FILES)
-        chapter_formset = chapter_formset(request.POST, request.FILES)
-
-        if test_form.is_valid() and chapter_formset.is_valid():
-            test_obj = test_form.save(commit=False)
-            test_type = test_obj.type
-            test_part = test_obj.part
-            test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
-            test_obj.test_num = test_num
-            test_obj.save()                                 # Save the Test
-
-            for chapter_form in chapter_formset.forms:      # Save the Chapters
-                if chapter_form.has_changed():
-                    chapter = chapter_form.save(commit=False)
-                    chapter.test_id = test_obj
-                    chapter.save()
-
-            return redirect('add_q_and_a', chapter.id)
-
-    context = {
-        'test_form': test_form,
-        'chapter_formset': chapter_formset,
-    }
-
-    return render(request, 'galaxy/add_test.html', context)
+#def add_test_and_chapters(request):
+#    test_form = TestAddForm()
+#    chapter_formset = formset_factory(ChapterAddForm, extra=0)
+#
+#    if request.method == 'POST':
+#        test_form = TestAddForm(request.POST, request.FILES)
+#        chapter_formset = chapter_formset(request.POST, request.FILES)
+#
+#        if test_form.is_valid() and chapter_formset.is_valid():
+#            test_obj = test_form.save(commit=False)
+#            test_type = test_obj.type
+#            test_part = test_obj.part
+#            test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
+#            test_obj.test_num = test_num
+#            test_obj.save()                                 # Save the Test
+#
+#            for chapter_form in chapter_formset.forms:      # Save the Chapters
+#                if chapter_form.has_changed():
+#                    chapter = chapter_form.save(commit=False)
+#                    chapter.test_id = test_obj
+#                    chapter.save()
+#
+#            return redirect('add_q_and_a', chapter.id)
+#
+#    context = {
+#        'test_form': test_form,
+#        'chapter_formset': chapter_formset,
+#    }
+#
+#    return render(request, 'galaxy/add_test.html', context)
 
 
 def add_q_and_a(request, chapter_id):
@@ -621,3 +629,22 @@ def add_q_and_a(request, chapter_id):
 
 def testing_page(request):
     return render(request, 'galaxy/audio_recording_test.html')
+
+
+class TestingPage(View):
+    template_name = 'galaxy/audio_recording_test.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        print('--------------WE GOT INTO POST--------------')
+
+        if len(request.FILES) > 0:
+            print(f"request.FILES:  {request.FILES}")
+            print('FILE!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            return render(request, 'galaxy/index.html')
+        else:
+            # Render an error page
+            print('ERROR, NO FILE')
+            return render(request, 'galaxy/julik.html')

@@ -10,21 +10,25 @@
 <div class="outer">
     <div class="dark-frame">
         {% if unfinished_try == 0 %}
-            <p>
-                {{test.test_info}}
-            </p>
-            <p>
-                Рекомендуемое время на выполнение заданий данного раздела – {{test.time_limit}} минут.
-            </p>
+            <p>{{test.test_details}}</p>
+            <p>Time limit for this test – {{test.time_limit}} minutes.</p>
+            {% if test.part == 'Speaking' %}
+                <div class="audio-test">
+                    <p>You can check your micro here:</p>
+                    <p id="status">Press "Record"</p>
+                    <button id="recordButton">Record</button>
+                    <button id="stopButton" disabled>Stop</button>
+                    <br><br>
+                    <audio id="audioPlayback" controls></audio>
+                </div>
+            {% endif %}
+            <p>If everything is ok - begin the test</p>
             <br><br>
-
             <a class="btn btn5" href="{% url 'test' test.pk %}">
                 <span>Begin test</span>
             </a>
         {% else %}
-            <p>
-                Вы не завершили предыдущюю попытку.
-            </p>
+            <p>You have some unfinished business.</p>
             <br><br>
 
             <a class="btn btn5" href="{% url 'test' test.pk %}">
@@ -34,3 +38,54 @@
     </div>
 </div>
 {% endblock %}
+
+{% block javascript %}
+    <script>
+      let mediaRecorder;
+      let recordedChunks = [];
+
+
+      const recordButton = document.getElementById('recordButton');
+      const stopButton = document.getElementById('stopButton');
+      const status = document.getElementById('status');
+
+      const audioPlayback = document.getElementById('audioPlayback');
+
+      recordButton.addEventListener('click', startRecording);
+      stopButton.addEventListener('click', stopRecording);
+
+      function startRecording() {
+        const constraints = { audio: true };
+        navigator.mediaDevices.getUserMedia(constraints)
+          .then(function(stream) {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.addEventListener('dataavailable', function(event) {
+              recordedChunks.push(event.data);
+            });
+            mediaRecorder.addEventListener('stop', function() {
+              const blob = new Blob(recordedChunks);
+              recordedChunks = [];
+              const url = URL.createObjectURL(blob);
+              audioPlayback.src = url;
+              status.textContent = 'Recording stopped. Use the player below to check your record.';
+              recordButton.disabled = false;
+              stopButton.disabled = true;
+            });
+
+            status.textContent = 'Recording...';
+            recordButton.disabled = true;
+            stopButton.disabled = false;
+            mediaRecorder.start();
+          })
+          .catch(function(err) {
+            console.error('Failed to get user media', err);
+            status.textContent = 'Failed to start recording.';
+          });
+      }
+
+      function stopRecording() {
+        mediaRecorder.stop();
+      }
+
+    </script>
+{% endblock javascript %}

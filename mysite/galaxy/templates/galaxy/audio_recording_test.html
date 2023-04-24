@@ -1,69 +1,134 @@
 {% extends 'galaxy/base.html' %}
 
+
+
 {% block content %}
-  <h1>Record Audio</h1>
-    <button id="recordButton">Record</button>
-    <button id="stopButton" disabled>Stop</button>
-    <p id="status">Click the Record button to start recording.</p>
-    <p id="timer">00:00</p>
-    <audio id="audioPlayback" controls></audio>
+    <form action="{% url 'testing_page' %}" method="post" id="my_form" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <input type="button" id="recordButton1" value="Record">
+        <input type="button" id="stopButton1" value="Stop" disabled>
+        <p id="status1">Click the Record button to start recording.</p>
+        <p id="timer1">00:00</p>
+        <audio id="audioPlayback1" controls></audio>
+
+        <div style="display: flex">
+            <button class="btn btn5" type="submit">
+                <span>Submit Answers</span>
+            </button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascript %}
     <script>
-      let mediaRecorder;
+      let mediaRecorders = [];
       let recordedChunks = [];
-      let startTime;
-      let timerInterval;
+      let startTime = [];
+      let timerInterval = [];
 
-      const recordButton = document.getElementById('recordButton');
-      const stopButton = document.getElementById('stopButton');
-      const status = document.getElementById('status');
-      const timer = document.getElementById('timer');
-      const audioPlayback = document.getElementById('audioPlayback');
+      const recordButtons = document.querySelectorAll('[id^="recordButton"]');
+      const stopButtons = document.querySelectorAll('[id^="stopButton"]');
+      const statuses = document.querySelectorAll('[id^="status"]');
+      const timers = document.querySelectorAll('[id^="timer"]');
+      const audioPlayback = document.querySelectorAll('[id^="audioPlayback"]');
 
-      recordButton.addEventListener('click', startRecording);
-      stopButton.addEventListener('click', stopRecording);
+      const fd = new FormData();
 
-      function startRecording() {
-        const constraints = { audio: true };
-        navigator.mediaDevices.getUserMedia(constraints)
-          .then(function(stream) {
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.addEventListener('dataavailable', function(event) {
-              recordedChunks.push(event.data);
+      recordButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                const constraints = { audio: true };
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (stream) {
+                        mediaRecorders[index] = new MediaRecorder(stream);
+                        mediaRecorders[index].addEventListener('dataavailable', function (event) {
+                            recordedChunks[index].push(event.data);
+                        });
+
+                        mediaRecorders[index].addEventListener('stop', function () {
+                            const blob = new Blob(recordedChunks[index], {type: 'audio/wav'});
+
+
+                            // Some shit
+
+                            fd.append('voice' + (index + 1), blob);
+
+
+
+                            recordedChunks[index] = [];
+                            const url = URL.createObjectURL(blob);
+                            audioPlayback[index].src = url;
+                            statuses[index].textContent = 'Recording stopped. Click the Play button to listen.';
+                            recordButtons[index].disabled = false;
+                            stopButtons[index].disabled = true;
+
+
+                        });
+
+                        startTime[index] = Date.now();
+                        statuses[index].textContent = 'Recording...';
+                        recordButtons[index].disabled = true;
+                        stopButtons[index].disabled = false;
+                        recordedChunks[index] = [];
+                        mediaRecorders[index].start();
+                        timerInterval[index] = setInterval(() => {
+                            updateTimer(index);
+                        }, 1000);
+                        setTimeout(() => {
+                            stopRecording(index);
+                        }, 120000); // Stop recording after 2 minutes
+                    })
+
+                    .catch(function (err) {
+                        console.error('Failed to get user media', err);
+                        statuses[index].textContent = 'Failed to start recording.';
+                    });
             });
-            mediaRecorder.addEventListener('stop', function() {
-              const blob = new Blob(recordedChunks);
-              recordedChunks = [];
-              const url = URL.createObjectURL(blob);
-              audioPlayback.src = url;
-              status.textContent = 'Recording stopped. Click the Play button to listen.';
-              recordButton.disabled = false;
-              stopButton.disabled = true;
+        });
+
+        stopButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                stopRecording(index);
             });
-            startTime = Date.now();
-            status.textContent = 'Recording...';
-            recordButton.disabled = true;
-            stopButton.disabled = false;
-            mediaRecorder.start();
-            timerInterval = setInterval(updateTimer, 1000);
-            setTimeout(stopRecording, 120000); // Stop recording after 2 minutes
-          })
-          .catch(function(err) {
-            console.error('Failed to get user media', err);
-            status.textContent = 'Failed to start recording.';
-          });
+        });
+
+        function stopRecording(index) {
+            mediaRecorders[index].stop();
+            clearInterval(timerInterval[index]);
+            timers[index].textContent = '00:00';
+        }
+
+        function updateTimer(index) {
+            const elapsedTime = new Date(Date.now() - startTime[index]);
+            const minutes = elapsedTime.getUTCMinutes().toString().padStart(2, '0');
+            const seconds = elapsedTime.getUTCSeconds().toString().padStart(2, '0');
+            timers[index].textContent = `${minutes}:${seconds}`;
       }
 
-      function stopRecording() {
-        mediaRecorder.stop();
-        clearInterval(timerInterval);
-        timer.textContent = '00:00';
-      }
+      const form = document.getElementById('my_form');
+    form.addEventListener('submit', submitForm);
 
-      function updateTimer() {
-        const elapsedTime = new Date(Date.now() - startTime);
-        const minutes = elapsedTime.getUTCMinutes().toString().padStart(2, '0');
-        const seconds = elapsedTime.getUTCSeconds().toString().padStart(2, '0');
-        timer.textContent = `${minutes}:${seconds}`;
-      }
+    function submitForm(event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      formData.append('audio', new Blob(recordedChunks), 'recording.wav');
+
+      fetch('{% url "testing_page" %}', {
+        method: 'POST',
+        body: fd,
+        headers: {
+          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+        }
+      })
+      form.submit();
+    }
+
+
+
+
+
+
     </script>
+
 {% endblock %}

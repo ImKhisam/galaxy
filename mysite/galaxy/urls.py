@@ -39,5 +39,5 @@ urlpatterns = [
     path('add_q_and_a/<int:chapter_id>', add_q_and_a, name='add_q_and_a'),
     #path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
 
-    path('testing_page', testing_page, name='testing_page'),
+    path('testing_page', TestingPage.as_view(), name='testing_page'),
     ]

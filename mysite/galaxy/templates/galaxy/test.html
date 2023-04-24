@@ -167,18 +167,29 @@
                     <div class="question_file_add">
                         <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
                     </div>
-                    <div class="add-files">
-                        <div class="file">
-                            <label for="{{question.pk}}_media1">Answer:</label>
-                            <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                    {% if test.part == 'Speaking' %}
+                        <div class="record-answer">
+                            <p class="question_writing_text">Time limit for this task: {{ question.time_limit }} minutes.</p>
+                            <input type="button" id="recordButton{{ question.pk }}" value="Record" data-question-id="{{ question.pk }}" data-question-time="{{ question.time_limit }}">
+                            <input type="button" id="stopButton{{ question.pk }}" value="Stop" disabled>
+                            <p id="status{{ question.pk }}">Click the Record button to start recording.</p>
+                            <p id="timer{{ question.pk }}">00:00</p>
+
                         </div>
-                        {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
-                        <div class="file">
-                            <label for="{{question.pk}}_media2">Additional:</label>
-                            <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                    {% else %}
+                        <div class="add-files">
+                            <div class="file">
+                                <label for="{{question.pk}}_media1">Answer:</label>
+                                <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                            </div>
+                            {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
+                            <div class="file">
+                                <label for="{{question.pk}}_media2">Additional:</label>
+                                <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
-                    </div>
+                    {% endif %}
                 {% endif %}
             </div>
         {% endfor %}
@@ -253,5 +264,110 @@ var x = setInterval(function() {
 }, 1000);
 
 </script>
+
+<script>
+      let mediaRecorders = [];
+      let recordedChunks = [];
+      let startTime = [];
+      let timerInterval = [];
+
+      const recordButtons = document.querySelectorAll('[id^="recordButton"]');
+      const stopButtons = document.querySelectorAll('[id^="stopButton"]');
+      const statuses = document.querySelectorAll('[id^="status"]');
+      const timers = document.querySelectorAll('[id^="timer"]');
+
+      const fd = new FormData();
+
+      recordButtons.forEach((button, index) => {
+        const questionId = button.dataset.questionId;
+        const questionTimeLimit = button.dataset.questionTime;
+            button.addEventListener('click', () => {
+                const constraints = { audio: true };
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (stream) {
+                        mediaRecorders[index] = new MediaRecorder(stream);
+                        mediaRecorders[index].addEventListener('dataavailable', function (event) {
+                            recordedChunks[index].push(event.data);
+                        });
+
+                        mediaRecorders[index].addEventListener('stop', function () {
+                            const blob = new Blob(recordedChunks[index], {type: 'audio/wav'});
+
+
+                            // Some shit
+
+                            fd.append(questionId + '_media1', blob);
+
+
+
+                            recordedChunks[index] = [];
+                            const url = URL.createObjectURL(blob);
+                            statuses[index].textContent = 'Recording stopped.';
+                            recordButtons[index].disabled = false;
+                            stopButtons[index].disabled = true;
+
+
+                        });
+
+                        startTime[index] = Date.now();
+                        statuses[index].textContent = 'Recording...';
+                        recordButtons[index].disabled = true;
+                        stopButtons[index].disabled = false;
+                        recordedChunks[index] = [];
+                        mediaRecorders[index].start();
+                        timerInterval[index] = setInterval(() => {
+                            updateTimer(index);
+                        }, 1000);
+                        setTimeout(() => {
+                            stopRecording(index);
+                        }, questionTimeLimit * 60000); // Stop recording after _ minutes
+                    })
+
+                    .catch(function (err) {
+                        console.error('Failed to get user media', err);
+                        statuses[index].textContent = 'Failed to start recording.';
+                    });
+            });
+        });
+
+        stopButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                stopRecording(index);
+            });
+        });
+
+        function stopRecording(index) {
+            mediaRecorders[index].stop();
+            clearInterval(timerInterval[index]);
+            timers[index].textContent = '00:00';
+        }
+
+        function updateTimer(index) {
+            const elapsedTime = new Date(Date.now() - startTime[index]);
+            const minutes = elapsedTime.getUTCMinutes().toString().padStart(2, '0');
+            const seconds = elapsedTime.getUTCSeconds().toString().padStart(2, '0');
+            timers[index].textContent = `${minutes}:${seconds}`;
+      }
+
+      const form = document.getElementById('my_form');
+    form.addEventListener('submit', submitForm);
+
+    function submitForm(event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      formData.append('audio', new Blob(recordedChunks), 'recording.wav');
+
+      fetch('{% url "test" test.pk %}', {
+        method: 'POST',
+        body: fd,
+        headers: {
+          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+        }
+      })
+      form.submit();
+    }
+
+    </script>
 
 {% endblock javascript%}

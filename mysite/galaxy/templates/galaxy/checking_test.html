@@ -16,7 +16,7 @@
                 <h2>Task: {{ task.question_id.question_number }} </h2>
                 <p class="question_writing_text">{{ task.question_id.question }}</p>
 
-                <h2>Student answer:</h2>
+                <h2>Student's answer:</h2>
                 {% if task.test_to_check_id.test_id.part == 'Writing' %}
                     {% if task.media1 %}
                         <p><img class="task_check_photo" src="{{task.media1.url}}"></p>
@@ -28,7 +28,9 @@
                     {% endif %}
                 {% elif task.test_to_check_id.test_id.part == 'Speaking' %}
                     {% if task.media1 %}
-                        <audio controls src="{{task.media1.url}}"></audio>
+                        <div style="display: flex;">
+                            <audio controls src="{{task.media1.url}}" style="margin: auto;"></audio>
+                        </div>
                     {% else %}
                         <p>Student forgot to load his answer</p>
                     {% endif %}
@@ -46,7 +48,10 @@
                 <textarea class="commentary" name="commentary" rows="15" cols="70"></textarea>
             </div>
             <div style="display: flex">
-                <input class="btn" style="border-radius: 0%;margin: auto"  type="submit" value="Submit Mark">
+                <button class="btn btn5" type="submit">
+                    <span>Submit Mark</span>
+                </button>
+                <!--<input class="btn btn5" style="border-radius: 0%;margin: auto"  type="submit" value="Submit Mark">-->
             </div>
         </form>
     </div>

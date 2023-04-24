@@ -77,9 +77,12 @@ class Tests(models.Model):
     test_num = models.PositiveIntegerField()
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
-    test_info = models.TextField(default="Текст, который выводится перед началом теста")
+    test_details = models.TextField(default="Текст, который выводится перед началом теста")
     time_limit = models.PositiveIntegerField()
     media = models.FileField(upload_to=content_file_name_test, blank=True)
+    #is_exam = models.BooleanField(default=False)        # Разделение тестов на проверочные работы и свободную практику
+    #is_appointed = models.BooleanField(default=False)   # Назначение теста каждый месяц
+    #is_used = models.BooleanField(default=False)        # Тест уже назначался в этом учебном году
 
     def __str__(self):
         return f"{self.type}, {self.part}, Test №{self.test_num}"
@@ -132,6 +135,7 @@ class Questions(models.Model):
     addition = models.CharField(max_length=50, blank=True)
     question_number = models.PositiveIntegerField()
     question_type = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_question_type)
+    time_limit = models.PositiveIntegerField(blank=True)
 
     def __str__(self):
         return f"{self.test_id}, {self.chapter_id}, Q{self.question_number}"
