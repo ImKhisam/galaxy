@@ -1,0 +1,104 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+.input-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.input-group input {
+    flex: 1;
+    margin-right: 10px;
+}
+.hidden{
+  display: none;
+}
+</style>
+
+{% endblock custom_styles %}
+
+{% block content %}
+<h1>Groups</h1>
+
+<div class="parent">
+  <div class="table">
+      <table class="table">
+      <thead>
+          <tr>
+              <th scope="col">#</th>
+              <th scope="col">Name</th>
+              <th scope="col">Action</th>
+          </tr>
+      </thead>
+      <tbody>
+      {% for group in groups %}
+          <tr>
+              <th scope="row">{{ forloop.counter }}</th>
+              <td> {{group.name}}</td>
+              <td>
+                  <div style="display: inline-flex; width: 80%;">
+                      <a class="btn btn5" href="#"><span>Show participants</span></a>
+                      <a class="btn btn5" href="{% url 'delete_group' group.id %}"><span>Delete</span></a>
+                  </div>
+              </td>
+          </tr>
+      {% endfor %}
+      <tr>
+              <td></td>
+              <td></td>
+              <td><button id="add-group-btn">Add group</button></td>
+      </tr>
+      <tr id="new-group-row" class="hidden">
+          <td></td>
+          <td><input type="text" id="new-group-name"></td>
+          <td>
+              <button id="save-group-btn">Save</button>
+              <button id="delete-group-btn">Close</button>
+          </td>
+      </tr>
+      </tbody>
+      </table>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block javascript %}
+
+<script>
+    const addGroupBtn = document.getElementById('add-group-btn');
+    const newGroupRow = document.getElementById('new-group-row');
+    const deleteGroupBtn = document.getElementById('delete-group-btn');
+    const saveGroupBtn = document.getElementById('save-group-btn');
+    const groupNameInput = document.getElementById('new-group-name');
+
+    addGroupBtn.addEventListener('click', () => {
+        newGroupRow.classList.remove('hidden');
+    });
+
+    deleteGroupBtn.addEventListener('click', () => {
+        newGroupRow.classList.add('hidden');
+    });
+
+    saveGroupBtn.addEventListener('click', () => {
+        const groupName = groupNameInput.value;
+        if (groupName) {
+            $.ajax({
+                url: "{% url 'add_group' %}",
+                data: {name: groupName},
+                success: function() {
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
+{% endblock javascript %}

@@ -1,0 +1,36 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
+{% endblock custom_styles %}
+
+{% block content %}
+<h1><a href="{% url 'make_an_assessment' %}">Make an assessment</a>  |  <span class="current">Current assessments</span></h1>
+
+<div class="parent">
+  <div class="table">
+      <table class="table">
+      <thead>
+          <tr>
+              <th scope="col">#</th>
+              <th scope="col">Date</th>
+              <th scope="col">Action</th>
+          </tr>
+      </thead>
+      <tbody>
+      {% for assessment in assessments %}
+          <tr>
+              <th scope="row">{{ forloop.counter }}</th>
+              <td> {{test.date_of_assessment}}</td>
+              <td><a class="btn btn5" href="#"><span>Deny assessment</span></a></td>
+          </tr>
+
+      {% endfor %}
+      </tbody>
+      </table>
+  </div>
+</div>
+
+{% endblock content %}

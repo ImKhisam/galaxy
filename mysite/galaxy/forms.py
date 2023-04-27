@@ -65,57 +65,7 @@ class AnswerAddForm(forms.ModelForm):
         fields = ['answer', 'is_true', 'addition', 'match']
 
 
-
-#class ChapterForm(ModelForm):
+#class AssessmentAddForm(forms.ModelForm):
 #    class Meta:
-#        model = Chapters
-#        fields = [
-#            'test_id',
-#            'chapter_number',
-#        ]
-#
-#
-##class BaseQuestionFormset(BaseInlineFormSet):
-#
-#    def add_fields(self, form, index):
-#        super(BaseQuestionFormset, self).add_fields(form, index)
-#        form.nested = AnswerFormset(
-#            instance=form.instance,
-#            data=form.data if form.is_bound else None,
-#            files=form.files if form.is_bound else None)
-#
-#    def is_valid(self):
-#        result = super(BaseQuestionFormset, self).is_valid()
-#        print(result)
-#        if self.is_bound:
-#            for form in self.forms:
-#                if hasattr(form, 'nested'):
-#                    result = result and form.nested.is_valid()
-#
-#        return result
-#
-#    def save(self, commit=True):
-#        for form in self.forms:
-#            form.save(commit=commit)
-#        result = super(BaseQuestionFormset, self).save(commit=commit)
-#
-#        for form in self.forms:
-#            if hasattr(form, 'nested'):
-#                if not self._should_delete_form(form):
-#                    form.nested.save(commit=commit)
-#
-#        return result
-#
-#
-#QuestionFormset = inlineformset_factory(
-#    parent_model=Chapters, model=Questions, fields='__all__',
-#    formset=BaseQuestionFormset, extra=1)
-#
-#AnswerFormset = inlineformset_factory(
-#    parent_model=Questions, model=Answers,
-#    fields='__all__', extra=1)
-#
-#QuestionForm = modelform_factory(Questions, fields=['question_number', 'question_type', 'question', 'addition', 'points'])
-#AnswerForm = modelform_factory(Answers, fields=['answer', 'is_true', 'addition', 'match'])
-
-
+#        model = Tests
+#        fields = ['date_of_assessment']

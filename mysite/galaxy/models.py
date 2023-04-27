@@ -1,8 +1,12 @@
 from autoslug import AutoSlugField
 from django import forms
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from django.urls import reverse
+
+
+class Groups(models.Model):
+    name = models.CharField(max_length=20)
 
 
 class CustomUser(AbstractUser):
@@ -12,6 +16,7 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=100, choices=role_choice)
     is_confirmed = models.BooleanField()
     slug = AutoSlugField(populate_from='username')
+    group = models.ForeignKey(Groups, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.username
@@ -80,9 +85,10 @@ class Tests(models.Model):
     test_details = models.TextField(default="Текст, который выводится перед началом теста")
     time_limit = models.PositiveIntegerField()
     media = models.FileField(upload_to=content_file_name_test, blank=True)
-    #is_exam = models.BooleanField(default=False)        # Разделение тестов на проверочные работы и свободную практику
-    #is_appointed = models.BooleanField(default=False)   # Назначение теста каждый месяц
-    #is_used = models.BooleanField(default=False)        # Тест уже назначался в этом учебном году
+    is_assessment = models.BooleanField(default=False)           # Разделение тестов на проверочные работы и свободную практику
+    is_appointed = models.BooleanField(default=False)      # Назначение теста каждый месяц
+    is_used = models.BooleanField(default=False)           # Тест уже назначался в этом учебном году
+    date_of_assessment = models.DateTimeField(null=True,blank=True)  # Дата сдачи теста
 
     def __str__(self):
         return f"{self.type}, {self.part}, Test №{self.test_num}"

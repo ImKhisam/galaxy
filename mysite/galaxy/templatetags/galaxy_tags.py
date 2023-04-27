@@ -1,6 +1,7 @@
 from django import template
 #from content_for_evrbd.models import BritishBulldog
 
+from django.utils import timezone
 from ..models import *
 
 
@@ -27,6 +28,14 @@ def drop_menu_test(type_of_exam):
         menu_dict[item] = Tests.objects.filter(type=type_of_exam, part=item.part).order_by('test_num')
 
     return {"menu_dict": menu_dict}
+
+
+@register.inclusion_tag('galaxy/tag_assessment.html')
+def assessment():
+    today = timezone.now().date()
+    #assessment_list = Tests.objects.filter(date_of_assessment=today)
+
+    return {"today": today}
 
 
 @register.filter                        # отображение баллов в результатах

@@ -193,6 +193,40 @@ class ResultPreview(DetailView):
         return context
 
 
+class ShowGroups(ListView):
+    model = Groups
+    context_object_name = 'groups'
+    template_name = "galaxy/show_groups.html"
+
+    def get_queryset(self):
+        return Groups.objects.all()
+
+
+def add_group(request):
+    groupname = request.GET.get('name', None)
+    print('--------------WE GOT INTO POST--------------')
+    print(groupname)
+    group = Groups.objects.create(name=groupname)
+    group.save()
+    return redirect('show_groups')
+
+
+class ShowGroupParticipants(ListView):
+    model = CustomUser
+    context_object_name = 'participants'
+    template_name = "galaxy/show_group_participants.html"
+
+    def get_queryset(self):
+        group_id = self.kwargs['group_id']
+        return CustomUser.objects.filter(group=group_id)
+
+
+def delete_group(request, group_id):
+    group = Groups.objects.get(id=group_id)
+    group.delete()
+    return redirect('show_groups')
+
+
 class TestDetails(LoginRequiredMixin, DetailView):
     login_url = reverse_lazy('login')
     model = Tests
@@ -648,3 +682,28 @@ class TestingPage(View):
             # Render an error page
             print('ERROR, NO FILE')
             return render(request, 'galaxy/julik.html')
+
+
+class MakeAnAssessment(TemplateView):
+    template_name = 'galaxy/make_an_assessment.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Make an assessment'
+        return context
+
+    def post(self, request, *args, **kwargs):
+        assessment_date = request.POST['datepicker']
+        '''Назначение даты 5 рандомным тестам '''
+        tests = Tests.objects.filter(is_assessment=True).distinct('part')
+        print(tests)
+        return redirect('home')
+
+
+class ShowCurrentAssessments(ListView):
+    model = Tests
+    context_object_name = 'assessments'
+    template_name = "galaxy/current_assessments.html"
+
+    def get_queryset(self):
+        return Tests.objects.filter(is_appointed=True)

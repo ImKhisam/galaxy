@@ -18,7 +18,11 @@ urlpatterns = [
     path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio'),
 
 
-    path('show_results', ShowResults.as_view(), name='show_results'),
+    path('results/', ShowResults.as_view(), name='show_results'),
+    path('groups/', ShowGroups.as_view(), name='show_groups'),
+    path('show_group_participants/<int:group_id>/', ShowGroupParticipants.as_view(), name='show_group_participants'),
+    path('add_group/', add_group, name='add_group'),
+    path('delete_group/<int:group_id>/', delete_group, name='delete_group'),
     path('show_confirmed_students/', ShowConfirmedStudents.as_view(), name='show_confirmed_students'),
     path('show_pending_students/', ShowPendingStudents.as_view(), name='show_pending_students'),
     path('show_denied_students/', ShowDeniedStudents.as_view(), name='show_denied_students'),
@@ -38,6 +42,9 @@ urlpatterns = [
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
     path('add_q_and_a/<int:chapter_id>', add_q_and_a, name='add_q_and_a'),
     #path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
+
+    path('make_an_assessment/', MakeAnAssessment.as_view(), name='make_an_assessment'),
+    path('show_current_assessments/', ShowCurrentAssessments.as_view(), name='show_current_assessments'),
 
     path('testing_page', TestingPage.as_view(), name='testing_page'),
     ]

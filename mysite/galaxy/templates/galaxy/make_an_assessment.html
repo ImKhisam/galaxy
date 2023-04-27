@@ -1,0 +1,39 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+<style>
+.current{
+    text-decoration: underline;
+}
+</style>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+{% endblock custom_styles %}
+
+{% block content %}
+<h1><span class="current">Make an assessment</span>  |  <a href="{% url 'show_current_assessments' %}">Current assessments</a></h1>
+
+<form action="{% url 'make_an_assessment' %}" method="post">
+{% csrf_token %}
+    <div style="display: flex;">
+        <p style="margin: auto;">Date: <input type="text" id="datepicker" name="datepicker"></p>
+    </div>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <div style="display: flex">
+        <button class="btn btn5" type="submit">
+            <span>Make an Assessment</span>
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block javascript %}
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#datepicker" ).datepicker();
+  } );
+  </script>
+{% endblock javascript %}
