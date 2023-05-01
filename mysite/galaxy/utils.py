@@ -27,7 +27,7 @@ class ConfirmMixin:
                 Q(first_name__icontains=query) |
                 Q(last_name__icontains=query)
             )
-        return CustomUser.objects.filter(role='Student', is_confirmed=value)
+        return CustomUser.objects.filter(role='Student', is_confirmed=value).order_by('id')
 
 
 class AddTestConstValues:

@@ -293,12 +293,9 @@ var x = setInterval(function() {
                         mediaRecorders[index].addEventListener('stop', function () {
                             const blob = new Blob(recordedChunks[index], {type: 'audio/wav'});
 
-
                             // Some shit
 
                             fd.append(questionId + '_media1', blob);
-
-
 
                             recordedChunks[index] = [];
                             const url = URL.createObjectURL(blob);

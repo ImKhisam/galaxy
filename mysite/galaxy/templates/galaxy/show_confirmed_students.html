@@ -4,6 +4,21 @@
 
 {% block custom_styles %}
     <link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
+<style>
+
+select{
+    padding: 3px;
+    color: #ffffff;
+    background-color: transparent;
+    font-size: 18px;
+    border: 2px solid #ffffff;
+}
+option{
+    background-color:black;
+    border: 2px solid #ffffff;
+    font-size: 18px;
+}
+</style>
 {% endblock custom_styles %}
 
 {% block content %}
@@ -29,6 +44,7 @@
               <th scope="col">Name</th>
               <th scope="col">Surname</th>
               <th scope="col">Username</th>
+              <th scope="col">Group</th>
               <th scope="col">Action</th>
           </tr>
       </thead>
@@ -37,14 +53,35 @@
           <tr>
               {% if page_obj.number %}
                   {% with offset=page_obj.number|add:'-1'|multiply:15 %}
-                  <th scope="row">{{ forloop.counter|add:offset }}</th>
+                  <td scope="row">{{ forloop.counter|add:offset }}</td>
                   {% endwith %}
               {% else %}
-                  <th scope="row">{{ forloop.counter }}</th>
+                  <td scope="row">{{ forloop.counter }}</td>
               {% endif %}
               <td> {{student.first_name}}</td>
               <td>{{student.last_name}}</td>
               <td>{{student.username}}</td>
+              {% if student.group == Null %}
+                  <td>
+                      <select name="{{student.pk}}" id="group-select-{{student.pk}}">
+                          <option></option>
+                          {% for item in group_list %}
+                            <option value="{{item.pk}}">{{item.name}}</option>
+                          {% endfor %}
+                      </select>
+                  </td>
+              {% else %}
+                  <td>
+                      <select name="{{student.pk}}" id="group-select-{{student.pk}}">
+                          <option>{{student.group.name}}</option>
+                          {% for item in group_list %}
+                            {% if item != student.group %}
+                                <option value="{{item.pk}}">{{item.name}}</option>
+                            {% endif %}
+                          {% endfor %}
+                      </select>
+                  </td>
+              {% endif %}
               <td><a class="btn btn5" href="{% url 'deny_student' student.id 'show_confirmed_students' %}"><span>Deny student</span></a></td>
           </tr>
 
@@ -54,26 +91,30 @@
   </div>
 </div>
 
-{% if page_obj.has_other_pages %}
-<div class="pagination">
-    {% if page_obj.has_previous %}
-    <a class="pagination-number" href="?page={{ page_obj.previous_page_number }}"><</a>
-    {% else %}
-    <span class="pagination-number pagination-current"><</span>
-    {% endif %}
-    {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-            <span class="pagination-number pagination-current">{{ num }}</span>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <a class="pagination-number" href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-    {% endfor %}
-    {% if page_obj.has_next %}
-    <a class="pagination-number" href="?page={{ page_obj.next_page_number }}">></a>
-    {% else %}
-    <span class="pagination-number pagination-current">></span>
-    {% endif %}
-</div>
-{% endif %}
+{% include "galaxy/pagination.html" %}
 
 {% endblock %}
+
+{% block javascript %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('select[id^="group-select-"]').on('change', function() {
+        var student = $(this).attr('name');
+        var group = $(this).val();
+        $.ajax({
+            type: 'GET',
+            url: '{% url "update_student_group" %}',
+            data: {'student': student, 'group': group},
+            success: function(response) {
+                // Handle success response from server
+            },
+            error: function(xhr) {
+                // Handle error response from server
+            }
+        });
+    });
+});
+</script>
+
+{% endblock javascript %}

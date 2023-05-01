@@ -204,8 +204,6 @@ class ShowGroups(ListView):
 
 def add_group(request):
     groupname = request.GET.get('name', None)
-    print('--------------WE GOT INTO POST--------------')
-    print(groupname)
     group = Groups.objects.create(name=groupname)
     group.save()
     return redirect('show_groups')
@@ -220,11 +218,26 @@ class ShowGroupParticipants(ListView):
         group_id = self.kwargs['group_id']
         return CustomUser.objects.filter(group=group_id)
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        group_obj = Groups.objects.get(id=self.kwargs['group_id'])
+        context['title'] = 'Group' + group_obj.name
+        context['group'] = group_obj
+        return context
+
+
 
 def delete_group(request, group_id):
     group = Groups.objects.get(id=group_id)
     group.delete()
     return redirect('show_groups')
+
+
+def update_student_group(request):
+    user = CustomUser.objects.get(id=request.GET.get('student'))
+    user.group = Groups.objects.get(id=request.GET.get('group'))
+    user.save()
+    return JsonResponse({'success': True})
 
 
 class TestDetails(LoginRequiredMixin, DetailView):
@@ -264,15 +277,30 @@ def test(request, test_pk):
     start_time = time_obj.start_time
 
     if request.method == 'POST':
+        print('------WE ARE IN POST------')
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
         test_time = int(time.time() - start_time)
         if test_time > test.time_limit * 60:
             test_time = test.time_limit * 60
         time_obj.delete()
 
+        '''2nd Speaking submit'''
+        print('speaking_flag' in request.session)
+        if 'speaking_flag' in request.session:
+            del request.session['speaking_flag']
+            return HttpResponseRedirect('/test_result_wo_points/')
+
+        '''1st Speaking submit'''
+        print(test.part == 'Speaking')
+        if test.part == 'Speaking':
+            print(request.session)
+            print('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            request.session['speaking_flag'] = 1
+
         '''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''
         if 'no_attached_files' in request.session:
             del request.session['no_attached_files']
+
         if test.part in ['Writing', 'Speaking'] and len(request.FILES) == 0:
             request.session['no_attached_files'] = 1
             return HttpResponseRedirect('/test_result_wo_points/')
@@ -480,6 +508,13 @@ class ShowTestsToCheck(ListView):
 class ShowConfirmedStudents(ConfirmMixin, ListView):
     template_name = "galaxy/show_confirmed_students.html"
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Confirmed Students'
+        group_list = Groups.objects.all()
+        context['group_list'] = group_list
+        return context
+
     def get_queryset(self):
         return self.foo(True)
 
@@ -501,6 +536,7 @@ class ShowDeniedStudents(ConfirmMixin, ListView):
 def deny_student(request, student_id, template):
     student = CustomUser.objects.get(id=student_id)
     student.is_confirmed = False
+    student.group = None
     student.save()
     return redirect(reverse_lazy(template))
 

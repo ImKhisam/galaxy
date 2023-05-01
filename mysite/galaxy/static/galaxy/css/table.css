@@ -13,7 +13,7 @@ th, td {
   padding: 8px;
 }
 
-th, td {
+tr {
   background-color: #000000c9;
 }
 
@@ -71,12 +71,11 @@ div.table {
 .current{
     text-decoration: underline;
 }
-td:last-child {
-    width: 45%; /* set width of last column to 60% */
+td:first-child {
+    width: 5%;
 }
-th:last-child {
-    width: 45%; /* set width of last column to 60% */
-}
+
+
 .search-button{
     display: flex;
 }
@@ -92,4 +91,16 @@ th:last-child {
 .search-button input{
     color: #ffffff;
     border: 2px solid #ffffff;
+}
+
+.dark-input{
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    background-color: var(--dark-transparent);
+    margin: 5px;
+    padding: 3px;
+    font-size: 20px;
+}
+.hidden{
+    height: 0px;
 }

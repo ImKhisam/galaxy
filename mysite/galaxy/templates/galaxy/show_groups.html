@@ -6,19 +6,11 @@
     <link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
-.input-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.input-group input {
-    flex: 1;
-    margin-right: 10px;
-}
 .hidden{
   display: none;
+}
+td:nth-child(2) {
+    width: 47%;
 }
 </style>
 
@@ -40,11 +32,11 @@
       <tbody>
       {% for group in groups %}
           <tr>
-              <th scope="row">{{ forloop.counter }}</th>
+              <td scope="row">{{ forloop.counter }}</td>
               <td> {{group.name}}</td>
               <td>
                   <div style="display: inline-flex; width: 80%;">
-                      <a class="btn btn5" href="#"><span>Show participants</span></a>
+                      <a class="btn btn5" href="{% url 'show_group_participants' group.id %}"><span>Show participants</span></a>
                       <a class="btn btn5" href="{% url 'delete_group' group.id %}"><span>Delete</span></a>
                   </div>
               </td>
@@ -53,14 +45,16 @@
       <tr>
               <td></td>
               <td></td>
-              <td><button id="add-group-btn">Add group</button></td>
+              <td><a class="btn btn5" id="add-group-btn"><span>+Add group</span></a></td>
       </tr>
       <tr id="new-group-row" class="hidden">
           <td></td>
-          <td><input type="text" id="new-group-name"></td>
+          <td><input class="dark-input" type="text" id="new-group-name"></td>
           <td>
-              <button id="save-group-btn">Save</button>
-              <button id="delete-group-btn">Close</button>
+              <div style="display: inline-flex; width: 60%;">
+                  <a class="btn btn5" id="save-group-btn"><span>Save</span></a>
+                  <a class="btn btn5" id="delete-group-btn"><span>Close</span></a>
+              </div>
           </td>
       </tr>
       </tbody>
@@ -82,10 +76,12 @@
 
     addGroupBtn.addEventListener('click', () => {
         newGroupRow.classList.remove('hidden');
+        addGroupBtn.classList.add('hidden');
     });
 
     deleteGroupBtn.addEventListener('click', () => {
         newGroupRow.classList.add('hidden');
+        addGroupBtn.classList.remove('hidden');
     });
 
     saveGroupBtn.addEventListener('click', () => {

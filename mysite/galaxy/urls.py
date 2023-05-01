@@ -17,12 +17,13 @@ urlpatterns = [
     path('show_doc/<int:classes_id>/<doc_type>/', showdoc, name='show_doc'),
     path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio'),
 
-
-    path('results/', ShowResults.as_view(), name='show_results'),
     path('groups/', ShowGroups.as_view(), name='show_groups'),
     path('show_group_participants/<int:group_id>/', ShowGroupParticipants.as_view(), name='show_group_participants'),
     path('add_group/', add_group, name='add_group'),
     path('delete_group/<int:group_id>/', delete_group, name='delete_group'),
+    path('update_student_group', update_student_group, name='update_student_group'),
+
+    path('results/', ShowResults.as_view(), name='show_results'),
     path('show_confirmed_students/', ShowConfirmedStudents.as_view(), name='show_confirmed_students'),
     path('show_pending_students/', ShowPendingStudents.as_view(), name='show_pending_students'),
     path('show_denied_students/', ShowDeniedStudents.as_view(), name='show_denied_students'),

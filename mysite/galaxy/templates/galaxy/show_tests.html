@@ -54,7 +54,7 @@ div.table {
           <tbody>
           {% for test in tests %}
               <tr>
-                  <th scope="row">{{ forloop.counter }}</th>
+                  <td scope="row">{{ forloop.counter }}</td>
                   <td> {{test.type}}</td>
                   <td>{{test.part}}</td>
                   <td>{{test.test_num}}</td>
@@ -73,5 +73,6 @@ div.table {
   </div>
 </div>
 
+{% include "galaxy/pagination.html" %}
 
 {% endblock %}

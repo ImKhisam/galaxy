@@ -86,14 +86,14 @@ div.table {
           <th scope="col">Date</th>
           <th scope="col">Points</th>
           <th scope="col">Time</th>
-          <th></th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
       {% for result in results %}
         <tr>
             {% with offset=page_obj.number|add:'-1'|multiply:15 %}
-          <th scope="row">{{ forloop.counter|add:offset }}</th>
+          <td scope="row">{{ forloop.counter|add:offset }}</td>
             {% endwith %}
             <td> {{result.student_id}}</td>
             <td>{{result.test_id}}</td>
@@ -109,26 +109,6 @@ div.table {
   </div>
 </div>
 
-{% if page_obj.has_other_pages %}
-<div class="pagination">
-    {% if page_obj.has_previous %}
-    <a class="pagination-number" href="?page={{ page_obj.previous_page_number }}"><</a>
-    {% else %}
-    <span class="pagination-number pagination-current"><</span>
-    {% endif %}
-    {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-            <span class="pagination-number pagination-current">{{ num }}</span>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <a class="pagination-number" href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-    {% endfor %}
-    {% if page_obj.has_next %}
-    <a class="pagination-number" href="?page={{ page_obj.next_page_number }}">></a>
-    {% else %}
-    <span class="pagination-number pagination-current">></span>
-    {% endif %}
-</div>
-{% endif %}
+{% include "galaxy/pagination.html" %}
 
 {% endblock %}
