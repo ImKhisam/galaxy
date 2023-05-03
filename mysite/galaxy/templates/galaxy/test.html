@@ -265,6 +265,7 @@ var x = setInterval(function() {
 
 </script>
 {% if test.part == 'Speaking' %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
       let mediaRecorders = [];
       let recordedChunks = [];
@@ -351,18 +352,25 @@ var x = setInterval(function() {
     function submitForm(event) {
       event.preventDefault();
 
-      const formData = new FormData();
-      formData.append('audio', new Blob(recordedChunks), 'recording.wav');
-
-      fetch('{% url "test" test.pk %}', {
-        method: 'POST',
-        body: fd,
+      $.ajax({
+        url: '{% url "test" test.pk %}',
+        type: 'POST',
+        data: fd,
+        processData: false,
+        contentType: false,
         headers: {
           'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+        },
+        success: function(response) {
+          // Handle success response here
+          window.location.replace('{% url "test_result_wo_points"%}');
+        },
+        error: function(xhr, status, error) {
+          // Handle error response here
+          console.error(xhr, status, error);
         }
-      })
+      });
 
-      window.location.replace('{% url "test_result_wo_points"%}')
     }
 
 </script>

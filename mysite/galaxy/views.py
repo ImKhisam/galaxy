@@ -226,7 +226,6 @@ class ShowGroupParticipants(ListView):
         return context
 
 
-
 def delete_group(request, group_id):
     group = Groups.objects.get(id=group_id)
     group.delete()
@@ -319,9 +318,13 @@ class Test(View):
         if 'no_attached_files' in request.session:
             del request.session['no_attached_files']
 
-        if test.part in ['Writing', 'Speaking'] and len(request.FILES) == 0:
+        if test.part == 'Writing' and len(request.FILES) == 0:
             request.session['no_attached_files'] = 1
             return HttpResponseRedirect('/test_result_wo_points/')
+
+        if test.part == 'Speaking' and len(request.FILES) == 0:
+            request.session['no_attached_files'] = 1
+            return JsonResponse({'empty_flag': 1})
 
         '''Создаем объект теста для проверки'''
         if test.part in ['Writing', 'Speaking']:
@@ -396,9 +399,14 @@ class Test(View):
                 fail_silently=False,
             )
 
+        if test.part == 'Writing':
             return HttpResponseRedirect('/test_result_wo_points/')
 
-        '''Создаем объект результата попытки выполнения теста'''
+        if test.part == 'Speaking':
+            return JsonResponse({'empty_flag': 0})
+
+
+        '''Создаем объект результата попытки выполнения теста для 3х категорий'''
         result = Results()
         result.student_id = user
         result.test_id = test
@@ -481,8 +489,11 @@ class ShowTests(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] ='tests'
+        context['title'] = 'Available Tests'
         return context
+
+    def get_queryset(self):
+        return Tests.objects.all().order_by('type', 'part', 'test_num')
 
 
 class ShowTestsToCheck(ListView):
@@ -613,7 +624,7 @@ class AddTestAndChaptersView(AddTestConstValues, View):
                     chapter.test_id = test_obj
                     chapter.save()
 
-            return redirect('add_q_and_a', chapter.id)
+            return redirect('add_q_and_a')
 
         context = {
             'test_form': test_form,
@@ -622,42 +633,10 @@ class AddTestAndChaptersView(AddTestConstValues, View):
         return render(request, 'galaxy/add_test.html', context)
 
 
-#def add_test_and_chapters(request):
-#    test_form = TestAddForm()
-#    chapter_formset = formset_factory(ChapterAddForm, extra=0)
-#
-#    if request.method == 'POST':
-#        test_form = TestAddForm(request.POST, request.FILES)
-#        chapter_formset = chapter_formset(request.POST, request.FILES)
-#
-#        if test_form.is_valid() and chapter_formset.is_valid():
-#            test_obj = test_form.save(commit=False)
-#            test_type = test_obj.type
-#            test_part = test_obj.part
-#            test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
-#            test_obj.test_num = test_num
-#            test_obj.save()                                 # Save the Test
-#
-#            for chapter_form in chapter_formset.forms:      # Save the Chapters
-#                if chapter_form.has_changed():
-#                    chapter = chapter_form.save(commit=False)
-#                    chapter.test_id = test_obj
-#                    chapter.save()
-#
-#            return redirect('add_q_and_a', chapter.id)
-#
-#    context = {
-#        'test_form': test_form,
-#        'chapter_formset': chapter_formset,
-#    }
-#
-#    return render(request, 'galaxy/add_test.html', context)
-
-
-def add_q_and_a(request, chapter_id):
-    question_form = QuestionAddForm()
+def add_q_and_a(request, test_id):
+    question_form = QuestionAddForm(test_id)
     answer_formset = formset_factory(AnswerAddForm, extra=0)
-    chapter = Chapters.objects.get(id=chapter_id)
+    test = Tests.objects.get(id=test_id)
 
     if request.method == 'POST':
         question_form = QuestionAddForm(request.POST, request.FILES)
@@ -665,8 +644,7 @@ def add_q_and_a(request, chapter_id):
 
         if question_form.is_valid() and answer_formset.is_valid():
             question_obj = question_form.save(commit=False)
-            question_obj.test_id = chapter.test_id
-            question_obj.chapter_id = chapter
+            question_obj.test_id = test
             # Save the question
             question_obj.save()
 
@@ -711,10 +689,13 @@ class MakeAnAssessment(TemplateView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Make an assessment'
+        group_list = Groups.objects.all()
+        context['group_list'] = group_list
         return context
 
     def post(self, request, *args, **kwargs):
         assessment_date = request.POST['datepicker']
+        group = request.POST['group']
         '''Назначение даты 5 рандомным тестам '''
         tests = Tests.objects.filter(is_assessment=True).distinct('part')
         print(tests)
@@ -724,7 +705,7 @@ class MakeAnAssessment(TemplateView):
 class ShowCurrentAssessments(ListView):
     model = Tests
     context_object_name = 'assessments'
-    template_name = "galaxy/current_assessments.html"
+    template_name = "galaxy/show_current_assessments.html"
 
     def get_queryset(self):
         return Tests.objects.filter(is_appointed=True)

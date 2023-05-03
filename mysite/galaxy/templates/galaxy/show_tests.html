@@ -1,4 +1,5 @@
 {% extends 'galaxy/base.html' %}
+{% load static %}
 
 {% block custom_styles %}
 <style>
@@ -32,6 +33,8 @@ div.table {
 
 </style>
 
+<link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
+
 {% endblock %}
 
 {% block content %}
@@ -48,7 +51,7 @@ div.table {
                   <th scope="col">Type</th>
                   <th scope="col">Part</th>
                   <th scope="col">Test number</th>
-                  <th scope="col"></th>
+                  <th scope="col">Action</th>
               </tr>
           </thead>
           <tbody>
@@ -58,7 +61,12 @@ div.table {
                   <td> {{test.type}}</td>
                   <td>{{test.part}}</td>
                   <td>{{test.test_num}}</td>
-                  <td><a href="#">Open</a></td>
+                  <td>
+                      <div style="display: inline-flex; width: 80%;">
+                          <a class="btn btn5" href="#"><span>Open</span></a>
+                          <a class="btn btn5" href="{% url 'add_q_and_a' test.id %}"><span>Add question</span></a>
+                      </div>
+                  </td>
               </tr>
           {% endfor %}
               <tr>
