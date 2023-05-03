@@ -34,7 +34,7 @@ urlpatterns = [
 
 
     path('test_details/<int:test_pk>/', TestDetails.as_view(), name='test_details'),
-    path('test/<int:test_pk>/', test, name='test'),
+    path('test/<int:test_pk>/', Test.as_view(), name='test'),
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
     path('result_preview/<int:result_pk>', ResultPreview.as_view(), name='result_preview'),

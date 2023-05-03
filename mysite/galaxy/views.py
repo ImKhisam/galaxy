@@ -262,40 +262,58 @@ class TestDetails(LoginRequiredMixin, DetailView):
         return context
 
 
-def test(request, test_pk):
-    test = get_object_or_404(Tests, id=test_pk)
-    user = request.user
-    try:
-        time_obj = TestTimings.objects.get(test_id=test, user_id=user)
-    except Exception as err:
-        print(err)      # TestTimings matching query does not exist.
-        time_obj = TestTimings()
-        time_obj.test_id = test
-        time_obj.user_id = user
-        time_obj.start_time = time.time()
-        time_obj.save()
-    start_time = time_obj.start_time
+class Test(View):
+    def get(self, request, test_pk):
+        test = get_object_or_404(Tests, id=test_pk)
+        user = request.user
 
-    if request.method == 'POST':
-        print('------WE ARE IN POST------')
+        try:
+            time_obj = TestTimings.objects.get(test_id=test, user_id=user)
+        except Exception as err:
+            print(err)  # TestTimings matching query does not exist
+            time_obj = TestTimings()
+            time_obj.test_id = test
+            time_obj.user_id = user
+            time_obj.start_time = time.time()
+            time_obj.save()
+
+        '''Формируем наполнение страницы'''
+        content_dict = {}
+        chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
+        for chapter in chapters_for_test:
+            questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+            qa = {}
+            for question in questions_for_test:
+                if question.question_type == 'match_type':  # Если вопрос на сопоставление
+                    qa[question] = {
+                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                            'answer',
+                            flat=True)
+                        for key in
+                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+                elif question.question_type == 'input_type':  # Вопрос с вводом слова
+                    qa[question] = Answers.objects.get(question_id__id=question.id)
+                else:  # Вопрос с radio или True/False
+                    qa[question] = Answers.objects.filter(question_id__id=question.id)
+            content_dict[chapter] = qa
+
+        context = {'test': test,
+                   'content_dict': content_dict,
+                   'start_time': time_obj.start_time,
+                   }
+
+        return render(request, 'galaxy/test.html', context)
+
+    def post(self, request, test_pk):
+        test = get_object_or_404(Tests, id=test_pk)
+        user = request.user
+
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
-        test_time = int(time.time() - start_time)
+        time_obj = TestTimings.objects.get(test_id=test, user_id=user)
+        test_time = int(time.time() - time_obj.start_time)
         if test_time > test.time_limit * 60:
             test_time = test.time_limit * 60
         time_obj.delete()
-
-        '''2nd Speaking submit'''
-        print('speaking_flag' in request.session)
-        if 'speaking_flag' in request.session:
-            del request.session['speaking_flag']
-            return HttpResponseRedirect('/test_result_wo_points/')
-
-        '''1st Speaking submit'''
-        print(test.part == 'Speaking')
-        if test.part == 'Speaking':
-            print(request.session)
-            print('!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            request.session['speaking_flag'] = 1
 
         '''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''
         if 'no_attached_files' in request.session:
@@ -317,38 +335,37 @@ def test(request, test_pk):
         questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
         for question in questions_for_test:
             if test.part not in ['Writing', 'Speaking']:
-                if question.question_type == 'match_type':          # Подсчёт вопросов на сопоставление
+                if question.question_type == 'match_type':  # Подсчёт вопросов на сопоставление
                     question_points = question.points
-                    for answer in Answers.objects.filter(question_id__id=question.id).exclude(match__exact=''): # ??перебираем только "правильные" ответы, отрезая пустышку без match
+                    for answer in Answers.objects.filter(question_id__id=question.id).exclude(
+                            match__exact=''):  # ??перебираем только "правильные" ответы, отрезая пустышку без match
                         student_answer = request.POST.get(str(answer.id))
                         if student_answer != answer.answer:
                             question_points -= 1
                     if question_points > 0:
                         total_test_points += question_points
-                elif question.question_type == 'input_type':        # Подсчет вопросов с вводом
+                elif question.question_type == 'input_type':  # Подсчет вопросов с вводом
                     answer = Answers.objects.get(question_id__id=question.id)
                     answers = str(answer.answer)
-                    print(answers)
                     right_answers = list(answers.split(','))
-                    print(right_answers)
                     student_answer = str(request.POST.get(str(answer.id)))
                     if student_answer in right_answers:
                         total_test_points += question.points
-                elif question.question_type == 'true_false_type':   # Подсчет вопросов с True/False
+                elif question.question_type == 'true_false_type':  # Подсчет вопросов с True/False
                     try:
                         if request.POST.get(str(question.id)) == Questions.objects.get(id=question.id).addition:
                             total_test_points += question.points
                     except:
                         pass
                     pass
-                try:        # потому что студент может оставить radio невыбранным
+                try:  # потому что студент может оставить radio невыбранным
                     obj = Answers.objects.get(pk=request.POST.get(str(question.id)))
                     if obj.is_true:
-                        total_test_points += question.points        # Подсчет вопросов с выбором
+                        total_test_points += question.points  # Подсчет вопросов с выбором
                 except:
                     pass
 
-            else:       # Writing and Speaking
+            else:  # Writing and Speaking
                 '''Создаем объект задания для проверки'''
                 task_to_check = TasksToCheck()
                 try:
@@ -389,33 +406,6 @@ def test(request, test_pk):
         result.time = str(timedelta(seconds=test_time))
         result.save()
         return HttpResponseRedirect('/test_result_with_points/' + str(result.pk) + '/')
-
-    '''Формируем наполнение страницы'''
-    content_dict = {}
-    chapters_for_test = Chapters.objects.filter(test_id__id=test.id)
-    for chapter in chapters_for_test:
-        questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
-        qa = {}
-        for question in questions_for_test:
-            if question.question_type == 'match_type':  # Если вопрос на сопоставление
-                qa[question] = {
-                    key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list('answer',
-                                                                                                            flat=True)
-                    for key in
-                    Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
-            elif question.question_type == 'input_type':  # Вопрос с вводом слова
-                qa[question] = Answers.objects.get(question_id__id=question.id)
-            else:  # Вопрос с radio или True/False
-                qa[question] = Answers.objects.filter(question_id__id=question.id)
-        content_dict[chapter] = qa
-
-    context = {'test': test,
-               'content_dict': content_dict,
-               'start_time': start_time,
-               }
-
-    response = render(request, 'galaxy/test.html', context)
-    return response
 
 
 class TestResultWOPoints(TemplateView):
@@ -708,15 +698,10 @@ class TestingPage(View):
         return render(request, self.template_name)
 
     def post(self, request):
-        print('--------------WE GOT INTO POST--------------')
-
         if len(request.FILES) > 0:
-            print(f"request.FILES:  {request.FILES}")
-            print('FILE!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
             return render(request, 'galaxy/index.html')
         else:
             # Render an error page
-            print('ERROR, NO FILE')
             return render(request, 'galaxy/julik.html')
 
 

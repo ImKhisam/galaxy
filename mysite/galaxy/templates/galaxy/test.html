@@ -264,7 +264,7 @@ var x = setInterval(function() {
 }, 1000);
 
 </script>
-
+{% if test.part == 'Speaking' %}
 <script>
       let mediaRecorders = [];
       let recordedChunks = [];
@@ -346,9 +346,8 @@ var x = setInterval(function() {
             timers[index].textContent = `${minutes}:${seconds}`;
       }
 
-      const form = document.getElementById('my_form');
+    const form = document.getElementById('my_form');
     form.addEventListener('submit', submitForm);
-
     function submitForm(event) {
       event.preventDefault();
 
@@ -362,9 +361,10 @@ var x = setInterval(function() {
           'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
         }
       })
-      form.submit();
+
+      window.location.replace('{% url "test_result_wo_points"%}')
     }
 
-    </script>
-
+</script>
+{% endif %}
 {% endblock javascript%}
