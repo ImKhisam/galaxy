@@ -34,14 +34,14 @@ urlpatterns = [
 
 
     path('test_details/<int:test_pk>/', TestDetails.as_view(), name='test_details'),
-    path('test/<int:test_pk>/', Test.as_view(), name='test'),
+    path('pass_test/<int:test_pk>/', PassTest.as_view(), name='pass_test'),
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
     path('result_preview/<int:result_pk>', ResultPreview.as_view(), name='result_preview'),
 
     path('show_tests/', ShowTests.as_view(), name='show_tests'),
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
-    path('add_q_and_a/<int:test_id>/', add_q_and_a, name='add_q_and_a'),
+    path('add_q_and_a/<int:test_id>/', AddQandAView.as_view(), name='add_q_and_a'),
     #path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
 
     path('make_an_assessment/', MakeAnAssessment.as_view(), name='make_an_assessment'),

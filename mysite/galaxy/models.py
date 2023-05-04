@@ -133,12 +133,14 @@ class Questions(models.Model):
         (true_false_type, 'true_false_type'),
         (file_adding_type, 'file_adding_type')
     ]
+    position_choice = ((None, 'Choose position'), ('0', 'Before answer'), ('1', 'After answer'))
 
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     chapter_id = models.ForeignKey(Chapters, on_delete=models.CASCADE)
     points = models.PositiveIntegerField()
     question = models.TextField()
     addition = models.CharField(max_length=50, blank=True)
+    addition_position = models.CharField(blank=True, max_length=50, choices=position_choice)
     question_number = models.PositiveIntegerField()
     question_type = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_question_type)
     time_limit = models.PositiveIntegerField(blank=True)

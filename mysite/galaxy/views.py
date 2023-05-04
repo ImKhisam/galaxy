@@ -261,7 +261,7 @@ class TestDetails(LoginRequiredMixin, DetailView):
         return context
 
 
-class Test(View):
+class PassTest(View):
     def get(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
@@ -301,7 +301,7 @@ class Test(View):
                    'start_time': time_obj.start_time,
                    }
 
-        return render(request, 'galaxy/test.html', context)
+        return render(request, 'galaxy/pass_test.html', context)
 
     def post(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
@@ -608,7 +608,6 @@ class AddTestAndChaptersView(AddTestConstValues, View):
     def post(self, request, *args, **kwargs):
         test_form = TestAddForm(request.POST, request.FILES)
         chapter_formset = formset_factory(ChapterAddForm, extra=0)(request.POST, request.FILES)
-
         if test_form.is_valid() and chapter_formset.is_valid():
             test_obj = test_form.save(commit=False)
             test_type = test_obj.type
@@ -624,7 +623,7 @@ class AddTestAndChaptersView(AddTestConstValues, View):
                     chapter.test_id = test_obj
                     chapter.save()
 
-            return redirect('add_q_and_a')
+            return redirect('add_q_and_a', test_obj.id)
 
         context = {
             'test_form': test_form,
@@ -633,18 +632,30 @@ class AddTestAndChaptersView(AddTestConstValues, View):
         return render(request, 'galaxy/add_test.html', context)
 
 
-def add_q_and_a(request, test_id):
-    question_form = QuestionAddForm(test_id)
-    answer_formset = formset_factory(AnswerAddForm, extra=0)
-    test = Tests.objects.get(id=test_id)
+class AddQandAView(View):
+    def get(self, request, *args, **kwargs):
+        test_id = self.kwargs.get('test_id')
+        question_form = QuestionAddForm(test_id)
+        answer_formset = formset_factory(AnswerAddForm, extra=0)
+        sum_of_questions = Questions.objects.filter(test_id=Tests.objects.get(id=test_id)).count()
+        context = {
+            'question_form': question_form,
+            'answer_formset': answer_formset,
+            'sum_of_questions': sum_of_questions,
+        }
 
-    if request.method == 'POST':
-        question_form = QuestionAddForm(request.POST, request.FILES)
-        answer_formset = answer_formset(request.POST, request.FILES)
+        return render(request, 'galaxy/add_q_and_a.html', context)
+
+    def post(self, request, *args, **kwargs):
+        test_id = self.kwargs.get('test_id')
+
+        question_form = QuestionAddForm(test_id, request.POST, request.FILES)
+        answer_formset = formset_factory(AnswerAddForm, extra=0)(request.POST, request.FILES)
 
         if question_form.is_valid() and answer_formset.is_valid():
+            print('-----------------------------------------------------')
             question_obj = question_form.save(commit=False)
-            question_obj.test_id = test
+            question_obj.test_id = Tests.objects.get(id=test_id)
             # Save the question
             question_obj.save()
 
@@ -655,14 +666,39 @@ def add_q_and_a(request, test_id):
                     answer_obj.question_id = question_obj
                     answer_obj.save()
 
-            return redirect('home')
+            return redirect('add_q_and_a', test_id)
 
-    context = {
-        'question_form': question_form,
-        'answer_formset': answer_formset,
-    }
 
-    return render(request, 'galaxy/add_q_and_a.html', context)
+#def add_q_and_a(request, test_id):
+#    question_form = QuestionAddForm(test_id)
+#    answer_formset = formset_factory(AnswerAddForm, extra=0)
+#    test = Tests.objects.get(id=test_id)
+#
+#    if request.method == 'POST':
+#        question_form = QuestionAddForm(test_id, request.POST, request.FILES)
+#        answer_formset = answer_formset(request.POST, request.FILES)
+#
+#        if question_form.is_valid() and answer_formset.is_valid():
+#            question_obj = question_form.save(commit=False)
+#            question_obj.test_id = test
+#            # Save the question
+#            question_obj.save()
+#
+#            # Save the Chapters
+#            for answer_form in answer_formset.forms:
+#                if answer_form.has_changed():
+#                    answer_obj = answer_form.save(commit=False)
+#                    answer_obj.question_id = question_obj
+#                    answer_obj.save()
+#
+#            return redirect('home')
+#
+#    context = {
+#        'question_form': question_form,
+#        'answer_formset': answer_formset,
+#    }
+#
+#    return render(request, 'galaxy/add_q_and_a.html', context)
 
 
 def testing_page(request):

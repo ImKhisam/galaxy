@@ -54,16 +54,21 @@ class TaskCheckForm(forms.ModelForm):       # выставление балло�
 
 
 class QuestionAddForm(forms.ModelForm):
+    #username = forms.CharField(label='Login', widget=forms.TextInput(attrs={'class': 'form-input'}))
+
     class Meta:
         model = Questions
-        fields = ['chapter_id', 'question_number', 'question', 'question_type', 'addition', 'points', 'time_limit']
+        fields = ['chapter_id', 'question_number', 'question', 'question_type', 'addition', 'addition_position', 'points', 'time_limit']
 
     def __init__(self, test_id,  *args, **kwargs):
         super(QuestionAddForm, self).__init__(*args, **kwargs)
-        chapters = Chapters.objects.filter(test_id=test_id)
-        self.fields['chapter_id'] = forms.ChoiceField(choices=[(item.id, str(item.test_id) + ", Chapter " + str(item.chapter_number)) for item in chapters])
+        #chapters = Chapters.objects.filter(test_id=test_id).order_by('chapter_number')
+        self.fields['chapter_id'] = forms.ModelChoiceField(queryset=Chapters.objects.filter(test_id=test_id).order_by('chapter_number'))
+
 
 class AnswerAddForm(forms.ModelForm):
+    answer = forms.CharField(label='Answer', widget=forms.TextInput(attrs={'class': 'form-input'}))
+
     class Meta:
         model = Answers
         fields = ['answer', 'is_true', 'addition', 'match']

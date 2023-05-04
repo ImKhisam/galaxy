@@ -24,14 +24,14 @@
             {% endif %}
             <p>If everything is ok - begin the test</p>
             <br><br>
-            <a class="btn btn5" href="{% url 'test' test.pk %}">
+            <a class="btn btn5" href="{% url 'pass_test' test.pk %}">
                 <span>Begin test</span>
             </a>
         {% else %}
             <p>You have some unfinished business.</p>
             <br><br>
 
-            <a class="btn btn5" href="{% url 'test' test.pk %}">
+            <a class="btn btn5" href="{% url 'pass_test' test.pk %}">
                 <span>Resume</span>
             </a>
         {% endif %}
