@@ -653,7 +653,6 @@ class AddQandAView(View):
         answer_formset = formset_factory(AnswerAddForm, extra=0)(request.POST, request.FILES)
 
         if question_form.is_valid() and answer_formset.is_valid():
-            print('-----------------------------------------------------')
             question_obj = question_form.save(commit=False)
             question_obj.test_id = Tests.objects.get(id=test_id)
             # Save the question
@@ -663,42 +662,43 @@ class AddQandAView(View):
             for answer_form in answer_formset.forms:
                 if answer_form.has_changed():
                     answer_obj = answer_form.save(commit=False)
+                    if question_obj.question_type == 'input_type':
+                        answer_obj.answer = answer_obj.answer.upper()
+
                     answer_obj.question_id = question_obj
                     answer_obj.save()
 
             return redirect('add_q_and_a', test_id)
 
 
-#def add_q_and_a(request, test_id):
-#    question_form = QuestionAddForm(test_id)
-#    answer_formset = formset_factory(AnswerAddForm, extra=0)
-#    test = Tests.objects.get(id=test_id)
-#
-#    if request.method == 'POST':
-#        question_form = QuestionAddForm(test_id, request.POST, request.FILES)
-#        answer_formset = answer_formset(request.POST, request.FILES)
-#
-#        if question_form.is_valid() and answer_formset.is_valid():
-#            question_obj = question_form.save(commit=False)
-#            question_obj.test_id = test
-#            # Save the question
-#            question_obj.save()
-#
-#            # Save the Chapters
-#            for answer_form in answer_formset.forms:
-#                if answer_form.has_changed():
-#                    answer_obj = answer_form.save(commit=False)
-#                    answer_obj.question_id = question_obj
-#                    answer_obj.save()
-#
-#            return redirect('home')
-#
-#    context = {
-#        'question_form': question_form,
-#        'answer_formset': answer_formset,
-#    }
-#
-#    return render(request, 'galaxy/add_q_and_a.html', context)
+class ShowTest(View):
+    def get(self, request, test_pk):
+        test = get_object_or_404(Tests, id=test_pk)
+
+        content_dict = {}
+        chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
+        for chapter in chapters_for_test:
+            questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+            qa = {}
+            for question in questions_for_test:
+                if question.question_type == 'match_type':
+                    qa[question] = {
+                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                            'answer',
+                            flat=True)
+                        for key in
+                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+                elif question.question_type == 'input_type':
+                    qa[question] = Answers.objects.get(question_id__id=question.id)
+                else:
+                    qa[question] = Answers.objects.filter(question_id__id=question.id)
+            content_dict[chapter] = qa
+
+        context = {'test': test,
+                   'content_dict': content_dict,
+                   }
+
+        return render(request, 'galaxy/show_test.html', context)
 
 
 def testing_page(request):
@@ -731,9 +731,12 @@ class MakeAnAssessment(TemplateView):
 
     def post(self, request, *args, **kwargs):
         assessment_date = request.POST['datepicker']
-        group = request.POST['group']
+        group = Groups.objects.get(id=request.POST['group'])
+        print(type(assessment_date))
+        print(group)
         '''Назначение даты 5 рандомным тестам '''
-        tests = Tests.objects.filter(is_assessment=True).distinct('part')
+        #random_object = Tests.objects.filter(is_assessment=True).order_by('?')[0]
+        tests = Tests.objects.filter(is_assessment=True).order_by('part').distinct('part')
         print(tests)
         return redirect('home')
 

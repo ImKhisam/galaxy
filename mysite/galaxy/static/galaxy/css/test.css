@@ -247,18 +247,22 @@ option{
     display: flex;
 }
 .input-question{
-    width: 50%;
+    width: 35%;
+    margin-right: 2%;
 }
 .input-type{
-    width: 25%;
+    width: 19%;
     display: flex;
+    margin: 0 2%;
 }
 .input-type input{
     margin: auto;
     font-size: 20px;
+    width: -webkit-fill-available;
 }
 .input-addition{
-    width: 25%;
+    width: 20%;
+    max-width: 20%;
     display: flex;
 }
 .input-addition-text{

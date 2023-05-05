@@ -63,7 +63,7 @@ div.table {
                   <td>{{test.test_num}}</td>
                   <td>
                       <div style="display: inline-flex; width: 80%;">
-                          <a class="btn btn5" href="#"><span>Open</span></a>
+                          <a class="btn btn5" href="{% url 'show_test' test.id %}"><span>Open</span></a>
                           <a class="btn btn5" href="{% url 'add_q_and_a' test.id %}"><span>Add question</span></a>
                       </div>
                   </td>

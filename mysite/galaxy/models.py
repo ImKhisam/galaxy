@@ -88,7 +88,7 @@ class Tests(models.Model):
     is_assessment = models.BooleanField(default=False)           # Разделение тестов на проверочные работы и свободную практику
     is_appointed = models.BooleanField(default=False)      # Назначение теста каждый месяц
     is_used = models.BooleanField(default=False)           # Тест уже назначался в этом учебном году
-    date_of_assessment = models.DateTimeField(null=True,blank=True)  # Дата сдачи теста
+    date_of_assessment = models.DateTimeField(null=True, blank=True)  # Дата сдачи теста
 
     def __str__(self):
         return f"{self.type}, {self.part}, Test №{self.test_num}"
@@ -133,14 +133,13 @@ class Questions(models.Model):
         (true_false_type, 'true_false_type'),
         (file_adding_type, 'file_adding_type')
     ]
-    position_choice = ((None, 'Choose position'), ('0', 'Before answer'), ('1', 'After answer'))
 
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     chapter_id = models.ForeignKey(Chapters, on_delete=models.CASCADE)
     points = models.PositiveIntegerField()
     question = models.TextField()
-    addition = models.CharField(max_length=50, blank=True)
-    addition_position = models.CharField(blank=True, max_length=50, choices=position_choice)
+    addition_before = models.CharField(max_length=50, blank=True)
+    addition_after = models.CharField(max_length=50, blank=True)
     question_number = models.PositiveIntegerField()
     question_type = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_question_type)
     time_limit = models.PositiveIntegerField(blank=True)
