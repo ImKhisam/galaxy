@@ -12,6 +12,19 @@
 td:nth-child(2) {
     width: 47%;
 }
+
+select{
+    padding: 3px;
+    color: #ffffff;
+    background-color: transparent;
+    font-size: 18px;
+    border: 2px solid #ffffff;
+}
+option{
+    background-color:black;
+    border: 2px solid #ffffff;
+    font-size: 18px;
+}
 </style>
 
 {% endblock custom_styles %}
@@ -26,6 +39,7 @@ td:nth-child(2) {
           <tr>
               <th scope="col">#</th>
               <th scope="col">Name</th>
+              <th scope="col">Type</th>
               <th scope="col">Action</th>
           </tr>
       </thead>
@@ -34,6 +48,7 @@ td:nth-child(2) {
           <tr>
               <td scope="row">{{ forloop.counter }}</td>
               <td> {{group.name}}</td>
+              <td> {{group.test_type}}</td>
               <td>
                   <div style="display: inline-flex; width: 80%;">
                       <a class="btn btn5" href="{% url 'show_group_participants' group.id %}"><span>Show participants</span></a>
@@ -45,11 +60,19 @@ td:nth-child(2) {
       <tr>
               <td></td>
               <td></td>
+              <td></td>
               <td><a class="btn btn5" id="add-group-btn"><span>+Add group</span></a></td>
       </tr>
       <tr id="new-group-row" class="hidden">
           <td></td>
           <td><input class="dark-input" type="text" id="new-group-name"></td>
+          <td>
+              <select id="new-group-test-type">
+                  <option></option>
+                  <option value="GSE">GSE</option>
+                  <option value="USE">USE</option>
+              </select>
+          </td>
           <td>
               <div style="display: inline-flex; width: 60%;">
                   <a class="btn btn5" id="save-group-btn"><span>Save</span></a>
@@ -73,6 +96,7 @@ td:nth-child(2) {
     const deleteGroupBtn = document.getElementById('delete-group-btn');
     const saveGroupBtn = document.getElementById('save-group-btn');
     const groupNameInput = document.getElementById('new-group-name');
+    const groupTestType = document.getElementById('new-group-test-type');
 
     addGroupBtn.addEventListener('click', () => {
         newGroupRow.classList.remove('hidden');
@@ -86,10 +110,11 @@ td:nth-child(2) {
 
     saveGroupBtn.addEventListener('click', () => {
         const groupName = groupNameInput.value;
-        if (groupName) {
+        const groupType = groupTestType.value;
+        if (groupName && groupType) {
             $.ajax({
                 url: "{% url 'add_group' %}",
-                data: {name: groupName},
+                data: {name: groupName, test_type: groupType},
                 success: function() {
                     location.reload();
                 }

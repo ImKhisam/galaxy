@@ -2,6 +2,7 @@ import os
 import time
 import json
 from datetime import datetime, timedelta
+from itertools import groupby
 
 import requests
 from django.forms import formset_factory, modelform_factory
@@ -16,7 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponseRedirect, JsonResponse
 from .forms import *
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -204,7 +205,8 @@ class ShowGroups(ListView):
 
 def add_group(request):
     groupname = request.GET.get('name', None)
-    group = Groups.objects.create(name=groupname)
+    test_type = request.GET.get('test_type', None)
+    group = Groups.objects.create(name=groupname, test_type=test_type)
     group.save()
     return redirect('show_groups')
 
@@ -581,7 +583,7 @@ class CheckingTest(DetailView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'checking test'
-        context['form'] = TaskCheckForm()
+        context['form'] = TaskCheckForm()       # не нужна?
         test_to_check = context['test_to_check']
         tasks_to_check = TasksToCheck.objects.filter(test_to_check_id=test_to_check)
         context['tasks_to_check'] = tasks_to_check
@@ -725,26 +727,55 @@ class MakeAnAssessment(TemplateView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Make an assessment'
-        group_list = Groups.objects.all()
+        group_list = Groups.objects.all().order_by('name')
         context['group_list'] = group_list
         return context
 
     def post(self, request, *args, **kwargs):
-        assessment_date = request.POST['datepicker']
         group = Groups.objects.get(id=request.POST['group'])
-        print(type(assessment_date))
-        print(group)
+        assessment_date = request.POST['datepicker']
+        assessment_date = datetime.strptime(assessment_date, "%m/%d/%Y").date()
+
         '''Назначение даты 5 рандомным тестам '''
-        #random_object = Tests.objects.filter(is_assessment=True).order_by('?')[0]
-        tests = Tests.objects.filter(is_assessment=True).order_by('part').distinct('part')
-        print(tests)
-        return redirect('home')
+        assessments_by_part = []
+        for part in ['Grammar and Vocabulary', 'Listening', 'Reading', 'Speaking', 'Writing']:
+            assessments_by_part.append(
+                Tests.objects.filter(is_assessment=True, type=group.test_type, part=part).
+                exclude(used_in_groups__contains=str(group.id))
+                                       )
+
+        for assessment_query in assessments_by_part:
+            if len(assessment_query) < 3:
+                pass        # notification, that few tests left
+
+            if len(assessment_query) > 0:
+                random_assessment = assessment_query.order_by('?')[0]       # rly random or everytime the same?
+                assessment = Assessments(test=random_assessment, group=group, date=assessment_date)
+                if len(random_assessment.used_in_groups) > 0:
+                    random_assessment.used_in_groups += ','
+                random_assessment.used_in_groups += str(group.id)
+                random_assessment.save()
+                assessment.save()
+        return redirect('show_current_assessments')
 
 
 class ShowCurrentAssessments(ListView):
-    model = Tests
+    model = Assessments
     context_object_name = 'assessments'
     template_name = "galaxy/show_current_assessments.html"
 
     def get_queryset(self):
-        return Tests.objects.filter(is_appointed=True)
+        #return Tests.objects.exclude(appointed_to_group=None)
+        return Assessments.objects.distinct('group', 'date')
+
+
+def delete_an_assessment(request, assessment_id):
+    assessment_object = Assessments.objects.get(id=assessment_id)
+    group = assessment_object.group
+    date = assessment_object.date
+    assessments_to_delete = Assessments.objects.filter(group=group, date=date)
+    #print(assessments_to_delete)
+    for assessment in assessments_to_delete:
+        assessment.delete()
+
+    return redirect('show_current_assessments')

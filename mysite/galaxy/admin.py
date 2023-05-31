@@ -16,6 +16,10 @@ class CustomUserAdmin(UserAdmin):
     list_editable = ('is_confirmed',)
 
 
+class GroupsAdmin(admin.ModelAdmin):
+    list_display = ('name', 'test_type')
+
+
 class OlympWayAdmin(admin.ModelAdmin):
     list_display = ('id', 'year', 'stage', 'classes', 'task', 'answer', 'audio', 'script')
 
@@ -45,6 +49,7 @@ class ResultsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Groups, GroupsAdmin)
 admin.site.register(OlympWay, OlympWayAdmin)
 admin.site.register(Tests, TestsAdmin)
 admin.site.register(Chapters, ChaptersAdmin)

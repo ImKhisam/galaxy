@@ -6,7 +6,16 @@ from django.urls import reverse
 
 
 class Groups(models.Model):
+    GSE = 'GSE'
+    USE = 'USE'
+    choices_in_type = [
+        (GSE, 'GSE'),
+        (USE, 'USE'),
+    ]
+
     name = models.CharField(max_length=20)
+    test_type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
+    #has_assessment = models.BooleanField(default=False)
 
 
 class CustomUser(AbstractUser):
@@ -86,15 +95,21 @@ class Tests(models.Model):
     time_limit = models.PositiveIntegerField()
     media = models.FileField(upload_to=content_file_name_test, blank=True)
     is_assessment = models.BooleanField(default=False)           # Разделение тестов на проверочные работы и свободную практику
-    is_appointed = models.BooleanField(default=False)      # Назначение теста каждый месяц
-    is_used = models.BooleanField(default=False)           # Тест уже назначался в этом учебном году
-    date_of_assessment = models.DateTimeField(null=True, blank=True)  # Дата сдачи теста
+    groups = models.ManyToManyField(Groups, through="Assessments")
+    #appointed_to_group = models.ForeignKey(Groups, related_name='tests', on_delete=models.CASCADE, null=True)      #  назначен в данный момент
+    used_in_groups = models.CharField(max_length=200, blank=True)        # Группы, которым уже назначался тест
 
     def __str__(self):
         return f"{self.type}, {self.part}, Test №{self.test_num}"
 
     class Meta:
         ordering = ['type', 'part']
+
+
+class Assessments(models.Model):
+    test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    group = models.ForeignKey(Groups, on_delete=models.CASCADE)
+    date = models.DateField(null=True, blank=True)  # Дата сдачи теста
 
 
 class TestTimings(models.Model):

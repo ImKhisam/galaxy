@@ -47,6 +47,7 @@ urlpatterns = [
 
     path('make_an_assessment/', MakeAnAssessment.as_view(), name='make_an_assessment'),
     path('show_current_assessments/', ShowCurrentAssessments.as_view(), name='show_current_assessments'),
+    path('delete_an_assessment/<int:assessment_id>/', delete_an_assessment, name='delete_an_assessment'),
 
     path('testing_page', TestingPage.as_view(), name='testing_page'),
     ]

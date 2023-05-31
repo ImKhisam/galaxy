@@ -18,6 +18,7 @@
           <thead>
               <tr>
                   <th scope="col">#</th>
+                  <th scope="col">Group</th>
                   <th scope="col">Date</th>
                   <th scope="col">Action</th>
               </tr>
@@ -26,8 +27,9 @@
           {% for assessment in assessments %}
               <tr>
                   <td scope="row">{{ forloop.counter }}</td>
-                  <td> {{test.date_of_assessment}}</td>
-                  <td><a class="btn btn5" href="#"><span>Deny assessment</span></a></td>
+                  <td> {{assessment.group.name}}</td>
+                  <td> {{assessment.date}}</td>
+                  <td><a class="btn btn5" href="{% url 'delete_an_assessment' assessment.id %}"><span>Deny assessment</span></a></td>
               </tr>
           {% endfor %}
           </tbody>
