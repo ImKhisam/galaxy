@@ -1,7 +1,7 @@
 import os
 import time
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from itertools import groupby
 
 import requests
@@ -305,6 +305,11 @@ class PassTest(View):
 
         return render(request, 'galaxy/pass_test.html', context)
 
+    def add_detail_points(self, question, detailed_test_points, points):
+        if len(detailed_test_points) > 0:
+            detailed_test_points += ','
+        detailed_test_points += (str(points) + '/' + str(question.points))
+
     def post(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
@@ -337,6 +342,7 @@ class PassTest(View):
 
         '''Подсчитываем баллы за тест для 3х категорий'''
         total_test_points = 0
+        detailed_test_points = ''
         questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
         for question in questions_for_test:
             if test.part not in ['Writing', 'Speaking']:
@@ -349,6 +355,9 @@ class PassTest(View):
                             question_points -= 1
                     if question_points > 0:
                         total_test_points += question_points
+                        self.add_detail_points(question, detailed_test_points, question_points)
+                    else:
+                        self.add_detail_points(question, detailed_test_points, 0)
                 elif question.question_type == 'input_type':  # Подсчет вопросов с вводом
                     answer = Answers.objects.get(question_id__id=question.id)
                     answers = str(answer.answer)
@@ -356,19 +365,29 @@ class PassTest(View):
                     student_answer = str(request.POST.get(str(answer.id)))
                     if student_answer in right_answers:
                         total_test_points += question.points
+                        self.add_detail_points(question, detailed_test_points, question.points)
+                    else:
+                        self.add_detail_points(question, detailed_test_points, 0)
                 elif question.question_type == 'true_false_type':  # Подсчет вопросов с True/False
                     try:
                         if request.POST.get(str(question.id)) == Questions.objects.get(id=question.id).addition:
                             total_test_points += question.points
+                            self.add_detail_points(question, detailed_test_points, question.points)
+                        else:
+                            self.add_detail_points(question, detailed_test_points, 0)
                     except:
                         pass
                     pass
+                # Подсчет вопросов с выбором
                 try:  # потому что студент может оставить radio невыбранным
                     obj = Answers.objects.get(pk=request.POST.get(str(question.id)))
                     if obj.is_true:
-                        total_test_points += question.points  # Подсчет вопросов с выбором
+                        total_test_points += question.points
+                        self.add_detail_points(question, detailed_test_points, question.points)
+                    else:
+                        self.add_detail_points(question, detailed_test_points, 0)
                 except:
-                    pass
+                    self.add_detail_points(question, detailed_test_points, 0)
 
             else:  # Writing and Speaking
                 '''Создаем объект задания для проверки'''
@@ -413,6 +432,7 @@ class PassTest(View):
         result.student_id = user
         result.test_id = test
         result.points = total_test_points
+        result.detailed_points = detailed_points
         result.time = str(timedelta(seconds=test_time))
         result.save()
         return HttpResponseRedirect('/test_result_with_points/' + str(result.pk) + '/')
@@ -733,7 +753,7 @@ class MakeAnAssessment(TemplateView):
 
     def post(self, request, *args, **kwargs):
         group = Groups.objects.get(id=request.POST['group'])
-        assessment_date = request.POST['datepicker']
+        assessment_date = request.POST['datepicker']  # 06/09/2023
         assessment_date = datetime.strptime(assessment_date, "%m/%d/%Y").date()
 
         '''Назначение даты 5 рандомным тестам '''
@@ -779,3 +799,14 @@ def delete_an_assessment(request, assessment_id):
         assessment.delete()
 
     return redirect('show_current_assessments')
+
+
+class ShowStudentAssessments(ListView):
+    model = Assessments
+    context_object_name = 'assessments'
+    template_name = "galaxy/show_student_assessments.html"
+
+    def get_queryset(self):
+        student = self.request.user
+        today = date.today()
+        return Assessments.objects.filter(group=student.group, date=today)
