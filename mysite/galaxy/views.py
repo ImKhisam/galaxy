@@ -307,8 +307,18 @@ class PassTest(View):
 
     def add_detail_points(self, question, detailed_test_points, points):
         if len(detailed_test_points) > 0:
-            detailed_test_points += ','
-        detailed_test_points += (str(points) + '/' + str(question.points))
+            detailed_test_points += ', '
+        detailed_test_points += (str(question.question_number) + ') ' + str(points) + '/' + str(question.points))
+        return detailed_test_points
+
+    @staticmethod
+    def add_answer_to_record(record_to_add_in, answer_to_add, separation_item):
+        if len(record_to_add_in) > 0:
+            record_to_add_in += separation_item
+        if answer_to_add == 'Выберите ответ':
+            answer_to_add = 'No answer'
+        record_to_add_in += answer_to_add
+        return record_to_add_in
 
     def post(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
@@ -343,21 +353,25 @@ class PassTest(View):
         '''Подсчитываем баллы за тест для 3х категорий'''
         total_test_points = 0
         detailed_test_points = ''
+        record_test_answers = ''
         questions_for_test = Questions.objects.filter(test_id__id=test.id).order_by('question_number')
         for question in questions_for_test:
             if test.part not in ['Writing', 'Speaking']:
                 if question.question_type == 'match_type':  # Подсчёт вопросов на сопоставление
                     question_points = question.points
+                    record_match_answers = ''
                     for answer in Answers.objects.filter(question_id__id=question.id).exclude(
                             match__exact=''):  # ??перебираем только "правильные" ответы, отрезая пустышку без match
                         student_answer = request.POST.get(str(answer.id))
+                        record_match_answers = self.add_answer_to_record(record_match_answers, student_answer, ', ')
                         if student_answer != answer.answer:
                             question_points -= 1
                     if question_points > 0:
                         total_test_points += question_points
-                        self.add_detail_points(question, detailed_test_points, question_points)
+                        detailed_test_points = self.add_detail_points(question, detailed_test_points, question_points)
                     else:
-                        self.add_detail_points(question, detailed_test_points, 0)
+                        detailed_test_points = self.add_detail_points(question, detailed_test_points, 0)
+                    record_to_add = record_match_answers
                 elif question.question_type == 'input_type':  # Подсчет вопросов с вводом
                     answer = Answers.objects.get(question_id__id=question.id)
                     answers = str(answer.answer)
@@ -365,30 +379,34 @@ class PassTest(View):
                     student_answer = str(request.POST.get(str(answer.id)))
                     if student_answer in right_answers:
                         total_test_points += question.points
-                        self.add_detail_points(question, detailed_test_points, question.points)
+                        detailed_test_points = self.add_detail_points(question, detailed_test_points, question.points)
                     else:
-                        self.add_detail_points(question, detailed_test_points, 0)
+                        detailed_test_points = self.add_detail_points(question, detailed_test_points, 0)
+                    record_to_add = 'No answer' if len(student_answer) == 0 else student_answer
                 elif question.question_type == 'true_false_type':  # Подсчет вопросов с True/False
                     try:
                         if request.POST.get(str(question.id)) == Questions.objects.get(id=question.id).addition:
                             total_test_points += question.points
-                            self.add_detail_points(question, detailed_test_points, question.points)
+                            detailed_test_points = self.add_detail_points(question, detailed_test_points, question.points)
                         else:
-                            self.add_detail_points(question, detailed_test_points, 0)
+                            detailed_test_points = self.add_detail_points(question, detailed_test_points, 0)
                     except:
                         pass
                     pass
-                # Подсчет вопросов с выбором
-                try:  # потому что студент может оставить radio невыбранным
-                    obj = Answers.objects.get(pk=request.POST.get(str(question.id)))
-                    if obj.is_true:
-                        total_test_points += question.points
-                        self.add_detail_points(question, detailed_test_points, question.points)
-                    else:
-                        self.add_detail_points(question, detailed_test_points, 0)
-                except:
-                    self.add_detail_points(question, detailed_test_points, 0)
-
+                    record_to_add = request.POST.get(str(question.id))
+                else:       # Подсчет вопросов с выбором
+                    try:  # потому что студент может оставить radio невыбранным
+                        answer_object = Answers.objects.get(pk=request.POST.get(str(question.id)))
+                        if answer_object.is_true:
+                            total_test_points += question.points
+                            detailed_test_points = self.add_detail_points(question, detailed_test_points, question.points)
+                        else:
+                            detailed_test_points = self.add_detail_points(question, detailed_test_points, 0)
+                        record_to_add = answer_object.answer                # добавление ответа в запись
+                    except:
+                        detailed_test_points = self.add_detail_points(question, detailed_test_points, 0)
+                        record_to_add = 'No answer'                         # добавление ответа в запись
+                record_test_answers += (str(question.question_number) + ') ' + record_to_add + '; ')
             else:  # Writing and Speaking
                 '''Создаем объект задания для проверки'''
                 task_to_check = TasksToCheck()
@@ -432,7 +450,8 @@ class PassTest(View):
         result.student_id = user
         result.test_id = test
         result.points = total_test_points
-        result.detailed_points = detailed_points
+        result.detailed_points = detailed_test_points
+        result.record_answers = record_test_answers
         result.time = str(timedelta(seconds=test_time))
         result.save()
         return HttpResponseRedirect('/test_result_with_points/' + str(result.pk) + '/')

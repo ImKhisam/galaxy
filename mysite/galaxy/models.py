@@ -176,7 +176,8 @@ class Results(models.Model):
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
     points = models.CharField(max_length=20)
-    detailed_points = models.CharField(max_length=50)
+    detailed_points = models.CharField(max_length=200, blank=True)
+    record_answers = models.TextField(max_length=600, blank=True)
     time = models.CharField(max_length=50, blank=True)
     commentary = models.TextField(max_length=600, blank=True)
 
