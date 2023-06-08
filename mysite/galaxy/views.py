@@ -17,7 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponseRedirect, JsonResponse
 from .forms import *
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -349,6 +349,12 @@ class PassTest(View):
             test_to_check.test_id = test
             test_to_check.student_id = user
             test_to_check.save()
+
+        if test.is_assessment:
+            if len(user.assessments_passed) > 0:
+                user.assessments_passed += ','
+            user.assessments_passed += str(test.id)
+            user.save()
 
         '''Подсчитываем баллы за тест для 3х категорий'''
         total_test_points = 0
@@ -805,7 +811,7 @@ class ShowCurrentAssessments(ListView):
 
     def get_queryset(self):
         #return Tests.objects.exclude(appointed_to_group=None)
-        return Assessments.objects.distinct('group', 'date')
+        return Assessments.objects.filter(is_passed=False).distinct('group', 'date')
 
 
 def delete_an_assessment(request, assessment_id):
@@ -813,9 +819,9 @@ def delete_an_assessment(request, assessment_id):
     group = assessment_object.group
     date = assessment_object.date
     assessments_to_delete = Assessments.objects.filter(group=group, date=date)
-    #print(assessments_to_delete)
     for assessment in assessments_to_delete:
-        assessment.delete()
+        assessment.is_passed = True
+        assessment.save()
 
     return redirect('show_current_assessments')
 
@@ -826,6 +832,8 @@ class ShowStudentAssessments(ListView):
     template_name = "galaxy/show_student_assessments.html"
 
     def get_queryset(self):
-        student = self.request.user
+        user = self.request.user
         today = date.today()
-        return Assessments.objects.filter(group=student.group, date=today)
+        print([int(id_) for id_ in user.assessments_passed.split(',') if id_])
+        return Assessments.objects.filter(group=user.group, date=today)\
+            .exclude(test_id__in=[int(id_) for id_ in user.assessments_passed.split(',') if id_])

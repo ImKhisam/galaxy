@@ -37,7 +37,7 @@ input {
 {% endblock custom_styles %}
 
 {% block content %}
-<h1><span class="current">Make an assessment</span>  |  <a href="{% url 'show_current_assessments' %}">Current assessments</a></h1>
+<h1><span class="current">Make an assessment</span>  |  <a href="{% url 'show_current_assessments' %}">Current assessments</a>  |  <a href="#">Past Assessments</a></h1>
 
 <form action="{% url 'make_an_assessment' %}" method="post">
 {% csrf_token %}

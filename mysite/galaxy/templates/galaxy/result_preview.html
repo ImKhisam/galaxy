@@ -2,5 +2,10 @@
 
 {% block content %}
     <h2>Test summary:</h2>
-    <p>{{result.commentary}}</p>
+    {% if result.test_id.part == 'Speaking' or result.test_id.part == 'Writing' %}
+        <p>{{result.commentary}}</p>
+    {% else %}
+        <p>{{ result.record_answers }}</p>
+    {% endif %}
+
 {% endblock content %}

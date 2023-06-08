@@ -26,6 +26,7 @@ class CustomUser(AbstractUser):
     is_confirmed = models.BooleanField()
     slug = AutoSlugField(populate_from='username')
     group = models.ForeignKey(Groups, null=True, on_delete=models.SET_NULL)
+    assessments_passed = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.username
@@ -110,6 +111,7 @@ class Assessments(models.Model):
     test = models.ForeignKey(Tests, on_delete=models.CASCADE)
     group = models.ForeignKey(Groups, on_delete=models.CASCADE)
     date = models.DateField(null=True, blank=True)  # Дата сдачи теста
+    is_passed = models.BooleanField(default=False)
 
 
 class TestTimings(models.Model):
