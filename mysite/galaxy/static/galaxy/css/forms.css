@@ -1,0 +1,10 @@
+.question-add{
+    width: 90%;
+    height: 150px;
+}
+p{
+    display: flex;
+}
+label{
+    padding-right: 10px;
+}

@@ -92,7 +92,7 @@ div.table {
       <tbody>
       {% for result in results %}
         <tr>
-            {% with offset=page_obj.number|add:'-1'|multiply:15 %}
+            {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
           <td scope="row">{{ forloop.counter|add:offset }}</td>
             {% endwith %}
             <td> {{result.student_id}}</td>

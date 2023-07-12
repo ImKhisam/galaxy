@@ -14,7 +14,9 @@ class LoginUserForm(AuthenticationForm):
 class SignUpForm(UserCreationForm):
     first_name = forms.CharField(label='First name', widget=forms.TextInput(attrs={'class': 'form-input'}))
     last_name = forms.CharField(label='Last name', widget=forms.TextInput(attrs={'class': 'form-input'}))
-    role = forms.ChoiceField(label='Role', choices= ((None, 'Choose role'), ('Student', 'Student'), ('Teacher', 'Teacher')), widget=forms.Select(attrs={'class': 'form-choice'}))
+    role = forms.ChoiceField(label='Role', choices=
+                             ((None, 'Choose role'), ('Student', 'Student'), ('Teacher', 'Teacher')),
+                             widget=forms.Select(attrs={'class': 'form-choice'}))
     username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-input'}))
     email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-input'}))
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
@@ -58,6 +60,9 @@ class QuestionAddForm(forms.ModelForm):
         model = Questions
         fields = ['chapter_id', 'question_number', 'question', 'question_type',
                   'addition_before', 'addition_after', 'points', 'time_limit']
+        widgets = {
+            'question': forms.Textarea(attrs={'class': 'question-add'}),
+        }
 
     def __init__(self, test_id,  *args, **kwargs):
         super(QuestionAddForm, self).__init__(*args, **kwargs)

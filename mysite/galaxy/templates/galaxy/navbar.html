@@ -67,7 +67,7 @@
                                 <ul>
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'show_results' %}">My results</a></li>
-                                    <li><a href="{% url 'show_tests' %}">Tests</a></li>
+                                    <li><a href="{% url 'show_tests' 0 %}">Tests</a></li>
                                     <li><a href="{% url 'make_an_assessment' %}">Assessments</a></li>
                                     <li><a href="{% url 'show_groups' %}">Groups</a></li>
                                     <li><a href="{% url 'show_confirmed_students' %}">Students</a></li>

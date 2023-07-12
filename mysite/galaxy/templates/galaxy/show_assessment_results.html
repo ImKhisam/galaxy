@@ -1,0 +1,52 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
+    <style>
+        div.table {
+          width: 70%;
+        }
+    </style>
+{% endblock custom_styles %}
+
+{% block content %}
+<h1> Assessment contestants</h1>
+
+<div class="parent">
+  <div class="table">
+      {% if assessment_contestants.count == 0 %}
+      <h2>Nobody passed tests</h2>
+      {% else %}
+          <table class="table">
+          <thead>
+              <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Grammar</th>
+                  <th scope="col">Listening</th>
+                  <th scope="col">Reading</th>
+                  <th scope="col">Speaking</th>
+                  <th scope="col">Writing</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for contestant, results in assessment_contestants.items %}
+              <tr>
+                  <td scope="row">{{ forloop.counter }}</td>
+                  <td> {{ contestant.last_name }} {{contestant.first_name}}</td>
+                  <td><a class="btn btn5" href="#"><span>Open results</span></a></td>
+                  <td><a class="btn btn5" href="#"><span>Open results</span></a></td>
+                  <td><a class="btn btn5" href="#"><span>Open results</span></a></td>
+                  <td><a class="btn btn5" href="#"><span>Open results</span></a></td>
+                  <td><a class="btn btn5" href="#"><span>Open results</span></a></td>
+              </tr>
+          {% endfor %}
+          </tbody>
+          </table>
+      {% endif %}
+  </div>
+</div>
+
+{% endblock content %}

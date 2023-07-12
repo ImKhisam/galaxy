@@ -174,6 +174,7 @@ class ShowResults(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'My results'
+        context['pagination_number'] = self.paginate_by
         context['dict'] = {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
                            for key in Tests.objects.all()}
         return context
@@ -267,6 +268,9 @@ class PassTest(View):
     def get(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
+
+        if str(test.id) in user.assessments_passed:
+            return render(request, 'galaxy/julik.html')
 
         try:
             time_obj = TestTimings.objects.get(test_id=test, user_id=user)
@@ -391,7 +395,7 @@ class PassTest(View):
                     record_to_add = 'No answer' if len(student_answer) == 0 else student_answer
                 elif question.question_type == 'true_false_type':  # Подсчет вопросов с True/False
                     try:
-                        if request.POST.get(str(question.id)) == Questions.objects.get(id=question.id).addition:
+                        if request.POST.get(str(question.id)) == Questions.objects.get(id=question.id).addition_after:      # .addition
                             total_test_points += question.points
                             detailed_test_points = self.add_detail_points(question, detailed_test_points, question.points)
                         else:
@@ -399,7 +403,7 @@ class PassTest(View):
                     except:
                         pass
                     pass
-                    record_to_add = request.POST.get(str(question.id))
+                    record_to_add = 'No answer' if request.POST.get(str(question.id)) == None else request.POST.get(str(question.id))
                 else:       # Подсчет вопросов с выбором
                     try:  # потому что студент может оставить radio невыбранным
                         answer_object = Answers.objects.get(pk=request.POST.get(str(question.id)))
@@ -530,6 +534,7 @@ def julik(request):
 
 
 class ShowTests(ListView):
+    paginate_by = 10
     model = Tests
     template_name = "galaxy/show_tests.html"
     context_object_name = 'tests'
@@ -537,10 +542,15 @@ class ShowTests(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Available Tests'
+        context['pagination_number'] = self.paginate_by
         return context
 
     def get_queryset(self):
-        return Tests.objects.all().order_by('type', 'part', 'test_num')
+        self.template_name = "galaxy/show_assessment_tests.html" if self.kwargs.get('assessment_fl') == 1 \
+            else "galaxy/show_tests.html"
+        flag = True if self.kwargs.get('assessment_fl') == 1 else False
+        #return Tests.objects.all().order_by('type', 'part', 'test_num')
+        return Tests.objects.filter(is_assessment=flag).order_by('type', 'part', 'test_num')
 
 
 class ShowTestsToCheck(ListView):
@@ -559,6 +569,7 @@ class ShowConfirmedStudents(ConfirmMixin, ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Confirmed Students'
+        context['pagination_number'] = self.paginate_by
         group_list = Groups.objects.all()
         context['group_list'] = group_list
         return context
@@ -659,7 +670,8 @@ class AddTestAndChaptersView(AddTestConstValues, View):
             test_obj = test_form.save(commit=False)
             test_type = test_obj.type
             test_part = test_obj.part
-            test_num = Tests.objects.filter(type=test_type, part=test_part).count() + 1
+            test_assessment_flag = test_obj.is_assessment
+            test_num = Tests.objects.filter(type=test_type, part=test_part, is_assessment=test_assessment_flag).count() + 1
             test_obj.test_num = test_num
             test_obj.save()                                     # Save the Test
             self.add_test_const_values(test_obj)
@@ -786,7 +798,7 @@ class MakeAnAssessment(TemplateView):
         for part in ['Grammar and Vocabulary', 'Listening', 'Reading', 'Speaking', 'Writing']:
             assessments_by_part.append(
                 Tests.objects.filter(is_assessment=True, type=group.test_type, part=part).
-                exclude(used_in_groups__contains=str(group.id))
+                exclude(used_in_groups__contains=group.name)
                                        )
 
         for assessment_query in assessments_by_part:
@@ -798,7 +810,7 @@ class MakeAnAssessment(TemplateView):
                 assessment = Assessments(test=random_assessment, group=group, date=assessment_date)
                 if len(random_assessment.used_in_groups) > 0:
                     random_assessment.used_in_groups += ','
-                random_assessment.used_in_groups += str(group.id)
+                random_assessment.used_in_groups += group.name
                 random_assessment.save()
                 assessment.save()
         return redirect('show_current_assessments')
@@ -824,6 +836,36 @@ def delete_an_assessment(request, assessment_id):
         assessment.save()
 
     return redirect('show_current_assessments')
+
+
+class ShowPastAssessments(ListView):
+    model = Assessments
+    context_object_name = 'assessments'
+    template_name = "galaxy/show_past_assessments.html"
+
+    def get_queryset(self):
+        #return Tests.objects.exclude(appointed_to_group=None)
+        return Assessments.objects.filter(is_passed=True).distinct('group', 'date')
+
+
+class ShowAssessmentResults(ListView):
+    model = CustomUser
+    context_object_name = 'assessment_contestants'
+    template_name = "galaxy/show_assessment_results.html"
+
+    def get_queryset(self):
+        assessment = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
+        group = assessment.group
+        users = CustomUser.objects.filter(group=group)
+        assessments = Assessments.objects.filter(group=group, date=assessment.date).order_by("test__part")
+        print(assessments)
+        tests = [assessment.test for assessment in assessments]
+        print({user: [Results.objects.get(student_id=user, test_id=test)
+                      if Results.objects.filter(student_id=user, test_id=test).exists()
+                      else "no result" for test in tests] for user in users})
+        return {user: [Results.objects.filter(student_id=user, test_id=test) for test in tests] for user in users}
+        #return CustomUser.objects.filter(group=group)
+
 
 
 class ShowStudentAssessments(ListView):

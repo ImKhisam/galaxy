@@ -7,7 +7,7 @@
 {% endblock custom_styles %}
 
 {% block content %}
-<h1><a href="{% url 'make_an_assessment' %}">Make an assessment</a>  |  <span class="current">Current assessments</span>  |  <a href="#">Past Assessments</a></h1>
+<h1><a href="{% url 'make_an_assessment' %}">Make an assessment</a>  |  <a href="{% url 'show_current_assessments' %}">Current assessments</a>  |  <span class="current">Past assessments</span></h1>
 
 <div class="parent">
   <div class="table">
@@ -29,7 +29,7 @@
                   <td scope="row">{{ forloop.counter }}</td>
                   <td> {{assessment.group.name}}</td>
                   <td> {{assessment.date}}</td>
-                  <td><a class="btn btn5" href="#"><span>Show assessment</span></a></td>
+                  <td><a class="btn btn5" href="{% url 'show_assessment_results' assessment.id %}"><span>Show assessment</span></a></td>
               </tr>
           {% endfor %}
           </tbody>

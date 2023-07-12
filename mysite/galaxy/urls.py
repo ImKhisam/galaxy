@@ -39,7 +39,7 @@ urlpatterns = [
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
     path('result_preview/<int:result_pk>', ResultPreview.as_view(), name='result_preview'),
 
-    path('show_tests/', ShowTests.as_view(), name='show_tests'),
+    path('show_tests/<int:assessment_fl>', ShowTests.as_view(), name='show_tests'),
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
     path('show_test/<int:test_pk>/', ShowTest.as_view(), name='show_test'),
     path('add_q_and_a/<int:test_id>/', AddQandAView.as_view(), name='add_q_and_a'),
@@ -48,6 +48,8 @@ urlpatterns = [
     path('make_an_assessment/', MakeAnAssessment.as_view(), name='make_an_assessment'),
     path('show_current_assessments/', ShowCurrentAssessments.as_view(), name='show_current_assessments'),
     path('delete_an_assessment/<int:assessment_id>/', delete_an_assessment, name='delete_an_assessment'),
+    path('show_past_assessments/', ShowPastAssessments.as_view(), name='show_past_assessments'),
+    path('show_assessment_results/<int:assessment_pk>', ShowAssessmentResults.as_view(), name='show_assessment_results'),
     path('show_student_assessments/', ShowStudentAssessments.as_view(), name='show_student_assessments'),
 
     path('testing_page', TestingPage.as_view(), name='testing_page'),

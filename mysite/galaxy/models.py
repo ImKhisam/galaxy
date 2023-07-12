@@ -97,7 +97,6 @@ class Tests(models.Model):
     media = models.FileField(upload_to=content_file_name_test, blank=True)
     is_assessment = models.BooleanField(default=False)           # Разделение тестов на проверочные работы и свободную практику
     groups = models.ManyToManyField(Groups, through="Assessments")
-    #appointed_to_group = models.ForeignKey(Groups, related_name='tests', on_delete=models.CASCADE, null=True)      #  назначен в данный момент
     used_in_groups = models.CharField(max_length=200, blank=True)        # Группы, которым уже назначался тест
 
     def __str__(self):

@@ -25,7 +25,8 @@ def drop_menu_test(type_of_exam):
     menu_dict = {}
 
     for item in Tests.objects.filter(type=type_of_exam).order_by('part').distinct('part'):
-        menu_dict[item] = Tests.objects.filter(type=type_of_exam, part=item.part).order_by('test_num')
+        menu_dict[item] = Tests.objects.filter(type=type_of_exam, part=item.part, is_assessment=False)\
+                                        .order_by('test_num')
 
     return {"menu_dict": menu_dict}
 
@@ -38,7 +39,7 @@ def assessment():
     return {"today": today}
 
 
-@register.filter                        # отображение баллов в результатах
+@register.filter                        # отображение баллов в результатах(show_results.html)
 def get_item(dictionary, key):
     return dictionary.get(key)
 
