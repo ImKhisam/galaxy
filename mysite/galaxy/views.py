@@ -559,8 +559,30 @@ class ShowTestsToCheck(ListView):
     template_name = "galaxy/show_tests_to_check.html"
     context_object_name = 'tests_to_check'
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Tests to check'         # needed??
+        context['pagination_number'] = self.paginate_by
+        return context
+
     def get_queryset(self):
         return TestsToCheck.objects.filter(is_checked=False)
+
+
+class ShowCheckedTests(ListView):
+    paginate_by = 15
+    model = TestsToCheck
+    template_name = "galaxy/show_checked_tests.html"
+    context_object_name = 'tests_to_check'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Tests to check'         # needed??
+        context['pagination_number'] = self.paginate_by
+        return context
+
+    def get_queryset(self):
+        return TestsToCheck.objects.filter(is_checked=True)
 
 
 class ShowConfirmedStudents(ConfirmMixin, ListView):
@@ -865,7 +887,6 @@ class ShowAssessmentResults(ListView):
                       else "no result" for test in tests] for user in users})
         return {user: [Results.objects.filter(student_id=user, test_id=test) for test in tests] for user in users}
         #return CustomUser.objects.filter(group=group)
-
 
 
 class ShowStudentAssessments(ListView):

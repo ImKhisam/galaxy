@@ -45,6 +45,10 @@ class ChapterAddForm(forms.ModelForm):
         model = Chapters
         fields = ['chapter_number', 'info', 'text_name', 'text', 'media']
         widgets = {
+            'chapter_number': forms.TextInput(attrs={'class': 'chapter-number-info-add'}),
+            'info': forms.Textarea(attrs={'class': 'chapter-info-add', 'oninput': "auto_grow(this)"}),
+            'text': forms.Textarea(attrs={'class': 'chapter-text-add', 'oninput': "auto_grow(this)"}),
+            'text_name': forms.TextInput(attrs={'class': 'chapter-text-name-add', 'oninput': "this.size = this.value.length"}),
             'media': forms.ClearableFileInput(attrs={'multiple': True}),
         }
 

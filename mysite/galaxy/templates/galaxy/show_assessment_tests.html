@@ -43,9 +43,11 @@ td:last-child {
 {% endblock %}
 
 {% block content %}
-<h1><a href="{% url 'show_tests' 0 %}">Free tests</a>   |  <span class="current">Assessment tests</span></h1>
 
-
+<div class="parent">
+    <div style="width: 30%"><h1><a href="{% url 'show_tests' 0 %}">Free tests</a></h1></div>
+    <div class="current" style="width: 30%"><h1><span>Assessment tests</span></h1></div>
+</div>
 
 <div class="parent">
   <div class="table">

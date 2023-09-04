@@ -7,8 +7,11 @@
 {% endblock custom_styles %}
 
 {% block content %}
-<h1><a href="{% url 'make_an_assessment' %}">Make an assessment</a>  |  <span class="current">Current assessments</span>  |  <a href="{% url 'show_past_assessments' %}">Past Assessments</a></h1>
-
+<div class="parent">
+    <div style="width: 20%"><h1><a href="{% url 'make_an_assessment' %}">Make an assessment</a></h1></div>
+    <div class="current" style="width: 20%"><h1><span>Current assessments</span></h1></div>
+    <div style="width: 20%"><h1><a href="{% url 'show_past_assessments' %}">Past Assessments</a></h1></div>
+</div>
 <div class="parent">
   <div class="table">
       {% if assessments.count == 0 %}

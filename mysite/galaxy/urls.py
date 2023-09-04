@@ -30,6 +30,7 @@ urlpatterns = [
     path('deny_student/<int:student_id>/<template>', deny_student, name='deny_student'),
     path('confirm_student/<int:student_id>/<template>', confirm_student, name='confirm_student'),
     path('show_tests_to_check/', ShowTestsToCheck.as_view(), name='show_tests_to_check'),
+    path('show_checked_tests/', ShowCheckedTests.as_view(), name='show_checked_tests'),
     path('checking_test/<int:test_to_check_id>', CheckingTest.as_view(), name='checking_test'),
 
 

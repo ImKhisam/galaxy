@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block custom_styles %}
+<link type="text/css" href="{% static 'galaxy/css/forms.css' %}" rel="stylesheet">
 <style>
 h1{
     text-align: center;
@@ -26,18 +27,34 @@ h1{
     <h1>Adding new test</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ test_form.as_p }}
+        <div class="test-form">
+            {{ test_form.as_p }}
+        </div>
         <h3>Chapters:</h3>
         {{ chapter_formset.management_form }}
         <div id="chapters">
             {% for chapter_form in chapter_formset %}
-                  <div class="chapter">
-                      {{ chapter_form.as_p }}
-                  </div>
+                <div class="chapter">
+                    {{ chapter_form.as_p }}
+                </div>
             {% endfor %}
         </div>
-        <div id="empty-form" class="hidden">{{ chapter_formset.empty_form.as_p }}</div>
-        <button id="add-chapter" type="button">Add chapter</button>
+        <div id="empty-form" class="hidden">
+            {% for f in chapter_formset.empty_form %}
+                {% if f.label == 'Text name' %}
+                    <div>
+                        <p><label for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }} </p>
+                        <div class="form-error">{{ f.errors }}</div>
+                    </div>
+                {% else %}
+                    <p><label for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }} </p>
+                    <div class="form-error">{{ f.errors }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <button id="add-chapter" type="button">
+            <span>Add chapter</span>
+        </button>
         <button type="submit">Save</button>
     </form>
 </div>
@@ -84,6 +101,16 @@ h1{
 
       totalForms.setAttribute('value', currentChapterCount + 1)
       formChapters.append(copyEmptyFormEl)
+  }
+
+  function auto_grow(element) {
+    element.style.height = "5px";
+    element.style.height = (element.scrollHeight) + "px";
+  }
+
+  function auto_width(element) {
+    element.style.width = "5px";
+    element.style.width = (element.value.length) + "px";
   }
 
 </script>
