@@ -39,6 +39,7 @@ urlpatterns = [
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
     path('result_preview/<int:result_pk>', ResultPreview.as_view(), name='result_preview'),
+    path('show_colour_result/<int:result_pk>', ShowColouredResult.as_view(), name='result_preview'),
 
     path('show_tests/<int:assessment_fl>', ShowTests.as_view(), name='show_tests'),
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),

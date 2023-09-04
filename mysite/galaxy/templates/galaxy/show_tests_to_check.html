@@ -30,7 +30,7 @@ div.parent {
 }
 
 div.table {
-  width: 50%;
+  width: 60%;
 }
 
 .pagination {
@@ -75,9 +75,10 @@ div.table {
 {% endblock %}
 
 {% block content %}
-
-<h1><span class="current">Tests to check</span><a class="next_list" href="{% url 'show_checked_tests' %}">Checked tests</a></h1>
-
+<div class="parent">
+    <div class="current" style="width: 30%"><h1><span>Tests to check</span></h1></div>
+    <div style="width: 30%"><h1><a href="{% url 'show_checked_tests' %}">Checked tests</a></h1></div>
+</div>
 <div class="parent">
   <div class="table">
       <table class="table">

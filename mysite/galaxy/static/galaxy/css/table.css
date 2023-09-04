@@ -14,7 +14,7 @@ th, td {
 }
 
 tr {
-  background-color: #000000c9;
+  background-color: var(--dark-transparent);
 }
 
 h1 {
@@ -47,7 +47,7 @@ div.table {
 .pagination-number {
     padding: 10px;
     color: #fff;
-    background-color: #000000c9;
+    background-color: var(--dark-transparent);
 }
 
 .pagination-number:hover,
@@ -72,7 +72,7 @@ div.table {
   margin: 3px;
 }
 .current{
-    background-color: var(--dark-transparent);;
+    background-color: var(--dark-transparent);
     
 }
 td:first-child {
@@ -106,4 +106,12 @@ td:first-child {
 }
 .hidden{
     height: 0px;
+}
+.search-form-backgr{
+    width: 60%;
+    display: flex;
+    justify-content: center;
+    background-color: #000000e3;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }

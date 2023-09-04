@@ -15,7 +15,9 @@
 <div class="parent">
   <div class="table">
       {% if assessments.count == 0 %}
-      <h2>No assessments yet</h2>
+      <div class="parent" style="background-color: var(--dark-transparent);">
+          <h2>No assessments right now</h2>
+      </div>
       {% else %}
           <table class="table">
           <thead>

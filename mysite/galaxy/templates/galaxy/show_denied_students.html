@@ -7,9 +7,14 @@
 {% endblock custom_styles %}
 
 {% block content %}
-<h1><a href="{% url 'show_confirmed_students' %}">Confirmed students</a>  |  <a href="{% url 'show_pending_students' %}">Pending students</a>  |  <span class="current">Denied students</span></h1>
+
 <div class="parent">
-    <form method="get">
+    <div style="width: 20%"><h1><a href="{% url 'show_confirmed_students' %}">Confirmed students</a></h1></div>
+    <div style="width: 20%"><h1><a href="{% url 'show_pending_students' %}">Pending students</a></h1></div>
+    <div class="current" style="width: 20%"><h1><span>Denied students</span></h1></div>
+</div>
+<div class="parent">
+    <form class="search-form-backgr" method="get">
         <div class="search-button">
             <input type="text" name="q" placeholder="Search users">
             <button class="btn btn5" type="submit"><span>Search</span></button>
@@ -19,7 +24,7 @@
         </div>
     </form>
 </div>
-<br>
+
 <div class="parent">
   <div class="table">
       <table class="table">

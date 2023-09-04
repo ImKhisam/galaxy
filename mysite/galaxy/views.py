@@ -573,16 +573,18 @@ class ShowCheckedTests(ListView):
     paginate_by = 15
     model = TestsToCheck
     template_name = "galaxy/show_checked_tests.html"
-    context_object_name = 'tests_to_check'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Tests to check'         # needed??
         context['pagination_number'] = self.paginate_by
+        context['tests_to_check'] = {x: self.forming_query(x) for x in TestsToCheck.objects.filter(is_checked=True)}
         return context
 
-    def get_queryset(self):
-        return TestsToCheck.objects.filter(is_checked=True)
+    @staticmethod
+    def forming_query(test):
+        tasks = TasksToCheck.objects.filter(test_to_check_id=test)
+        return sum(int(x.points) for x in tasks)
 
 
 class ShowConfirmedStudents(ConfirmMixin, ListView):
@@ -780,6 +782,36 @@ class ShowTest(View):
                    }
 
         return render(request, 'galaxy/show_test.html', context)
+
+
+class ShowColouredResult(View):                    # exact copy of previous (inherit it?)
+    def get(self, request, test_pk):
+        test = get_object_or_404(Tests, id=test_pk)
+
+        content_dict = {}
+        chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
+        for chapter in chapters_for_test:
+            questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+            qa = {}
+            for question in questions_for_test:
+                if question.question_type == 'match_type':
+                    qa[question] = {
+                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                            'answer',
+                            flat=True)
+                        for key in
+                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+                elif question.question_type == 'input_type':
+                    qa[question] = Answers.objects.get(question_id__id=question.id)
+                else:
+                    qa[question] = Answers.objects.filter(question_id__id=question.id)
+            content_dict[chapter] = qa
+
+        context = {'test': test,
+                   'content_dict': content_dict,
+                   }
+
+        return render(request, 'galaxy/show_colour_result.html', context)
 
 
 def testing_page(request):

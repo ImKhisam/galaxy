@@ -43,7 +43,7 @@ input {
 </div>
 <div class="parent">
     <div class="table">
-        <form action="{% url 'make_an_assessment' %}" method="post">
+        <form style="background-color: var(--dark-transparent);" action="{% url 'make_an_assessment' %}" method="post">
         {% csrf_token %}
             <div style="display: flex; padding-top: 20px;">
                 <div style="margin: auto; display: flex; width: 60%; justify-content: space-evenly;">
@@ -62,7 +62,7 @@ input {
             </div>
             <br><br><br><br><br><br><br><br><br><br><br>
             <div style="display: flex">
-                <button style="background-color: var(--dark-transparent);" class="btn btn5" type="submit">
+                <button style="background-color: var(--dark-transparent);margin-bottom: 30px;" class="btn btn5" type="submit">
                     <span>Make an Assessment</span>
                 </button>
             </div>

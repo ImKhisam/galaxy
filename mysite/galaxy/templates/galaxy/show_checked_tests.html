@@ -30,7 +30,7 @@ div.parent {
 }
 
 div.table {
-  width: 50%;
+  width: 60%;
 }
 
 .pagination {
@@ -75,9 +75,10 @@ div.table {
 {% endblock %}
 
 {% block content %}
-
-<h1><a class="next_list" href="{% url 'show_tests_to_check' %}">Tests to check</a><span class="current">Checked tests</span></h1>
-
+<div class="parent">
+    <div style="width: 30%"><h1><a href="{% url 'show_tests_to_check' %}">Tests to check</a></h1></div>
+    <div class="current" style="width: 30%"><h1><span>Checked tests</span></h1></div>
+</div>
 <div class="parent">
   <div class="table">
       <table class="table">
@@ -91,7 +92,7 @@ div.table {
         </tr>
       </thead>
       <tbody>
-      {% for test_to_check in tests_to_check %}
+      {% for test_to_check, points in tests_to_check.items %}
         <tr>
             {% if page_obj.number %}
                 {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
@@ -102,7 +103,7 @@ div.table {
             {% endif %}
             <td> {{test_to_check.student_id}}</td>
             <td>{{test_to_check.test_id}}</td>
-            <td>{{test_to_check.points}}</td>
+            <td>{{points}}</td>
             <td><a href="{% url 'checking_test' test_to_check.id %}">Open</a></td>
         </tr>
 
