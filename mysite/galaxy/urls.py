@@ -20,6 +20,7 @@ urlpatterns = [
     path('groups/', ShowGroups.as_view(), name='show_groups'),
     path('show_group_participants/<int:group_id>/', ShowGroupParticipants.as_view(), name='show_group_participants'),
     path('add_group/', add_group, name='add_group'),
+    path('update_group_name/', update_group_name, name='update_group_name'),
     path('delete_group/<int:group_id>/', delete_group, name='delete_group'),
     path('update_student_group', update_student_group, name='update_student_group'),
 
@@ -39,7 +40,7 @@ urlpatterns = [
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
     path('result_preview/<int:result_pk>', ResultPreview.as_view(), name='result_preview'),
-    path('show_colour_result/<int:result_pk>', ShowColouredResult.as_view(), name='result_preview'),
+    path('show_colour_result/<int:result_pk>', ShowColouredResult.as_view(), name='show_colour_result'),
 
     path('show_tests/<int:assessment_fl>', ShowTests.as_view(), name='show_tests'),
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
@@ -53,6 +54,7 @@ urlpatterns = [
     path('show_past_assessments/', ShowPastAssessments.as_view(), name='show_past_assessments'),
     path('show_assessment_results/<int:assessment_pk>', ShowAssessmentResults.as_view(), name='show_assessment_results'),
     path('show_student_assessments/', ShowStudentAssessments.as_view(), name='show_student_assessments'),
+    path('show_assessment_results/', ShowStudentAssessmentResults.as_view(), name='show_student_assessment_results'),
 
     path('testing_page', TestingPage.as_view(), name='testing_page'),
     ]

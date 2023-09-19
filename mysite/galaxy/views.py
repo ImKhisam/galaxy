@@ -205,11 +205,32 @@ class ShowGroups(ListView):
 
 
 def add_group(request):
-    groupname = request.GET.get('name', None)
+    group_name = request.GET.get('name', None)
     test_type = request.GET.get('test_type', None)
-    group = Groups.objects.create(name=groupname, test_type=test_type)
+    group = Groups.objects.create(name=group_name, test_type=test_type)
     group.save()
     return redirect('show_groups')
+
+
+def update_group_name(request):
+    group_id = request.GET.get('group_id', None)
+    new_name = request.GET.get('new_name', None)
+    try:
+        group_obj = Groups.objects.get(pk=group_id)
+        old_name = group_obj.name
+        group_obj.name = new_name
+        group_obj.save()
+        '''change group name in assessment tests'''
+        tests_objects = Tests.objects.filter(used_in_groups__contains=old_name)
+        for test in tests_objects:
+            groups_list = test.used_in_groups.split(', ')
+            groups_list.remove(old_name)
+            groups_list.append(new_name)
+            test.used_in_groups = ', '.join(groups_list)
+            test.save()
+        return JsonResponse({'success': True})
+    except Exception:
+        return JsonResponse({'success': False, 'error': 'Error'})
 
 
 class ShowGroupParticipants(ListView):
@@ -231,7 +252,14 @@ class ShowGroupParticipants(ListView):
 
 def delete_group(request, group_id):
     group = Groups.objects.get(id=group_id)
+    name_to_delete = group.name
     group.delete()
+    tests_with_group_in_list = Tests.objects.filter(used_in_groups__contains=name_to_delete)
+    for test in tests_with_group_in_list:
+        groups_list = test.used_in_groups.split(', ')
+        groups_list.remove(name_to_delete)
+        test.used_in_groups = ', '.join(groups_list)
+        test.save()
     return redirect('show_groups')
 
 
@@ -785,8 +813,9 @@ class ShowTest(View):
 
 
 class ShowColouredResult(View):                    # exact copy of previous (inherit it?)
-    def get(self, request, test_pk):
-        test = get_object_or_404(Tests, id=test_pk)
+    def get(self, request, result_pk):
+        result_object = Results.objects.get(id=str(result_pk))
+        test = get_object_or_404(Tests, id=result_object.test_id.id)
 
         content_dict = {}
         chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
@@ -810,7 +839,7 @@ class ShowColouredResult(View):                    # exact copy of previous (inh
         context = {'test': test,
                    'content_dict': content_dict,
                    }
-
+        print(content_dict)
         return render(request, 'galaxy/show_colour_result.html', context)
 
 
@@ -847,25 +876,36 @@ class MakeAnAssessment(TemplateView):
         assessment_date = request.POST['datepicker']  # 06/09/2023
         assessment_date = datetime.strptime(assessment_date, "%m/%d/%Y").date()
 
-        '''Назначение даты 5 рандомным тестам '''
-        assessments_by_part = []
+        '''Собираем свободные тесты для ассессмента по типам '''
+        assessment_tests_by_part = []
         for part in ['Grammar and Vocabulary', 'Listening', 'Reading', 'Speaking', 'Writing']:
-            assessments_by_part.append(
+            assessment_tests_by_part.append(
                 Tests.objects.filter(is_assessment=True, type=group.test_type, part=part).
                 exclude(used_in_groups__contains=group.name)
                                        )
 
-        for assessment_query in assessments_by_part:
-            if len(assessment_query) < 3:
+        '''Проверяем на каждый ли тип теста есть свободный тест для назначения'''
+        if len(assessment_tests_by_part) != 5:
+            print('НЕ ХВАТАЕТ ТИПОВ АССЕССМЕНТА:', len(assessment_tests_by_part))
+            return redirect('make_an_assessment')
+
+        '''Назначение даты 5 рандомным тестам '''
+        for test_query in assessment_tests_by_part:
+            '''Уведомление о том, что осталось мало свободных ассессментов для этой группы'''
+            if len(test_query) < 3:
                 pass        # notification, that few tests left
 
-            if len(assessment_query) > 0:
-                random_assessment = assessment_query.order_by('?')[0]       # rly random or everytime the same?
-                assessment = Assessments(test=random_assessment, group=group, date=assessment_date)
-                if len(random_assessment.used_in_groups) > 0:
-                    random_assessment.used_in_groups += ','
-                random_assessment.used_in_groups += group.name
-                random_assessment.save()
+            '''Назначение даты 5 рандомным тестам '''
+            if len(test_query) > 0:
+                random_test = test_query.order_by('?')[0]       # rly random or everytime the same?
+                list_used_in_groups = random_test.used_in_groups.split(', ')
+                if list_used_in_groups == ['']:
+                    random_test.used_in_groups = group.name
+                else:
+                    list_used_in_groups.append(group.name)
+                    random_test.used_in_groups = ', '.join(list_used_in_groups)
+                random_test.save()
+                assessment = Assessments(test=random_test, group=group, date=assessment_date)
                 assessment.save()
         return redirect('show_current_assessments')
 
@@ -932,3 +972,20 @@ class ShowStudentAssessments(ListView):
         print([int(id_) for id_ in user.assessments_passed.split(',') if id_])
         return Assessments.objects.filter(group=user.group, date=today)\
             .exclude(test_id__in=[int(id_) for id_ in user.assessments_passed.split(',') if id_])
+
+
+class ShowStudentAssessmentResults(ListView):
+    #model = Results
+    context_object_name = 'assessments'
+    template_name = "galaxy/show_student_assessment_results.html"
+
+    def get_queryset(self):
+        user = self.request.user
+        user_assessment_dates = [x.date for x in Assessments.objects.filter(group=user.group).distinct('date')]
+        assessments_dict = {key: [Results.objects.get(student_id=user, test_id=x.test)
+                                  if Results.objects.filter(student_id=user, test_id=x.test).exists()
+                                  else "no result"
+                                  for x in Assessments.objects.filter(group=user.group, date=key).order_by('test__part')]
+                                  for key in user_assessment_dates}
+
+        return assessments_dict

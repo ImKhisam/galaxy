@@ -1,0 +1,47 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
+{% endblock custom_styles %}
+
+{% block content %}
+<div class="parent">
+    <div style="width: 30%"><h1><a href="{% url 'show_student_assessments' %}">Assessments for today</a></h1></div>
+    <div class="current" style="width: 30%"><h1><span>Assessment results</span></h1></div>
+</div>
+<div class="parent">
+    <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Grammar</th>
+                    <th>Listening</th>
+                    <th>Reading</th>
+                    <th>Speaking</th>
+                    <th>Writing</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for date, results in assessments.items %}
+                <tr>
+                    <td scope="row">{{ forloop.counter }}</td>
+                    <td>{{ date }}</td>
+                    {% for result in results %}
+                    {% if result == 'no result' %}
+                        <td>No result</td>
+                    {% else %}
+                        <td><a href="{% url 'result_preview' result.id %}">{{ result.points }}</a></td>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock content %}

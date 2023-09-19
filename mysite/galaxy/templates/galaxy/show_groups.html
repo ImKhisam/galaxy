@@ -47,7 +47,12 @@ option{
       {% for group in groups %}
           <tr>
               <td scope="row">{{ forloop.counter }}</td>
-              <td> {{group.name}}</td>
+              <td class="group-name" data-group-id="{{ group.id }}">
+                  <span class="editable">{{ group.name }}</span>
+                  <input class="edit-input hidden" type="text" value="{{ group.name }}">
+                  <button class="save-btn hidden">Save</button>
+                  <button class="cancel-btn hidden">Cancel</button>
+              </td>
               <td> {{group.test_type}}</td>
               <td>
                   <div style="display: inline-flex; width: 80%;">
@@ -120,6 +125,53 @@ option{
                 }
             });
         }
+    });
+
+    // Add click event listener to each group name
+    const groupNames = document.querySelectorAll('.group-name');
+    groupNames.forEach((groupName) => {
+        const editable = groupName.querySelector('.editable');
+        const editInput = groupName.querySelector('.edit-input');
+        const saveBtn = groupName.querySelector('.save-btn');
+        const cancelBtn = groupName.querySelector('.cancel-btn');
+
+        editable.addEventListener('click', () => {
+            // Toggle between view and edit modes
+            editable.classList.add('hidden');
+            editInput.classList.remove('hidden');
+            saveBtn.classList.remove('hidden');
+            cancelBtn.classList.remove('hidden');
+        });
+
+        // Handle cancel button click
+        cancelBtn.addEventListener('click', () => {
+            editable.classList.remove('hidden');
+            editInput.classList.add('hidden');
+            saveBtn.classList.add('hidden');
+            cancelBtn.classList.add('hidden');
+        });
+
+        // Handle save button click
+        saveBtn.addEventListener('click', () => {
+            const groupId = groupName.getAttribute('data-group-id');
+            const newGroupName = editInput.value;
+            // Send an AJAX request to update the group name
+            $.ajax({
+                url: "{% url 'update_group_name' %}",
+                data: {
+                    group_id: groupId,
+                    new_name: newGroupName,
+                },
+                success: function() {
+                    // Update the view with the new group name
+                    editable.textContent = newGroupName;
+                    editable.classList.remove('hidden');
+                    editInput.classList.add('hidden');
+                    saveBtn.classList.add('hidden');
+                    cancelBtn.classList.add('hidden');
+                },
+            });
+        });
     });
 </script>
 {% endblock javascript %}
