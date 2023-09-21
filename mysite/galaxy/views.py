@@ -23,7 +23,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
-from .utils import generate_token, ConfirmMixin, AddTestConstValues
+from .utils import generate_token, ConfirmMixin, AddTestConstValues, TeacherUserMixin, ConfirmStudentMixin
 
 
 class Index(TemplateView):
@@ -72,7 +72,7 @@ class SignUp(CreateView):
         return render(self.request, 'galaxy/email_check_page.html')     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! прямой редирект?????
 
 
-def email_check_page(request):                  # !!!!!!!!!!!!!!!!!!!!!!!!! буз этой функции?
+def email_check_page(request):                  # !!!!!!!!!!!!!!!!!!!!!!!!! без этой функции?
     return render(request, 'galaxy/email_check_page.html')
 
 
@@ -152,6 +152,8 @@ def logout_user(request):
 
 
 class PersonalAcc(LoginRequiredMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = CustomUser
     template_name = "galaxy/personal_acc.html"
     slug_url_kwarg = 'acc_slug'
@@ -163,7 +165,9 @@ class PersonalAcc(LoginRequiredMixin, DetailView):
         return context
 
 
-class ShowResults(ListView):
+class ShowResults(LoginRequiredMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     paginate_by = 15
     model = Results
     template_name = "galaxy/show_results.html"
@@ -183,7 +187,9 @@ class ShowResults(ListView):
         return Results.objects.filter(student_id=self.request.user)
 
 
-class ResultPreview(DetailView):
+class ResultPreview(LoginRequiredMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = Results
     template_name = 'galaxy/result_preview.html'
     pk_url_kwarg = 'result_pk'
@@ -195,7 +201,9 @@ class ResultPreview(DetailView):
         return context
 
 
-class ShowGroups(ListView):
+class ShowGroups(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = Groups
     context_object_name = 'groups'
     template_name = "galaxy/show_groups.html"
@@ -233,7 +241,9 @@ def update_group_name(request):
         return JsonResponse({'success': False, 'error': 'Error'})
 
 
-class ShowGroupParticipants(ListView):
+class ShowGroupParticipants(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = CustomUser
     context_object_name = 'participants'
     template_name = "galaxy/show_group_participants.html"
@@ -270,8 +280,10 @@ def update_student_group(request):
     return JsonResponse({'success': True})
 
 
-class TestDetails(LoginRequiredMixin, DetailView):
-    login_url = reverse_lazy('login')
+class TestDetails(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    #login_url = reverse_lazy('login')
     model = Tests
     template_name = "galaxy/test_details.html"
     pk_url_kwarg = 'test_pk'
@@ -292,7 +304,10 @@ class TestDetails(LoginRequiredMixin, DetailView):
         return context
 
 
-class PassTest(View):
+class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+
     def get(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
@@ -495,7 +510,9 @@ class PassTest(View):
         return HttpResponseRedirect('/test_result_with_points/' + str(result.pk) + '/')
 
 
-class TestResultWOPoints(TemplateView):
+class TestResultWOPoints(LoginRequiredMixin, ConfirmStudentMixin, TemplateView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     template_name = "galaxy/test_result_wo_points.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -504,7 +521,9 @@ class TestResultWOPoints(TemplateView):
         return context
 
 
-class TestResultWithPoints(DetailView):
+class TestResultWithPoints(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = Results
     template_name = "galaxy/test_result_with_points.html"
     pk_url_kwarg = 'res_pk'
@@ -536,7 +555,9 @@ def showdoc(request, classes_id, doc_type):
         raise Http404()
 
 
-class Playaudio(DetailView):
+class Playaudio(LoginRequiredMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = OlympWay
     template_name = 'galaxy/play_audio.html'
     pk_url_kwarg = 'classes_id'
@@ -549,6 +570,8 @@ class Playaudio(DetailView):
 
 
 class Idioms(LoginRequiredMixin, TemplateView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     template_name = "galaxy/zaglushka.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -561,7 +584,9 @@ def julik(request):
     return render(request, 'galaxy/julik.html')
 
 
-class ShowTests(ListView):
+class ShowTests(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     paginate_by = 10
     model = Tests
     template_name = "galaxy/show_tests.html"
@@ -581,7 +606,9 @@ class ShowTests(ListView):
         return Tests.objects.filter(is_assessment=flag).order_by('type', 'part', 'test_num')
 
 
-class ShowTestsToCheck(ListView):
+class ShowTestsToCheck(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     paginate_by = 15
     model = TestsToCheck
     template_name = "galaxy/show_tests_to_check.html"
@@ -597,7 +624,9 @@ class ShowTestsToCheck(ListView):
         return TestsToCheck.objects.filter(is_checked=False)
 
 
-class ShowCheckedTests(ListView):
+class ShowCheckedTests(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     paginate_by = 15
     model = TestsToCheck
     template_name = "galaxy/show_checked_tests.html"
@@ -615,7 +644,9 @@ class ShowCheckedTests(ListView):
         return sum(int(x.points) for x in tasks)
 
 
-class ShowConfirmedStudents(ConfirmMixin, ListView):
+class ShowConfirmedStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     template_name = "galaxy/show_confirmed_students.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -630,14 +661,18 @@ class ShowConfirmedStudents(ConfirmMixin, ListView):
         return self.foo(True)
 
 
-class ShowPendingStudents(ConfirmMixin, ListView):
+class ShowPendingStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     template_name = "galaxy/show_pending_students.html"
 
     def get_queryset(self):
         return self.foo(None)
 
 
-class ShowDeniedStudents(ConfirmMixin, ListView):
+class ShowDeniedStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     template_name = "galaxy/show_denied_students.html"
 
     def get_queryset(self):
@@ -659,7 +694,9 @@ def confirm_student(request, student_id, template):
     return redirect(reverse_lazy(template))
 
 
-class CheckingTest(DetailView):
+class CheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = TestsToCheck
     template_name = 'galaxy/checking_test.html'
     pk_url_kwarg = 'test_to_check_id'
@@ -705,7 +742,9 @@ class CheckingTest(DetailView):
 #    return response
 
 
-class AddTestAndChaptersView(AddTestConstValues, View):
+class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstValues, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     def get(self, request, *args, **kwargs):
         test_form = TestAddForm()
         chapter_formset = formset_factory(ChapterAddForm, extra=0)
@@ -743,7 +782,9 @@ class AddTestAndChaptersView(AddTestConstValues, View):
         return render(request, 'galaxy/add_test.html', context)
 
 
-class AddQandAView(View):
+class AddQandAView(LoginRequiredMixin, TeacherUserMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     def get(self, request, *args, **kwargs):
         test_id = self.kwargs.get('test_id')
         question_form = QuestionAddForm(test_id)
@@ -782,7 +823,9 @@ class AddQandAView(View):
             return redirect('add_q_and_a', test_id)
 
 
-class ShowTest(View):
+class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     def get(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
 
@@ -812,7 +855,9 @@ class ShowTest(View):
         return render(request, 'galaxy/show_test.html', context)
 
 
-class ShowColouredResult(View):                    # exact copy of previous (inherit it?)
+class ShowColouredResult(LoginRequiredMixin, View):                    # exact copy of previous (inherit it?)
+    login_url = '/login/'
+    redirect_field_name = 'login'
     def get(self, request, result_pk):
         result_object = Results.objects.get(id=str(result_pk))
         test = get_object_or_404(Tests, id=result_object.test_id.id)
@@ -847,7 +892,9 @@ def testing_page(request):
     return render(request, 'galaxy/audio_recording_test.html')
 
 
-class TestingPage(View):
+class TestingPage(LoginRequiredMixin, View):        # wtf is this
+    login_url = '/login/'
+    redirect_field_name = 'login'
     template_name = 'galaxy/audio_recording_test.html'
 
     def get(self, request):
@@ -861,7 +908,9 @@ class TestingPage(View):
             return render(request, 'galaxy/julik.html')
 
 
-class MakeAnAssessment(TemplateView):
+class MakeAnAssessment(LoginRequiredMixin, TeacherUserMixin, TemplateView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     template_name = 'galaxy/make_an_assessment.html'
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -910,7 +959,9 @@ class MakeAnAssessment(TemplateView):
         return redirect('show_current_assessments')
 
 
-class ShowCurrentAssessments(ListView):
+class ShowCurrentAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = Assessments
     context_object_name = 'assessments'
     template_name = "galaxy/show_current_assessments.html"
@@ -932,7 +983,9 @@ def delete_an_assessment(request, assessment_id):
     return redirect('show_current_assessments')
 
 
-class ShowPastAssessments(ListView):
+class ShowPastAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = Assessments
     context_object_name = 'assessments'
     template_name = "galaxy/show_past_assessments.html"
@@ -942,7 +995,9 @@ class ShowPastAssessments(ListView):
         return Assessments.objects.filter(is_passed=True).distinct('group', 'date')
 
 
-class ShowAssessmentResults(ListView):
+class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = CustomUser
     context_object_name = 'assessment_contestants'
     template_name = "galaxy/show_assessment_results.html"
@@ -961,7 +1016,9 @@ class ShowAssessmentResults(ListView):
         #return CustomUser.objects.filter(group=group)
 
 
-class ShowStudentAssessments(ListView):
+class ShowStudentAssessments(LoginRequiredMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = Assessments
     context_object_name = 'assessments'
     template_name = "galaxy/show_student_assessments.html"
@@ -974,7 +1031,9 @@ class ShowStudentAssessments(ListView):
             .exclude(test_id__in=[int(id_) for id_ in user.assessments_passed.split(',') if id_])
 
 
-class ShowStudentAssessmentResults(ListView):
+class ShowStudentAssessmentResults(LoginRequiredMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     #model = Results
     context_object_name = 'assessments'
     template_name = "galaxy/show_student_assessment_results.html"

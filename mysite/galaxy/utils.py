@@ -1,9 +1,9 @@
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import six
 from django.db.models import Q
-
+from django.contrib.auth.mixins import UserPassesTestMixin
 from galaxy.models import CustomUser
-
+from django.shortcuts import redirect
 
 class TokenGenerator(PasswordResetTokenGenerator):
 
@@ -15,6 +15,9 @@ generate_token = TokenGenerator()
 
 
 class ConfirmMixin:
+    """Formation list of students, value in foo - True/False/None
+    depending on type of students(confirmed/not confirmed/pending).
+    q - parameters from search field"""
     paginate_by = 15
     model = CustomUser
     context_object_name = 'students'
@@ -29,6 +32,21 @@ class ConfirmMixin:
             )
         return CustomUser.objects.filter(role='Student', is_confirmed=value).order_by('id')
 
+
+class TeacherUserMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.role == 'Teacher'
+
+    def handle_no_permission(self):
+        return redirect('home')
+
+
+class ConfirmStudentMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_confirmed is True
+
+    def handle_no_permission(self):
+        return redirect('julik')
 
 class AddTestConstValues:
     timings = {'GSEListening': 30,
