@@ -15,6 +15,11 @@
                 <div class="form-error">{{ f.errors }}</div>
             {% endfor %}
             <div class="center">
+                <a class="btn btn5" href="{% url 'reset_password' %}">
+                    <span>Forgot Password?</span>
+                </a>
+            </div>
+            <div class="center">
                 <button class="btn btn5" type="submit">
                     <span>Login</span>
                 </button>

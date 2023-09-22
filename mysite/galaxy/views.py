@@ -14,6 +14,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, TemplateView, DetailView, ListView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponseRedirect, JsonResponse
 from .forms import *
@@ -23,10 +24,12 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
-from .utils import generate_token, ConfirmMixin, AddTestConstValues, TeacherUserMixin, ConfirmStudentMixin
+from .utils import generate_token, ConfirmMixin, AddTestConstValues, TeacherUserMixin, ConfirmStudentMixin, teacher_check
+from django.contrib.auth.views import PasswordResetView
 
 
-class Index(TemplateView):
+
+class Index(TemplateView, LoginRequiredMixin):
     template_name = "galaxy/index.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -151,7 +154,18 @@ def logout_user(request):
     return redirect('home')
 
 
-class PersonalAcc(LoginRequiredMixin, DetailView):
+class ResetPassView(PasswordResetView):
+    template_name = 'galaxy/password_reset.html'
+    email_template_name = 'galaxy/password_reset_email.html'
+    #subject_template_name = 'password_reset_subject'
+    success_message = "We've emailed you instructions for setting your password, " \
+                      "if an account exists with the email you entered. You should receive them shortly." \
+                      " If you don't receive an email, " \
+                      "please make sure you've entered the address you registered with, and check your spam folder."
+    success_url = reverse_lazy('login')
+
+
+class PersonalAcc(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = CustomUser
@@ -165,7 +179,7 @@ class PersonalAcc(LoginRequiredMixin, DetailView):
         return context
 
 
-class ShowResults(LoginRequiredMixin, ListView):
+class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     paginate_by = 15
@@ -187,7 +201,7 @@ class ShowResults(LoginRequiredMixin, ListView):
         return Results.objects.filter(student_id=self.request.user)
 
 
-class ResultPreview(LoginRequiredMixin, DetailView):
+class ResultPreview(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = Results
@@ -212,6 +226,7 @@ class ShowGroups(LoginRequiredMixin, TeacherUserMixin, ListView):
         return Groups.objects.all()
 
 
+#@user_passes_test(teacher_check)
 def add_group(request):
     group_name = request.GET.get('name', None)
     test_type = request.GET.get('test_type', None)
@@ -220,6 +235,7 @@ def add_group(request):
     return redirect('show_groups')
 
 
+@user_passes_test(teacher_check, login_url='home')
 def update_group_name(request):
     group_id = request.GET.get('group_id', None)
     new_name = request.GET.get('new_name', None)
@@ -260,6 +276,7 @@ class ShowGroupParticipants(LoginRequiredMixin, TeacherUserMixin, ListView):
         return context
 
 
+@user_passes_test(teacher_check, login_url='home')
 def delete_group(request, group_id):
     group = Groups.objects.get(id=group_id)
     name_to_delete = group.name
@@ -273,6 +290,7 @@ def delete_group(request, group_id):
     return redirect('show_groups')
 
 
+@user_passes_test(teacher_check, login_url='home')
 def update_student_group(request):
     user = CustomUser.objects.get(id=request.GET.get('student'))
     user.group = Groups.objects.get(id=request.GET.get('group'))
@@ -540,6 +558,7 @@ class TestResultWithPoints(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
         return context
 
 
+# need decorator for checking student confirmation - to show only bb docs, not olymp
 def showdoc(request, classes_id, doc_type):
     media = settings.MEDIA_ROOT                                     # importing from settings
     obj = get_object_or_404(OlympWay, id=classes_id)                # get path from db
@@ -679,6 +698,7 @@ class ShowDeniedStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, Lis
         return self.foo(False)
 
 
+@user_passes_test(teacher_check, login_url='home')
 def deny_student(request, student_id, template):
     student = CustomUser.objects.get(id=student_id)
     student.is_confirmed = False
@@ -687,6 +707,7 @@ def deny_student(request, student_id, template):
     return redirect(reverse_lazy(template))
 
 
+@user_passes_test(teacher_check, login_url='home')
 def confirm_student(request, student_id, template):
     student = CustomUser.objects.get(id=student_id)
     student.is_confirmed = True
@@ -888,14 +909,12 @@ class ShowColouredResult(LoginRequiredMixin, View):                    # exact c
         return render(request, 'galaxy/show_colour_result.html', context)
 
 
-def testing_page(request):
-    return render(request, 'galaxy/audio_recording_test.html')
+#def testing_page(request):
+#    return render(request, 'galaxy/audio_recording_test.html')
 
 
-class TestingPage(LoginRequiredMixin, View):        # wtf is this
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    template_name = 'galaxy/audio_recording_test.html'
+class TestingPage(View):        # wtf is this
+    template_name = 'galaxy/testing.html'
 
     def get(self, request):
         return render(request, self.template_name)
@@ -971,6 +990,7 @@ class ShowCurrentAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
         return Assessments.objects.filter(is_passed=False).distinct('group', 'date')
 
 
+@user_passes_test(teacher_check, login_url='home')
 def delete_an_assessment(request, assessment_id):
     assessment_object = Assessments.objects.get(id=assessment_id)
     group = assessment_object.group

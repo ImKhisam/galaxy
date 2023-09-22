@@ -147,3 +147,7 @@ class AddTestConstValues:
         testobject.time_limit = self.timings[testobject.type + testobject.part]
         testobject.test_details = self.texts[testobject.type + testobject.part]
         testobject.save()
+
+
+def teacher_check(user):
+    return user.role == 'Teacher'
