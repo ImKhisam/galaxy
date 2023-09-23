@@ -1,9 +1,44 @@
 {% extends 'galaxy/base.html' %}
 
 {% block content %}
-<h1>PK of {{user.username}}</h1>
+<h1>PK of {{ user.username }}</h1>
 
 {% if not user.is_confirmed %}
-<p>You're not confirmed, pls contact administrator</p>
+<p>You're not confirmed, please contact the administrator</p>
 {% endif %}
+
+<div class="modal">
+    <a class="btn btn5" href="#" id="delete-account-button">
+        <span>Delete your acc? </span>
+    </a>
+</div>
+
+<!-- Modal for confirmation -->
+<div class="modal" id="delete-account-modal" style="display: none;">
+    <p>You really want to delete your account?</p>
+    <button id="confirm-delete">Yes</button>
+    <button id="cancel-delete">No</button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Show the confirmation modal when the button is clicked
+        $("#delete-account-button").click(function() {
+            $("#delete-account-modal").show();
+        });
+
+        // Handle the "Yes" button click
+        $("#confirm-delete").click(function() {
+            // Redirect to the delete account URL
+            window.location.href = "{% url 'delete_account' user.pk %}";
+        });
+
+        // Handle the "No" button click
+        $("#cancel-delete").click(function() {
+            $("#delete-account-modal").hide();
+        });
+    });
+</script>
+
 {% endblock %}

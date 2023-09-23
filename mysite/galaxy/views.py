@@ -179,6 +179,14 @@ class PersonalAcc(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
         return context
 
 
+def delete_account(request, user_id):
+    user = CustomUser.objects.get(id=user_id)
+    user.delete()
+    logout(request)
+    return redirect('home')
+
+
+
 class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'

@@ -1,5 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordResetForm, \
+    SetPasswordForm
 from django.contrib.auth.models import User
 from .models import *
 from django.forms.models import inlineformset_factory, BaseInlineFormSet, modelform_factory
@@ -25,6 +26,11 @@ class SignUpForm(UserCreationForm):
     class Meta(UserCreationForm):
         model = CustomUser
         fields = ('first_name', 'last_name', 'role', 'username', 'email', 'password1', 'password2')
+
+
+class NewPassSetForm(SetPasswordForm):
+    new_password1 = forms.CharField(label='New password', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+    new_password2 = forms.CharField(label='New password confirm', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
 
 
 class CustomUserChangeForm(UserChangeForm):
