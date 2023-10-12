@@ -24,9 +24,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
-from .utils import generate_token, ConfirmMixin, AddTestConstValues, TeacherUserMixin, ConfirmStudentMixin, teacher_check
+from .utils import generate_token, NotLoggedIn, ConfirmMixin, AddTestConstValues, TeacherUserMixin, \
+    ConfirmStudentMixin, teacher_check, ChooseAddQuestForm
 from django.contrib.auth.views import PasswordResetView
-
 
 
 class Index(TemplateView, LoginRequiredMixin):
@@ -40,7 +40,7 @@ class Index(TemplateView, LoginRequiredMixin):
         return context
 
 
-class SignUp(CreateView):
+class SignUp(NotLoggedIn, CreateView):
     form_class = SignUpForm
     template_name = 'galaxy/sign_up.html'
     success_url = reverse_lazy('personal_acc')
@@ -131,7 +131,7 @@ def validate_password(request):
     return JsonResponse(response)
 
 
-class LoginUser(LoginView):
+class LoginUser(NotLoggedIn, LoginView):
     form_class = LoginUserForm
     template_name = 'galaxy/login.html'
 
@@ -811,31 +811,35 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
         return render(request, 'galaxy/add_test.html', context)
 
 
-class AddQandAView(LoginRequiredMixin, TeacherUserMixin, View):
+class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, View):
     login_url = '/login/'
     redirect_field_name = 'login'
+    #used_form = QuestionAddForm
+
     def get(self, request, *args, **kwargs):
-        test_id = self.kwargs.get('test_id')
-        question_form = QuestionAddForm(test_id)
+        chapter_id = self.kwargs.get('chapter_id')
+        question_form = self.choose_form(Chapters.objects.get(id=chapter_id))
+        print('form is', question_form)
         answer_formset = formset_factory(AnswerAddForm, extra=0)
-        sum_of_questions = Questions.objects.filter(test_id=Tests.objects.get(id=test_id)).count()
         context = {
             'question_form': question_form,
             'answer_formset': answer_formset,
-            'sum_of_questions': sum_of_questions,
         }
 
         return render(request, 'galaxy/add_q_and_a.html', context)
 
     def post(self, request, *args, **kwargs):
-        test_id = self.kwargs.get('test_id')
-
-        question_form = QuestionAddForm(test_id, request.POST, request.FILES)
+        chapter_id = self.kwargs.get('chpater_id')
+        chapter_obj = Chapters.objects.get(id=chapter_id)
+        sum_of_questions = Questions.objects.filter(chapter_id=Chapters.objects.get(id=chapter_id)).count()
+        question_form = self.used_form(request.POST, request.FILES)
         answer_formset = formset_factory(AnswerAddForm, extra=0)(request.POST, request.FILES)
 
         if question_form.is_valid() and answer_formset.is_valid():
             question_obj = question_form.save(commit=False)
-            question_obj.test_id = Tests.objects.get(id=test_id)
+            question_obj.test_id = chapter_obj.test_id
+            question_obj.chapter_id = chapter_obj
+            question_obj.question_number = sum_of_questions + 1
             # Save the question
             question_obj.save()
 
@@ -849,12 +853,13 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, View):
                     answer_obj.question_id = question_obj
                     answer_obj.save()
 
-            return redirect('add_q_and_a', test_id)
+            return redirect('add_q_and_a', chapter_id)
 
 
 class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
     login_url = '/login/'
     redirect_field_name = 'login'
+
     def get(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
 
@@ -865,14 +870,25 @@ class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
             qa = {}
             for question in questions_for_test:
                 if question.question_type == 'match_type':
-                    qa[question] = {
-                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
-                            'answer',
-                            flat=True)
-                        for key in
-                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+                    test_obj = question.test_id
+                    if test_obj.type == 'USE' and test_obj.part == 'Listening' and question.question_number == 2:
+                        qa[question] = {
+                            key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                                'addition',
+                                flat=True)
+                            for key in
+                            Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').
+                                order_by('match')}
+                    else:
+                        qa[question] = {
+                            key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                                'answer',
+                                flat=True)
+                            for key in
+                            Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').
+                                order_by('match')}
                 elif question.question_type == 'input_type':
-                    qa[question] = Answers.objects.get(question_id__id=question.id)
+                    qa[question] = Answers.objects.get(question_id__id=question.id)     # незачем запрашивать?
                 else:
                     qa[question] = Answers.objects.filter(question_id__id=question.id)
             content_dict[chapter] = qa

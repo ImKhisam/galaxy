@@ -2,6 +2,8 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import six
 from django.db.models import Q
 from django.contrib.auth.mixins import UserPassesTestMixin
+
+from galaxy.forms import *
 from galaxy.models import CustomUser
 from django.shortcuts import redirect
 
@@ -13,6 +15,13 @@ class TokenGenerator(PasswordResetTokenGenerator):
 
 generate_token = TokenGenerator()
 
+
+class NotLoggedIn(UserPassesTestMixin):
+    def test_func(self):
+        return not self.request.user.is_authenticated
+
+    def handle_no_permission(self):
+        return redirect('home')
 
 class ConfirmMixin:
     """Formation list of students, value in foo - True/False/None
@@ -47,6 +56,7 @@ class ConfirmStudentMixin(UserPassesTestMixin):
 
     def handle_no_permission(self):
         return redirect('julik')
+
 
 class AddTestConstValues:
     timings = {'GSEListening': 30,
@@ -143,10 +153,18 @@ class AddTestConstValues:
                              Письмо недостаточного объёма, а также часть текста электронного письма, 
                              превышающая требуемый объём, не оцениваются.'''}
 
-    def add_test_const_values(self, testobject):
-        testobject.time_limit = self.timings[testobject.type + testobject.part]
-        testobject.test_details = self.texts[testobject.type + testobject.part]
-        testobject.save()
+    def add_test_const_values(self, test_object):
+        test_object.time_limit = self.timings[test_object.type + test_object.part]
+        test_object.test_details = self.texts[test_object.type + test_object.part]
+        test_object.save()
+
+
+class ChooseAddQuestForm:
+    def choose_form(self, chapter_object):
+        if chapter_object.test_id.part == 'Writing':
+            return WritingQandAAddForm
+        else:
+            return QuestionAddForm
 
 
 def teacher_check(user):

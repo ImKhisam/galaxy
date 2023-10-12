@@ -8,29 +8,39 @@ from django.forms import ModelForm, modelformset_factory
 
 
 class LoginUserForm(AuthenticationForm):
-    username = forms.CharField(label='Login', widget=forms.TextInput(attrs={'class': 'form-input'}))
-    password = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+    username = forms.CharField(
+        label='Login', widget=forms.TextInput(attrs={'class': 'auth_input', 'placeholder': 'Username'}))
+    password = forms.CharField(
+        label='Password', widget=forms.PasswordInput(attrs={'class': 'auth_input', 'placeholder': 'Password'}))
 
 
 class SignUpForm(UserCreationForm):
-    first_name = forms.CharField(label='First name', widget=forms.TextInput(attrs={'class': 'form-input'}))
-    last_name = forms.CharField(label='Last name', widget=forms.TextInput(attrs={'class': 'form-input'}))
-    role = forms.ChoiceField(label='Role', choices=
-                             ((None, 'Choose role'), ('Student', 'Student'), ('Teacher', 'Teacher')),
-                             widget=forms.Select(attrs={'class': 'form-choice'}))
-    username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-input'}))
-    email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-input'}))
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
-    password2 = forms.CharField(label='Repeat pass', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+    first_name = forms.CharField(
+        label='First name', widget=forms.TextInput(attrs={'class': 'auth_input', 'placeholder': 'First name'}))
+    last_name = forms.CharField(
+        label='Last name', widget=forms.TextInput(attrs={'class': 'auth_input', 'placeholder': 'Last name'}))
+    #role = forms.ChoiceField(label='Role', choices=
+    #                         ((None, 'Choose role'), ('Student', 'Student'), ('Teacher', 'Teacher')),
+    #                         widget=forms.Select(attrs={'class': 'form-choice'}))
+    username = forms.CharField(
+        label='Username', widget=forms.TextInput(attrs={'class': 'auth_input', 'placeholder': 'Username'}))
+    email = forms.EmailField(
+        label='Email', widget=forms.EmailInput(attrs={'class': 'auth_input', 'placeholder': 'Email'}))
+    password1 = forms.CharField(
+        label='Password', widget=forms.PasswordInput(attrs={'class': 'auth_input', 'placeholder': 'Password'}))
+    password2 = forms.CharField(
+        label='Repeat pass', widget=forms.PasswordInput(attrs={'class': 'auth_input', 'placeholder': 'Repeat Password'}))
 
     class Meta(UserCreationForm):
         model = CustomUser
-        fields = ('first_name', 'last_name', 'role', 'username', 'email', 'password1', 'password2')
+        fields = ('first_name', 'last_name', 'username', 'email', 'password1', 'password2')
 
 
 class NewPassSetForm(SetPasswordForm):
-    new_password1 = forms.CharField(label='New password', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
-    new_password2 = forms.CharField(label='New password confirm', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+    new_password1 = forms.CharField(
+        label='Password', widget=forms.PasswordInput(attrs={'placeholder': 'New password'}))
+    new_password2 = forms.CharField(
+        label='Password confirm', widget=forms.PasswordInput(attrs={'placeholder': 'Repeat new password'}))
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -68,16 +78,24 @@ class TaskCheckForm(forms.ModelForm):       # выставление балло�
 class QuestionAddForm(forms.ModelForm):
     class Meta:
         model = Questions
-        fields = ['chapter_id', 'question_number', 'question', 'question_type',
+        fields = ['question_type', 'question', 'media',
                   'addition_before', 'addition_after', 'points', 'time_limit']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question-add'}),
+            'addition_before': forms.TextInput(attrs={'class': 'additions'})
         }
 
-    def __init__(self, test_id,  *args, **kwargs):
-        super(QuestionAddForm, self).__init__(*args, **kwargs)
-        self.fields['chapter_id'] = \
-            forms.ModelChoiceField(queryset=Chapters.objects.filter(test_id=test_id).order_by('chapter_number'))
+
+class WritingQandAAddForm(forms.ModelForm):
+    class Meta:
+        model = Questions
+        fields = ['question', 'media', 'points', 'time_limit',
+                  'writing_fl', 'writing_from', 'writing_to', 'writing_subject',
+                  'writing_letter', 'writing_after']
+        widgets = {
+            'question': forms.Textarea(attrs={'class': 'question-add'}),
+            'addition_before': forms.TextInput(attrs={'class': 'additions'})
+        }
 
 
 class AnswerAddForm(forms.ModelForm):

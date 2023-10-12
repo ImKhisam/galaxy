@@ -1,33 +1,41 @@
 {% extends 'galaxy/base.html' %}
+{% load static %}
 
 {% block custom_styles %}
+<link type="text/css" href="{% static 'galaxy/css/auth.css' %}" rel="stylesheet" />
 <style>
-.invalid-feedback{
-    margin-top: 10px;
-    text-align: center;
-}
+
 </style>
+
 {% endblock %}
 
 {% block content %}
-    <div class="modal">
+    <div class="auth_window">
         <h1>{{ title }}</h1>
-
         <form method="post">
             {% csrf_token %}
             {% for f in form %}
-                <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }} </p>
+                <div class="auth_line">
+                    {{ f }}
+                    {% if f.label == 'Password' or f.label == 'Repeat pass' %}
+                        <div class="show_hide_pass">
+                            <button class="eye_button moon" type="button" id="toggle-{{ f.name }}">
+                                <div class="tooltip">Show/Hide Password</div>
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
                 <div class="form-error">{{ f.errors }}</div>
             {% endfor %}
-            <div class="center">
-                <button class="btn btn5" id="registerBtn" type="submit">
+            <div class="auth_line">
+                <button class="login_button" id="registerBtn" type="submit">
                     <span>Register</span>
                 </button>
             </div>
         </form>
 
     </div>
-{% endblock %}
+{% endblock content %}
 
 {% block javascript %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -51,9 +59,7 @@
                             $('#id_username').removeClass('is-invalid').addClass('is-valid');
                             $('#usernameError').remove();
                             $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn'); // enable the button
-
                         }
-
                     },
                     // on error
                     error: function (response) {
@@ -61,84 +67,85 @@
                         console.log(response.responseJSON.errors)
                     }
                 });
-
                 return false;
             });
-        // email validation
-        $('#id_email').keyup(function () {
-            // create an AJAX call
-            $.ajax({
-                data: $(this).serialize(),
-                url: "{% url 'validate_email' %}",
-                success: function (response) {
-                    if (response.is_taken == true) {
-                        $('#id_email').removeClass('is-valid').addClass('is-invalid');
-                        $('#id_email').after('<div class="invalid-feedback d-block" id="emailError">This email is already registered!</div>')
-                        $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button');
-                    }
-                    else {
-                        $('#id_email').removeClass('is-invalid').addClass('is-valid');
-                        $('#emailError').remove();
-                        if (response.is_valid == true) {
-                            $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn');
-                        } else {
+            // email validation
+            $('#id_email').keyup(function () {
+                // create an AJAX call
+                $.ajax({
+                    data: $(this).serialize(),
+                    url: "{% url 'validate_email' %}",
+                    success: function (response) {
+                        if (response.is_taken == true) {
                             $('#id_email').removeClass('is-valid').addClass('is-invalid');
-                            $('#id_email').after('<div class="invalid-feedback d-block" id="emailError">Please enter a valid email address.</div>')
+                            $('#id_email').after('<div class="invalid-feedback d-block" id="emailError">This email is already registered!</div>')
                             $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button');
                         }
+                        else {
+                            $('#id_email').removeClass('is-invalid').addClass('is-valid');
+                            $('#emailError').remove();
+                            if (response.is_valid == true) {
+                                $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn');
+                            } else {
+                                $('#id_email').removeClass('is-valid').addClass('is-invalid');
+                                $('#id_email').after('<div class="invalid-feedback d-block" id="emailError">Please enter a valid email address.</div>')
+                                $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button');
+                            }
+                        }
+                    },
+                    // on error
+                    error: function (response) {
+                        console.log(response.responseJSON.errors)
                     }
-                },
-                // on error
-                error: function (response) {
-                    console.log(response.responseJSON.errors)
+                });
+                return false;
+            });
+
+            // check equals pass
+            $('#id_password1, #id_password2').keyup(function () {
+                var password1 = $('#id_password1').val();
+                var password2 = $('#id_password2').val();
+                if (password1 != password2) {
+                    $('#id_password2').removeClass('is-valid').addClass('is-invalid');
+                    $('#passwordError').remove();
+                    $('#id_password2').after('<div class="invalid-feedback d-block" id="passwordError">Passwords do not match!</div>')
+                    $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button'); // disable the button
+                }
+                else {
+                    $('#id_password2').removeClass('is-invalid').addClass('is-valid');
+                    $('#passwordError').remove();
+                    $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn'); // enable the button
                 }
             });
-            return false;
-        });
-        // check equals pass
-
-         $('#id_password2').keyup(function () {
-            var password1 = $('#id_password1').val();
-            var password2 = $(this).val();
-            if (password1 != password2) {
-                $('#id_password2').removeClass('is-valid').addClass('is-invalid');
-                $('#passwordError').remove();
-                $('#id_password2').after('<div class="invalid-feedback d-block" id="passwordError">Passwords do not match!</div>')
-                $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button'); // disable the button
-            }
-            else {
-                $('#id_password2').removeClass('is-invalid').addClass('is-valid');
-                $('#passwordError').remove();
-                $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn'); // enable the button
-            }
-         });
-
-
-
         })
+
+        // show-hide password buttons
+        $(document).ready(function() {
+            function togglePasswordField(passwordField, eyeButton) {
+                var passwordFieldType = passwordField.attr("type");
+
+                // Toggle the password field's type between "password" and "text"
+                if (passwordFieldType === "password") {
+                    passwordField.attr("type", "text");
+                    eyeButton.removeClass("moon").addClass("sun");
+                } else {
+                    passwordField.attr("type", "password");
+                    eyeButton.removeClass("sun").addClass("moon");
+                }
+            }
+
+            $("#toggle-password1").click(function() {
+                var passwordField = $("#id_password1");
+                var eyeButton = $("#toggle-password1");
+                togglePasswordField(passwordField, eyeButton);
+            });
+
+            $("#toggle-password2").click(function() {
+                var passwordField = $("#id_password2");
+                var eyeButton = $("#toggle-password2");
+                togglePasswordField(passwordField, eyeButton);
+            });
+        });
     </script>
 {% endblock javascript %}
 
-$('#id_password2').keyup(function() {
-            $.ajax({
-                data: {
-                  'password1': $('#id_password1').val(),
-                  'password2': $('#id_password2').val(),
-                },
-                url: "{% url 'validate_password' %}",
-                success: function(response) {
-                    if (response.matches == false) {
-                        $('#id_password2').removeClass('is-valid').addClass('is-invalid');
-                        $('#id_password2').after('<div class="invalid-feedback d-block" id="passwordError">Passwords do not match!</div>');
-                        $('#registerBtn').prop('disabled', true).removeClass('btn').addClass('disabled_button');
-                    } else {
-                        $('#id_password2').removeClass('is-invalid').addClass('is-valid');
-                        $('#passwordError').remove();
-                        $('#registerBtn').prop('disabled', false).removeClass('disabled_button').addClass('btn');
-                    }
-                },
-                error: function(response) {
-                  console.log(response.responseJSON.errors)
-                }
-            });
-        });

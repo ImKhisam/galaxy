@@ -1,29 +1,60 @@
 {% extends 'galaxy/base.html' %}
+{% load static %}
 
 {% block custom_styles %}
-
+    <link type="text/css" href="{% static 'galaxy/css/auth.css' %}" rel="stylesheet" />
 {% endblock custom_styles %}
 
 {% block content %}
-    <div class="modal">
-        <h1>Authentication</h1>
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-error">{{ form.non_field_errors }}</div>
-            {% for f in form %}
-                <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }} </p>
-                <div class="form-error">{{ f.errors }}</div>
-            {% endfor %}
-            <div class="center">
-                <a class="btn btn5" href="{% url 'reset_password' %}">
-                    <span>Forgot Password?</span>
-                </a>
+<div class="auth_window">
+    <h1>Authentication</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-error">{{ form.non_field_errors }}</div>
+        {% for f in form %}
+            <div class="auth_line">
+                {{ f }}
+                {% if f.label == 'Password' %}
+                    <div class="show_hide_pass">
+                        <button class="eye_button moon" type="button" id="toggle-password">
+                            <div class="tooltip">Show/Hide Password</div>
+                        </button>
+                    </div>
+                {% endif %}
             </div>
-            <div class="center">
-                <button class="btn btn5" type="submit">
-                    <span>Login</span>
-                </button>
-            </div>
-        </form>
-    </div>
-{% endblock %}
+            <div class="form-error">{{ f.errors }}</div>
+        {% endfor %}
+        <div class="auth_line">
+            <button class="login_button" type="submit">
+                <span>Login</span>
+            </button>
+        </div>
+        <div class="auth_line">
+            <div class="forgot_pass"><a href="{% url 'reset_password' %}">Forgot Password?</a></div>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    var passwordField = $("#id_password");
+    var eyeButton = $("#toggle-password");
+
+    $("#toggle-password").click(function() {
+        var passwordFieldType = passwordField.attr("type");
+
+        // Toggle the password field's type between "password" and "text"
+        if (passwordFieldType === "password") {
+            passwordField.attr("type", "text");
+            eyeButton.removeClass("moon").addClass("sun");
+        } else {
+            passwordField.attr("type", "password");
+            eyeButton.removeClass("sun").addClass("moon");
+        }
+    });
+});
+</script>
+{% endblock javascript %}

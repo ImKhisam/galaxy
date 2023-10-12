@@ -22,7 +22,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     is_email_verified = models.BooleanField(default=False)
     role_choice = ((None, 'Choose role'), ('Student', 'Student'), ('Teacher', 'Teacher'))
-    role = models.CharField(max_length=100, choices=role_choice)
+    role = models.CharField(max_length=100, choices=role_choice, default='Student')
     is_confirmed = models.BooleanField()
     slug = AutoSlugField(populate_from='username')
     group = models.ForeignKey(Groups, null=True, on_delete=models.SET_NULL)
@@ -136,6 +136,15 @@ class Chapters(models.Model):
         return f"{self.test_id}, Chapter #{self.chapter_number}"
 
 
+def content_file_name_question(instance, filename):
+    return '/'.join(['test', instance.test_id.type, \
+                     instance.test_id.part, \
+                     str(instance.test_id.test_num), \
+                     "Chapter" + str(instance.chapter_id.chapter_number), \
+                     "Question" + str(instance.question_number), \
+                     filename])
+
+
 class Questions(models.Model):
     single_choice_type = 'single_choice_type'
     match_type = 'match_type'
@@ -149,6 +158,12 @@ class Questions(models.Model):
         (true_false_type, 'true_false_type'),
         (file_adding_type, 'file_adding_type')
     ]
+    letter = 'letter'
+    essay = 'essay'
+    choices_in_writing_fl = [
+        (letter, 'letter'),
+        (essay, 'essay'),
+    ]
 
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     chapter_id = models.ForeignKey(Chapters, on_delete=models.CASCADE)
@@ -159,6 +174,13 @@ class Questions(models.Model):
     question_number = models.PositiveIntegerField()
     question_type = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_question_type)
     time_limit = models.PositiveIntegerField(blank=True)
+    media = models.FileField(upload_to=content_file_name_question, blank=True)
+    writing_fl = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_writing_fl)
+    writing_from = models.CharField(max_length=50, blank=True)
+    writing_to = models.CharField(max_length=50, blank=True)
+    writing_subject = models.CharField(max_length=50, blank=True)
+    writing_letter = models.TextField(max_length=600, blank=True)
+    writing_after = models.TextField(max_length=600, blank=True)
 
     def __str__(self):
         return f"{self.test_id}, {self.chapter_id}, Q{self.question_number}"

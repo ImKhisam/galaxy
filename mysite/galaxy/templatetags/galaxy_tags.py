@@ -24,7 +24,7 @@ def drop_menu_olymp():
 def drop_menu_test(type_of_exam):
     menu_dict = {}
 
-    for item in Tests.objects.filter(type=type_of_exam).order_by('part').distinct('part'):
+    for item in Tests.objects.filter(type=type_of_exam, is_assessment=False).order_by('part').distinct('part'):
         menu_dict[item] = Tests.objects.filter(type=type_of_exam, part=item.part, is_assessment=False)\
                                         .order_by('test_num')
 

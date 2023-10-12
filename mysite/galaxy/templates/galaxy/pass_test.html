@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="test-parent">
 <div class="test">
 <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
@@ -187,7 +188,7 @@
                             <p id="timer{{ question.pk }}">00:00</p>
 
                         </div>
-                    {% else %}
+                    {% else %}      <!-- Writing test -->
                         <div class="add-files">
                             <div class="file">
                                 <label for="{{question.pk}}_media1">Answer:</label>

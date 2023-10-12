@@ -25,7 +25,6 @@ h1{
 {% block content %}
 <div class="question">
     <h1>Adding question</h1>
-    <p> This test already contains number of questions: {{sum_of_questions}}</p>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ question_form.as_p }}

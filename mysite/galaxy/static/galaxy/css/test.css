@@ -10,6 +10,9 @@ h2{
     margin-block-start: 50px;
     margin-block-end: 50px;
 }
+.chapter{
+    margin-bottom: 30px;
+}
 .chapter-text{
     font-size: 24px;
     padding: 0px 40px;
@@ -25,12 +28,11 @@ h2{
 .test-parent{
     padding: 30px;
 }
-.match-answers{
+.list_of_match_options{
     margin-top: 50px;
     text-align: left;
     text-indent: 25px;
     margin-left: 40px;
-
 }
 
 .match-answer{
@@ -308,4 +310,27 @@ h2{
 }
 .file input{
     font-size: 20px;
+}
+.letter_data{
+    white-space: break-spaces;
+    font-size: 27px;
+    margin: 5px 10px 5px 10px;
+    font-weight: bold;
+}
+.letter{
+    display: table;
+    border-collapse: collapse
+}
+.letter_row{
+    display: table-row;
+    border: 1px solid black;
+    box-sizing: border-box;
+    white-space: break-spaces;
+    font-size: 27px;
+}
+.letter_text{
+    white-space: break-spaces;
+    font-size: 27px;
+    margin: 5px 10px 5px 10px;
+    font-style: italic;
 }
