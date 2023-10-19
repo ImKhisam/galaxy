@@ -78,11 +78,12 @@ class TaskCheckForm(forms.ModelForm):       # выставление балло�
 class QuestionAddForm(forms.ModelForm):
     class Meta:
         model = Questions
-        fields = ['question_type', 'question', 'media',
+        fields = ['question_type', 'question', 'media', 'text_name', 'text',
                   'addition_before', 'addition_after', 'points', 'time_limit']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question-add'}),
-            'addition_before': forms.TextInput(attrs={'class': 'additions'})
+            'addition_before': forms.TextInput(attrs={'class': 'additions'}),
+            'text': forms.Textarea(attrs={'class': 'question-add'})
         }
 
 
@@ -99,11 +100,13 @@ class WritingQandAAddForm(forms.ModelForm):
 
 
 class AnswerAddForm(forms.ModelForm):
-    answer = forms.CharField(label='Answer', widget=forms.TextInput(attrs={'class': 'form-input'}))
-
     class Meta:
         model = Answers
         fields = ['answer', 'is_true', 'addition', 'match']
+        widgets = {
+            'answer': forms.Textarea(attrs={'class': 'question-add'}),
+            'addition': forms.Textarea(attrs={'class': 'question-add'})
+        }
 
 
 #class AssessmentAddForm(forms.ModelForm):

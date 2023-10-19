@@ -337,6 +337,7 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
     def get(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
+        template = 'galaxy/pass_speaking_test.html' if test.part == 'Speaking' else 'galaxy/pass_test.html'
 
         if str(test.id) in user.assessments_passed:
             return render(request, 'galaxy/julik.html')
@@ -376,7 +377,7 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                    'start_time': time_obj.start_time,
                    }
 
-        return render(request, 'galaxy/pass_test.html', context)
+        return render(request, template, context)
 
     def add_detail_points(self, question, detailed_test_points, points):
         if len(detailed_test_points) > 0:
@@ -396,7 +397,7 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
     def post(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
-
+        
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
         time_obj = TestTimings.objects.get(test_id=test, user_id=user)
         test_time = int(time.time() - time_obj.start_time)
@@ -414,7 +415,8 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
 
         if test.part == 'Speaking' and len(request.FILES) == 0:
             request.session['no_attached_files'] = 1
-            return JsonResponse({'empty_flag': 1})
+            return HttpResponseRedirect('/test_result_wo_points/')
+            #return JsonResponse({'empty_flag': 1})
 
         '''Создаем объект теста для проверки'''
         if test.part in ['Writing', 'Speaking']:
@@ -814,12 +816,12 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
 class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, View):
     login_url = '/login/'
     redirect_field_name = 'login'
-    #used_form = QuestionAddForm
+    used_form = QuestionAddForm
 
     def get(self, request, *args, **kwargs):
         chapter_id = self.kwargs.get('chapter_id')
         question_form = self.choose_form(Chapters.objects.get(id=chapter_id))
-        print('form is', question_form)
+        self.used_form = question_form
         answer_formset = formset_factory(AnswerAddForm, extra=0)
         context = {
             'question_form': question_form,
@@ -829,7 +831,7 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Vie
         return render(request, 'galaxy/add_q_and_a.html', context)
 
     def post(self, request, *args, **kwargs):
-        chapter_id = self.kwargs.get('chpater_id')
+        chapter_id = self.kwargs.get('chapter_id')
         chapter_obj = Chapters.objects.get(id=chapter_id)
         sum_of_questions = Questions.objects.filter(chapter_id=Chapters.objects.get(id=chapter_id)).count()
         question_form = self.used_form(request.POST, request.FILES)

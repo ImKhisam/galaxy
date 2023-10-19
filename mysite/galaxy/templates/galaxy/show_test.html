@@ -33,21 +33,34 @@
             {% endif %}
             {% if chapter.media %}
                 <br><br>
-                <div class="question">
+                <div class="question_obj">
                     <audio controls src="{{chapter.media.url}} "></audio>
                 </div>
             {% endif %}
             {% if test.media and forloop.first %}
-                <div class="question">
+                <div class="question_obj">
                     <audio hidden autoplay>
                         <source src="{{test.media.url}}">
                     </audio>
                 </div>
             {% endif %}
             {% for question, answers in qa.items %}
-                <div class="question">
+                <div class="question_obj">
                     {% if question.question_type == 'match_type' %}     <!-- Match type of question-->
-                        <p class="question-text">{{question.question_number}}. {{question.question}}</p>
+                        <div class="question">
+                            <p class="question_number">{{question.question_number}}</p>
+                            <p class="question-text" style="border: 2px solid black;font-style: italic;padding:5px;">
+                                {{question.question}}
+                            </p>
+                        </div>
+                        {% if question.text %}
+                            <div class="chapter-text-name">
+                                <h3>{{question.text_name}}</h3>
+                            </div>
+                            <div class="chapter-text">
+                                <p>{{question.text}}</p>
+                            </div>
+                        {% endif %}
                         {% for answer, answer_list in answers.items %}
                             {% if forloop.first %}  <!-- Printing answer options -->
                                 <div class="list_of_match_options">
@@ -74,7 +87,7 @@
                             </div>
                         {% else %}
                             {% for answer, answer_list in answers.items %}
-                                {% if test.part == 'Reading' %}           <!-- Reading match-->
+                                {% if test.part == 'Reading' and question.question_number == 1 %}   <!-- Reading match-->
                                     <div class="reading-match-element">
                                         <div class="outer-addition">
                                             <div class="reading-addition left-align">
@@ -93,8 +106,10 @@
                                         </div>
                                     </div>
                                 {% else %}
-                                    <div class="matches">       <!-- Listening match -->
-                                        <div class="select-wrapper listening-select">
+                                    {% if forloop.first %}
+                                        <div class="matches">
+                                    {% endif %}
+                                        <div class="select-wrapper listening-select">   <!-- Listening match -->
                                             <label>{{answer.match}}</label>
                                             <select name="{{answer.pk}}">
                                                 <option>Выберите ответ</option>
@@ -103,14 +118,17 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
-                                    </div>
+                                    {% if forloop.last %}
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
                     {% elif question.question_type == 'input_type'%}    <!-- Input type question -->
                         <div class="input-outer">
                             <div class="input-question">
-                                <p class="question-text">{{question.question_number}}. {{question.question}}</p>
+                                <p class="question_number">{{question.question_number}}</p>
+                                <p class="question-text">{{question.question}}</p>
                             </div>
                             {% if question.addition_before %}
                                 <div class="input-addition">
@@ -132,7 +150,10 @@
                         </div>
                     {% elif question.question_type == 'single_choice_type' %} <!-- Single choice type question -->
                         <div class="question_radio">
-                            <p class="question-text">{{question.question_number}}. {{question.question}}</p>
+                            <div class="question">
+                            	<p class="question_number">{{question.question_number}}</p>
+                            	<p class="question-text">{{question.question}}</p>
+                            </div>
                             <div class="question-choices">
                                 {% for answer in answers %}
                                     <div class="question-choice">
@@ -146,7 +167,10 @@
                         </div>
                     {% elif question.question_type == 'true_false_type' %}  <!-- True/False type question -->
                         <div class="question_true_false">
-                            <p class="question-text">{{question.question_number}}. {{question.question}}</p>
+                            <div class="question">
+                            	<p class="question_number">{{question.question_number}}</p>
+                            	<p class="question-text">{{question.question}}</p>
+                            </div>
                             <div class="question-choices">
                                 <div class="question-choice">
                                     <input type="radio" id="True{{question.pk}}" name="{{question.pk}}" value="True">
@@ -174,8 +198,9 @@
                         </div>
                     {% else %}      <!-- File adding type question -->
                         {% if question.writing_fl == 'letter'%}
-                            <div class="question_file_add">
-                                <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
+                            <div class="question">
+                                <p class="question_number">{{question.question_number}}</p>
+	                            <p class="question-text">{{question.question}}</p>
                             </div>
                             <div style="display: flex; justify-content: center;">
                                 <div class="letter">
@@ -189,24 +214,34 @@
                                 <p class="question_writing_text">{{question.writing_after}}</p>
                             </div>
                         {% else %}
-                            <div class="question_file_add">
-                                <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
+                            <div class="question">
+                                <p class="question_number">{{question.question_number}}</p>
+	                            <p class="question-text">{{question.question}}</p>
                             </div>
                         {% endif %}
                         {% if test.part == 'Speaking' %}
+                            {% if question.text %}
+                                <div class="chapter-text">
+                                    <p>{{ question.text }}</p>
+                                </div>
+                            {% endif %}
                             <div class="record-answer">
-                                <p class="question_writing_text">Time limit for this task: {{ question.time_limit }} minutes.</p>
-                                <input type="button" id="recordButton{{ question.pk }}" value="Record" data-question-id="{{ question.pk }}" data-question-time="{{ question.time_limit }}">
-                                <input type="button" id="stopButton{{ question.pk }}" value="Stop" disabled>
-                                <p id="status{{ question.pk }}">Click the Record button to start recording.</p>
-                                <p id="timer{{ question.pk }}">00:00</p>
+                                <p style="text-align:center;">REMEMBER! You have time limit for this task: {{ question.time_limit }} minutes.</p>
+                                <p style="text-align:center;" id="status{{ question.pk }}">Click the Record button to start recording.</p>
+                                <div style="text-align:center;">
+                                    <input type="button" id="recordButton{{ question.pk }}" value="Record" data-question-id="{{ question.pk }}" data-question-time="{{ question.time_limit }}">
+                                    <input type="button" id="stopButton{{ question.pk }}" value="Stop" disabled>
+                                </div>
+                                <p style="text-align:center;" id="timer{{ question.pk }}">00:00</p>
 
                             </div>
                         {% else %}  <!-- Writing question answer input-->
                             <div class="add-files">
                                 <div class="file">
-                                    <label for="{{question.pk}}_media1">Answer:</label>
-                                    <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                                    <label class="input-file">
+                                        <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                                        <span>Choose a file...</span>
+                                    </label>
                                 </div>
                                 {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
                                 <div class="file">
@@ -227,4 +262,14 @@
 </div>
 </div>
 
-{% endblock %}
+{% endblock content %}
+
+{% block javascript %}
+<script src="https://snipp.ru/cdn/jquery/2.1.1/jquery.min.js"></script>
+<script>
+    $('.input-file input[type=file]').on('change', function(){
+    	let file = this.files[0];
+    	$(this).next().html(file.name);
+    });
+</script>
+{% endblock javascript %}
