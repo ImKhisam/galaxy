@@ -6,11 +6,9 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="test-parent">
     <div class="test">
         <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
-
         <form action="{% url 'pass_test' test.pk %}" method="post" id="my_form" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form errors">
@@ -18,25 +16,36 @@
             </div>
             {% for chapter, qa in content_dict.items %}
                 {% for question, answers in qa.items %}
-                        <div class="question">
-                            <p class="question_number">{{question.question_number}}</p>
-    	                    <p class="question-text">{{question.question}}</p>
-                        </div>
-                        {% if question.text %}
-                            <div class="chapter-text">
-                                <p>{{ question.text }}</p>
+                    {% if forloop.first %}
+                        <div class="question-container"
+                             id="task_{{ question.question_number }}"
+                             data-preparation-time="{{ question.preparation_time }}"
+                             data-question-time="{{ question.time_limit }}">
+                    {% else %}
+                        <div class="question-container"
+                             id="task_{{ question.question_number }}"
+                             style="display: none;"
+                             data-preparation-time="{{ question.preparation_time }}"
+                             data-question-time="{{ question.time_limit }}">
+                    {% endif %}
+                            <div class="question">
+                                <p class="question_number">{{question.question_number}}</p>
+    	                        <p class="question-text">{{question.question}}</p>
                             </div>
-                        {% endif %}
-                        <div class="record-answer">
-                            <p style="text-align:center;">REMEMBER! You have time limit for this task: {{ question.time_limit }} minutes.</p>
-                            <p style="text-align:center;" id="status{{ question.pk }}">Click the Record button to start recording.</p>
-                            <div style="text-align:center;">
-                                <input type="button" id="recordButton{{ question.pk }}" value="Record" data-question-id="{{ question.pk }}" data-question-time="{{ question.time_limit }}">
-                                <input type="button" id="stopButton{{ question.pk }}" value="Stop" disabled>
+                            {% if question.text %}
+                                <div class="chapter-text">
+                                    <p>{{ question.text }}</p>
+                                </div>
+                            {% endif %}
+                            <div class="record-answer">
+                                <p style="text-align:center;" id="status{{ question.pk }}">Click the Record button to start recording.</p>
+                                <div style="text-align:center;">
+                                    <input type="button" id="recordButton{{ question.pk }}" value="Record" data-question-id="{{ question.pk }}">
+                                    <input type="button" id="stopButton{{ question.pk }}" value="Stop" disabled>
+                                </div>
+                                <p style="text-align:center;" id="timer{{ question.pk }}">00:00</p>
                             </div>
-                            <p style="text-align:center;" id="timer{{ question.pk }}">00:00</p>
                         </div>
-
                 {% endfor %}
             {% endfor %}
             <br><br>
@@ -48,180 +57,245 @@
         </form>
     </div>
 
-    <div class="time-counter">          <!-- Time counter -->
-    <p id="demo"></p>
-</div>
-
-    <div class="warning" id="warning">  <!-- Warning window -->
-        <h2>Warning: Only 5 minutes left!</h2>
-        <button class="btn btn5" onclick="closeDiv()">
-            <span>Got it</span>
-        </button>
+    <div class="time-counter"> <!-- Time counter -->
+        <p id="demo"></p>
+        <p id="message"></p>
     </div>
 </div>
 {% endblock content %}
 
 {% block javascript %}
-<script>
-  function closeDiv() {
-   document.getElementById('warning').style.display = "none";
-}
-
-  // Get today's date and time
-  var now = new Date().getTime();
-
-  // Set the date we're counting down to
-  var countDownDate = new Date(1000 * {{start_time}} + {{test.time_limit}}*60000).getTime();
-
-  // Set the warning time to 5 minutes before the end of the countdown
-  var warningTime = new Date(1000 * {{start_time}} + {{test.time_limit}}*60000 - 5*60000).getTime();
-
-  var warningShown = false;
-
-// Update the countdown every 1 second
-var x = setInterval(function() {
-
-  // Get today's date and time
-  var now = new Date().getTime();
-
-  // Find the distance between now and the countdown date
-  var distance = countDownDate - now;
-
-
-
-  // Time calculations for days, hours, minutes and seconds
-  //var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-  // Output the result in an element with id="demo"
-  document.getElementById("demo").innerHTML = hours + "h "
-  + minutes + "m " + seconds + "s ";
-
-  // If the count down is over, submit form
-  if (distance < 0) {
-    document.getElementById("my_form").submit()
-  }
-  // Check if there are 5 minutes left
-  if (now > warningTime && !warningShown) {
-    // Show the warning modal
-    warningShown = true;
-    var warningMsg = document.getElementById("warning");
-    warningMsg.style.display = "block";
-  }
-}, 1000);
-
-</script>
-{% if test.part == 'Speaking' %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-      let mediaRecorders = [];
-      let recordedChunks = [];
-      let startTime = [];
-      let timerInterval = [];
+    let mediaRecorders = [];
+    let recordedChunks = [];
+    let startTime = [];
+    let timerInterval = [];
+    let completedRecordings = 0;
 
-      const recordButtons = document.querySelectorAll('[id^="recordButton"]');
-      const stopButtons = document.querySelectorAll('[id^="stopButton"]');
-      const statuses = document.querySelectorAll('[id^="status"]');
-      const timers = document.querySelectorAll('[id^="timer"]');
+    const recordButtons = document.querySelectorAll('[id^="recordButton"]');
+    const stopButtons = document.querySelectorAll('[id^="stopButton"]');
+    const statuses = document.querySelectorAll('[id^="status"]');
+    const timers = document.querySelectorAll('[id^="timer"]');
 
-      const fd = new FormData();
+    const fd = new FormData();
 
-      recordButtons.forEach((button, index) => {
-        const questionId = button.dataset.questionId;
-        const questionTimeLimit = button.dataset.questionTime;
-            button.addEventListener('click', () => {
-                const constraints = { audio: true };
-                navigator.mediaDevices.getUserMedia(constraints)
-                    .then(function (stream) {
-                        mediaRecorders[index] = new MediaRecorder(stream);
-                        mediaRecorders[index].addEventListener('dataavailable', function (event) {
-                            recordedChunks[index].push(event.data);
-                        });
+    recordButtons.forEach((button, index) =>
+        {
+            const questionId = button.dataset.questionId;
+            button.addEventListener('click', () =>
+                {
+                    const constraints = { audio: true };
+                    navigator.mediaDevices.getUserMedia(constraints)
+                        .then(function (stream)
+                            {
+                                mediaRecorders[index] = new MediaRecorder(stream);
+                                recordedChunks[index] = [];
 
-                        mediaRecorders[index].addEventListener('stop', function () {
-                            const blob = new Blob(recordedChunks[index], {type: 'audio/wav'});
+                                mediaRecorders[index].addEventListener('dataavailable', function (event)
+                                    {
+                                        recordedChunks[index].push(event.data);
+                                    });
 
-                            // Some shit
+                                mediaRecorders[index].addEventListener('stop', function ()
+                                    {
+                                        const blob = new Blob(recordedChunks[index], {type: 'audio/wav'});
+                                        fd.append(questionId + '_media1', blob);
+                                        recordedChunks[index] = [];
+                                        statuses[index].textContent = 'Recording stopped.';
+                                        recordButtons[index].disabled = false;
+                                        stopButtons[index].disabled = true;
 
-                            fd.append(questionId + '_media1', blob);
+                                        // Increase the completed recordings count
+                                        completedRecordings++;
 
-                            recordedChunks[index] = [];
-                            const url = URL.createObjectURL(blob);
-                            statuses[index].textContent = 'Recording stopped.';
-                            recordButtons[index].disabled = false;
-                            stopButtons[index].disabled = true;
+                                        // Check if all recordings are complete
+                                        if (completedRecordings === tasks.length) {
+                                            // If all recordings are complete, submit the form
+                                            debugger;
+                                            submitForm({ preventDefault: function () {} });
+                                        }
+                                    });
 
-
-                        });
-
-                        startTime[index] = Date.now();
-                        statuses[index].textContent = 'Recording...';
-                        recordButtons[index].disabled = true;
-                        stopButtons[index].disabled = false;
-                        recordedChunks[index] = [];
-                        mediaRecorders[index].start();
-                        timerInterval[index] = setInterval(() => {
-                            updateTimer(index);
-                        }, 1000);
-                        setTimeout(() => {
-                            stopRecording(index);
-                        }, questionTimeLimit * 60000); // Stop recording after _ minutes
-                    })
-
-                    .catch(function (err) {
-                        console.error('Failed to get user media', err);
-                        statuses[index].textContent = 'Failed to start recording.';
-                    });
-            });
+                                statuses[index].textContent = 'Recording...';
+                                recordButtons[index].disabled = true;
+                                stopButtons[index].disabled = false;
+                                recordedChunks[index] = [];
+                                mediaRecorders[index].start();
+                            })
+                        .catch(function (err)
+                            {
+                                console.error('Failed to get user media', err);
+                                statuses[index].textContent = 'Failed to start recording.';
+                            });
+                });
+        });
+    stopButtons.forEach((button, index) =>
+        {
+            button.addEventListener('click', () =>
+                {
+                    stopRecording(index);
+                });
         });
 
-        stopButtons.forEach((button, index) => {
-            button.addEventListener('click', () => {
-                stopRecording(index);
-            });
-        });
-
-        function stopRecording(index) {
+    function stopRecording(index)
+        {
             mediaRecorders[index].stop();
             clearInterval(timerInterval[index]);
-            timers[index].textContent = '00:00';
         }
 
-        function updateTimer(index) {
+    function updateTimer(index)
+        {
             const elapsedTime = new Date(Date.now() - startTime[index]);
             const minutes = elapsedTime.getUTCMinutes().toString().padStart(2, '0');
             const seconds = elapsedTime.getUTCSeconds().toString().padStart(2, '0');
             timers[index].textContent = `${minutes}:${seconds}`;
-      }
+        }
 
     const form = document.getElementById('my_form');
     form.addEventListener('submit', submitForm);
-    function submitForm(event) {
-      event.preventDefault();
+    function submitForm(event)
+        {
+            event.preventDefault();
+            // Stop recording for the last question (if not already stopped)
 
-      $.ajax({
-        url: '{% url "pass_test" test.pk %}',
-        type: 'POST',
-        data: fd,
-        processData: false,
-        contentType: false,
-        headers: {
-          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
-        },
-        success: function(response) {
-          // Handle success response here
-          window.location.replace('{% url "test_result_wo_points"%}');
-        },
-        error: function(xhr, status, error) {
-          // Handle error response here
-          console.error(xhr, status, error);
+            stopRecording(mediaRecorders.length - 1);
+
+            $.ajax({
+                url: '{% url "pass_test" test.pk %}',
+                type: 'POST',
+                data: fd,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+                },
+                success: function(response) {
+                    // Handle success response here
+                    window.location.replace('{% url "test_result_wo_points"%}');
+                },
+                error: function(xhr, status, error) {
+                    // Handle error response here
+                    console.error(xhr, status, error);
+                }
+            });
         }
-      });
-
-    }
 
 </script>
-{% endif %}
+<script>
+    // Get today's date and time
+    var now = new Date().getTime();
+
+    // Find the first task element and its data attributes
+    var firstTask = document.querySelector('.question-container');
+    var preparationTime = parseFloat(firstTask.getAttribute('data-preparation-time')) * 60000;
+    var questionTime = parseFloat(firstTask.getAttribute('data-question-time')) * 60000;
+
+    // Set the countdown start time based on the preparation time of the first task
+    var countDownDate = now + preparationTime;
+
+    // Set the warning time to 5 minutes before the end of the preparation time for the first task
+    var warningTime = countDownDate - 300000;
+
+    var currentTaskIndex = 0;
+    var tasks = document.querySelectorAll('.question-container');
+
+    // Function to switch to the next task
+    function showNextTask()
+        {
+            tasks[currentTaskIndex].style.display = 'none';
+            currentTaskIndex++;
+            if (currentTaskIndex < tasks.length)
+                {
+                    var nextTask = tasks[currentTaskIndex];
+                    var nextPreparationTime = parseFloat(nextTask.getAttribute('data-preparation-time')) * 60000;
+                    questionTime = parseFloat(nextTask.getAttribute('data-question-time')) * 60000;
+                    countDownDate = now + nextPreparationTime;
+                    // Set the warning time for the next task
+                    warningTime = countDownDate - 300000;
+                    nextTask.style.display = 'block';
+                }
+        }
+
+    var isPreparationTime = true;
+
+    //
+    function updateMessage(message)
+	    {
+	        document.getElementById("message").innerHTML = message;
+	    }
+
+    // Function to update the countdown timer
+    function updateTimer()
+        {
+            // Get today's date and time
+            var now = new Date().getTime();
+            // Find the distance between now and the countdown date
+            var distance = countDownDate - now;
+
+            // Time calculations for minutes and seconds
+            var minutes = Math.floor(distance / 60000);
+            var seconds = Math.floor((distance % 60000) / 1000);
+
+            // Output the result in an element with id="demo"
+            document.getElementById("demo").innerHTML = minutes + "m " + seconds + "s ";
+        }
+
+    // Initial setup to show the first task
+    firstTask.style.display = 'block';
+    updateTimer();
+    updateMessage('Preparation')
+
+    // Update the countdown every 1 second
+    var x = setInterval(function()
+        {
+            // Get today's date and time
+            now = new Date().getTime();
+
+            if (isPreparationTime)
+                {
+                    // If the preparation time is over, switch to the question time
+                    if (now >= countDownDate)
+                        {
+                            countDownDate = now + questionTime;
+                            isPreparationTime = false;
+                            updateMessage('Recording')
+                            // Get the current question's primary key
+                            var currentQuestionPK = tasks[currentTaskIndex].querySelector('.record-answer input[data-question-id]').getAttribute('data-question-id');
+                            // Trigger the "Record" button click for the current question
+                            document.getElementById("recordButton" + currentQuestionPK).click();
+                        }
+                }
+            else
+                {
+                    // If the question time is over, switch to the next task
+                    if (now >= countDownDate && (currentTaskIndex + 1) < tasks.length)
+                        {
+                            // Get the current question's primary key
+                            var currentQuestionPK = tasks[currentTaskIndex].querySelector('.record-answer input[data-question-id]').getAttribute('data-question-id');
+                            // Trigger the "Stop" button click for the current question
+                            // document.getElementById("stopButton" + currentQuestionPK).click();
+                            stopRecording(currentTaskIndex);
+                            showNextTask();
+                            isPreparationTime = true;
+                            updateMessage('Preparation')
+                        }
+                    else if (now >= countDownDate && (currentTaskIndex + 1) === tasks.length)
+                        {
+                            // Get the current question's primary key
+                            var currentQuestionPK = tasks[currentTaskIndex].querySelector('.record-answer input[data-question-id]').getAttribute('data-question-id');
+                            // Trigger the "Stop" button click for the current question
+                            stopRecording(currentTaskIndex);
+                            clearInterval(x); // Stop the timer if all tasks are done
+                            //submitForm({ preventDefault: function() {} });
+                        }
+                }
+            updateTimer(); // Update the timer display
+        }, 1000);
+
+    var warningShown = false;
+</script>
+
+<!-- listening js -->
+
 {% endblock javascript%}

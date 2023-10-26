@@ -395,6 +395,9 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         return record_to_add_in
 
     def post(self, request, test_pk):
+        print('!!!!!!!!!!!!!!!!!!!! WE ARE IN POST!!!!!!!!!!!!!!!!')
+        print(request.FILES)
+        print(request.session.items())
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
         
@@ -406,7 +409,7 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         time_obj.delete()
 
         '''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''
-        if 'no_attached_files' in request.session:
+        if 'no_attached_files' in request.session:      # if it remained from previous test
             del request.session['no_attached_files']
 
         if test.part == 'Writing' and len(request.FILES) == 0:

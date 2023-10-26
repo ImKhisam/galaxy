@@ -120,8 +120,11 @@ class TestTimings(models.Model):
 
 
 def content_file_name_chapter(instance, filename):
-    return '/'.join(['test', instance.test_id.type, instance.test_id.part, \
-                     str(instance.test_id.test_num), "Chapter" + str(instance.chapter_number), filename])
+    return '/'.join(['test', instance.test_id.type, \
+                     instance.test_id.part, \
+                     str(instance.test_id.test_num), \
+                     "Chapter" + str(instance.chapter_number), \
+                     filename])
 
 
 class Chapters(models.Model):
