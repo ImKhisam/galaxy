@@ -29,7 +29,9 @@
                 {% elif task.test_to_check_id.test_id.part == 'Speaking' %}
                     {% if task.media1 %}
                         <div style="display: flex;">
-                            <audio controls src="{{task.media1.url}}" style="margin: auto;"></audio>
+                            <audio controls style="margin: auto;">
+                                <source src="{{task.media1.url}}">
+                            </audio>
                         </div>
                     {% else %}
                         <p>Student forgot to load his answer</p>

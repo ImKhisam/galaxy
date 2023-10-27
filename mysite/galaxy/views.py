@@ -497,6 +497,28 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                 try:
                     media1_index = str(question.id) + '_media1'
                     media1 = request.FILES[media1_index]
+                    # converting blob to mp3
+                    if media1.content_type == 'audio/wav':
+                        from pydub import AudioSegment
+                        from io import BytesIO
+                        from django.core.files.base import ContentFile
+                        # Load the WAV audio content from the uploaded file
+                        wav_audio = AudioSegment.from_wav(media1)
+
+                        # Convert to MP3 format
+                        mp3_audio = wav_audio.export(format="mp3")
+
+                        # Save the MP3 audio to a BytesIO buffer
+                        mp3_buffer = BytesIO()
+                        mp3_audio.export(mp3_buffer, format="mp3")
+                        mp3_buffer.seek(0)
+
+                        # Create a ContentFile from the BytesIO buffer
+                        mp3_content = ContentFile(mp3_buffer.read())
+
+                        # Assign the MP3 file to your model field (e.g., task_to_check.media1)
+                        task_to_check.media1.save(media1.name.replace('.wav', '.mp3'), mp3_content)
+
                     task_to_check.media1 = media1
                 except:
                     pass

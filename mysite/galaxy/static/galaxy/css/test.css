@@ -251,10 +251,11 @@ option{
     border: 2px solid black;
     height: fit-content;
     text-align: center;
-    font-size: 25px;
+    font-size: 27px;
 }
 .question-text{
-    font-size: 25px;
+    font-size: 27px;
+    white-space: break-spaces;
     margin-left: 20px;
     flex: 1;
 }

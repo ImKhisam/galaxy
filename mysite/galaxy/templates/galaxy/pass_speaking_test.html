@@ -1,4 +1,5 @@
 {% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
 {% load static %}
 
 {% block custom_styles %}
@@ -19,15 +20,22 @@
                     {% if forloop.first %}
                         <div class="question-container"
                              id="task_{{ question.question_number }}"
-                             data-preparation-time="{{ question.preparation_time }}"
-                             data-question-time="{{ question.time_limit }}">
+                             data-preparation-time="{{ question.preparation_time|multiply:60 }}"
+                             data-question-time="{{ question.time_limit|multiply:60 }}">
                     {% else %}
                         <div class="question-container"
                              id="task_{{ question.question_number }}"
                              style="display: none;"
-                             data-preparation-time="{{ question.preparation_time }}"
-                             data-question-time="{{ question.time_limit }}">
+                             data-preparation-time="{{ question.preparation_time|multiply:60 }}"
+                             data-question-time="{{ question.time_limit|multiply:60 }}">
                     {% endif %}
+                            {% if question.media %}
+                                <div class="audio">
+                                    <audio hidden id="audio{{ question.pk }}">
+                                        <source src="{{question.media.url}}">
+                                    </audio>
+                                </div>
+                            {% endif %}
                             <div class="question">
                                 <p class="question_number">{{question.question_number}}</p>
     	                        <p class="question-text">{{question.question}}</p>
@@ -37,9 +45,9 @@
                                     <p>{{ question.text }}</p>
                                 </div>
                             {% endif %}
-                            <div class="record-answer">
+                            <div class="record-answer" style="display: none">
                                 <p style="text-align:center;" id="status{{ question.pk }}">Click the Record button to start recording.</p>
-                                <div style="text-align:center;">
+                                <div style="text-align:center; display: none">
                                     <input type="button" id="recordButton{{ question.pk }}" value="Record" data-question-id="{{ question.pk }}">
                                     <input type="button" id="stopButton{{ question.pk }}" value="Stop" disabled>
                                 </div>
@@ -49,7 +57,7 @@
                 {% endfor %}
             {% endfor %}
             <br><br>
-            <div style="display: flex"> <!--Submit button -->
+            <div style="display: none"> <!--Submit button -->
                 <button class="btn btn5" type="submit">
                     <span>Submit Answers</span>
                 </button>
@@ -66,6 +74,47 @@
 
 {% block javascript %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+    // Select all audio elements inside question containers
+    const audioElements = document.querySelectorAll("div.question-container .audio audio");
+
+    // Add an event listener to each audio element
+    audioElements.forEach(function (audio) {
+        const questionContainer = audio.closest(".question-container");
+
+        // When the audio is loaded, set the data-question-time attribute to the audio duration in minutes
+        audio.addEventListener("loadeddata", function () {
+            const durationInSeconds = audio.duration;
+            const durationInMinutes = durationInSeconds / 60; // Convert to minutes
+            questionContainer.setAttribute("data-question-time", durationInSeconds);
+
+            // Update the countdown timer element
+           // const timerElement = questionContainer.querySelector(".record-answer #timer" + questionContainer.dataset.questionNumber);
+           //timerElement.textContent = formatTime(durationInSeconds);
+        });
+
+        // When the question container becomes visible, play the audio
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                }
+            });
+        });
+
+        // Observe the question container
+        observer.observe(questionContainer);
+    });
+});
+
+</script>
+
+
 <script>
     let mediaRecorders = [];
     let recordedChunks = [];
@@ -112,7 +161,6 @@
                                         // Check if all recordings are complete
                                         if (completedRecordings === tasks.length) {
                                             // If all recordings are complete, submit the form
-                                            debugger;
                                             submitForm({ preventDefault: function () {} });
                                         }
                                     });
@@ -188,8 +236,8 @@
 
     // Find the first task element and its data attributes
     var firstTask = document.querySelector('.question-container');
-    var preparationTime = parseFloat(firstTask.getAttribute('data-preparation-time')) * 60000;
-    var questionTime = parseFloat(firstTask.getAttribute('data-question-time')) * 60000;
+    var preparationTime = parseFloat(firstTask.getAttribute('data-preparation-time')) * 1000;
+    var questionTime = parseFloat(firstTask.getAttribute('data-question-time')) * 1000;
 
     // Set the countdown start time based on the preparation time of the first task
     var countDownDate = now + preparationTime;
@@ -208,8 +256,8 @@
             if (currentTaskIndex < tasks.length)
                 {
                     var nextTask = tasks[currentTaskIndex];
-                    var nextPreparationTime = parseFloat(nextTask.getAttribute('data-preparation-time')) * 60000;
-                    questionTime = parseFloat(nextTask.getAttribute('data-question-time')) * 60000;
+                    var nextPreparationTime = parseFloat(nextTask.getAttribute('data-preparation-time')) * 1000;
+                    questionTime = parseFloat(nextTask.getAttribute('data-question-time')) * 1000;
                     countDownDate = now + nextPreparationTime;
                     // Set the warning time for the next task
                     warningTime = countDownDate - 300000;
