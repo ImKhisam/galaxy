@@ -120,10 +120,10 @@ class TestTimings(models.Model):
 
 
 def content_file_name_chapter(instance, filename):
-    return '/'.join(['test', instance.test_id.type, \
-                     instance.test_id.part, \
-                     str(instance.test_id.test_num), \
-                     "Chapter" + str(instance.chapter_number), \
+    return '/'.join(['test', instance.test_id.type,
+                     instance.test_id.part,
+                     str(instance.test_id.test_num),
+                     "Chapter" + str(instance.chapter_number),
                      filename])
 
 
@@ -140,11 +140,11 @@ class Chapters(models.Model):
 
 
 def content_file_name_question(instance, filename):
-    return '/'.join(['test', instance.test_id.type, \
-                     instance.test_id.part, \
-                     str(instance.test_id.test_num), \
-                     "Chapter" + str(instance.chapter_id.chapter_number), \
-                     "Question" + str(instance.question_number), \
+    return '/'.join(['test', instance.test_id.type,
+                     instance.test_id.part,
+                     str(instance.test_id.test_num),
+                     "Chapter" + str(instance.chapter_id.chapter_number),
+                     "Question" + str(instance.question_number),
                      filename])
 
 
@@ -219,12 +219,17 @@ class TestsToCheck(models.Model):
 
 
 def content_file_name_check(instance, filename):
-    return '/'.join(['test', 'TestsToCheck', str(instance.question_id), filename])
+    return '/'.join(['test', 'TestsToCheck',
+                     str(instance.test_to_check_id.student_id),
+                     str(instance.test_to_check_id.date)[:10],
+                     str(instance.test_to_check_id.id),
+                     str(instance.question_id),
+                     filename])
 
 
 class TasksToCheck(models.Model):
     test_to_check_id = models.ForeignKey(TestsToCheck, on_delete=models.CASCADE)
     question_id = models.ForeignKey(Questions, on_delete=models.CASCADE)
-    media1 = models.FileField(upload_to=content_file_name_check, blank=True)
-    media2 = models.FileField(upload_to=content_file_name_check, blank=True)
+    media1 = models.FileField(upload_to=content_file_name_check, blank=True, max_length=250)
+    media2 = models.FileField(upload_to=content_file_name_check, blank=True, max_length=250)
     points = models.CharField(max_length=20, default=0)

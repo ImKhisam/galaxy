@@ -73,6 +73,7 @@
 {% endblock content %}
 
 {% block javascript %}
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>
@@ -138,7 +139,7 @@
                     navigator.mediaDevices.getUserMedia(constraints)
                         .then(function (stream)
                             {
-                                mediaRecorders[index] = new MediaRecorder(stream);
+                                mediaRecorders[index] = new MediaRecorder(stream, {type: 'audio/ogg; codecs=opus'});
                                 recordedChunks[index] = [];
 
                                 mediaRecorders[index].addEventListener('dataavailable', function (event)
@@ -148,8 +149,11 @@
 
                                 mediaRecorders[index].addEventListener('stop', function ()
                                     {
-                                        const blob = new Blob(recordedChunks[index], {type: 'audio/wav'});
-                                        fd.append(questionId + '_media1', blob);
+                                        const blob = new Blob(recordedChunks[index], { type: "audio/ogg; codecs=opus" });
+                                        fd.append(questionId + '_media1', blob, questionId+".ogg");
+                                        //fd.append(questionId + '_media1', blob);
+
+
                                         recordedChunks[index] = [];
                                         statuses[index].textContent = 'Recording stopped.';
                                         recordButtons[index].disabled = false;

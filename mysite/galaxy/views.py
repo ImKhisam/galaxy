@@ -27,6 +27,7 @@ from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeErr
 from .utils import generate_token, NotLoggedIn, ConfirmMixin, AddTestConstValues, TeacherUserMixin, \
     ConfirmStudentMixin, teacher_check, ChooseAddQuestForm
 from django.contrib.auth.views import PasswordResetView
+from pydub import AudioSegment
 
 
 class Index(TemplateView, LoginRequiredMixin):
@@ -394,10 +395,23 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         record_to_add_in += answer_to_add
         return record_to_add_in
 
+    @staticmethod
+    def convert_to_mp3(file_path):
+        print('IM IN COVERT')
+        import subprocess
+        mp3_file_path = file_path.replace('.wav', '.mp3')
+        # Use FFmpeg to convert the WAV file to MP3
+        subprocess.run(["ffmpeg", "-i", file_path, mp3_file_path])
+        print('IM OUT CONVERT')
+        return mp3_file_path
+
+    @staticmethod
+    def convert_wav_to_mp3(wav_path, mp3_path):
+        sound = AudioSegment.from_wav(wav_path)
+        sound.export(mp3_path, format="mp3")
+
     def post(self, request, test_pk):
         print('!!!!!!!!!!!!!!!!!!!! WE ARE IN POST!!!!!!!!!!!!!!!!')
-        print(request.FILES)
-        print(request.session.items())
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
         
@@ -497,28 +511,6 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                 try:
                     media1_index = str(question.id) + '_media1'
                     media1 = request.FILES[media1_index]
-                    # converting blob to mp3
-                    if media1.content_type == 'audio/wav':
-                        from pydub import AudioSegment
-                        from io import BytesIO
-                        from django.core.files.base import ContentFile
-                        # Load the WAV audio content from the uploaded file
-                        wav_audio = AudioSegment.from_wav(media1)
-
-                        # Convert to MP3 format
-                        mp3_audio = wav_audio.export(format="mp3")
-
-                        # Save the MP3 audio to a BytesIO buffer
-                        mp3_buffer = BytesIO()
-                        mp3_audio.export(mp3_buffer, format="mp3")
-                        mp3_buffer.seek(0)
-
-                        # Create a ContentFile from the BytesIO buffer
-                        mp3_content = ContentFile(mp3_buffer.read())
-
-                        # Assign the MP3 file to your model field (e.g., task_to_check.media1)
-                        task_to_check.media1.save(media1.name.replace('.wav', '.mp3'), mp3_content)
-
                     task_to_check.media1 = media1
                 except:
                     pass
@@ -531,6 +523,15 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                 task_to_check.test_to_check_id = test_to_check
                 task_to_check.question_id = question
                 task_to_check.save()
+
+                #print(task_to_check.media1.path)
+                ## convert file here
+                #wav_path = task_to_check.media1.path
+                #mp3_path = task_to_check.media1.path.replace('.wav', '.mp3')
+                #self.convert_wav_to_mp3(wav_path, mp3_path)
+                ## You can use the mp3_path variable to do further operations if needed
+                #print(f"Converted {wav_path} to {mp3_path}")
+
 
         '''Уведомляем учителя о том, что студент выполнил тест, который нуждается в проверке'''
         if test.part in ['Writing', 'Speaking']:
@@ -549,7 +550,6 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
 
         if test.part == 'Speaking':
             return JsonResponse({'empty_flag': 0})
-
 
         '''Создаем объект результата попытки выполнения теста для 3х категорий'''
         result = Results()
