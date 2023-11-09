@@ -74,6 +74,8 @@
 
 {% block javascript %}
 
+<script src="javascripts/lib/WebAudioRecorder.js"></script>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>
@@ -140,6 +142,7 @@
                         .then(function (stream)
                             {
                                 mediaRecorders[index] = new MediaRecorder(stream, {type: 'audio/ogg; codecs=opus'});
+                                //recorder = new WebAudioRecorder(source, { workerDir: "javascripts/" });
                                 recordedChunks[index] = [];
 
                                 mediaRecorders[index].addEventListener('dataavailable', function (event)

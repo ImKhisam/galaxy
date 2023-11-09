@@ -1,0 +1,85 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet" />
+{% endblock custom_styles %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        <h1>Audio Recorder</h1>
+        <button id="recordButton" type="button">Record</button>
+        <button id="stopButton" type="button" disabled>Stop</button>
+
+        <div style="display: none"> <!--Submit button -->
+            <button class="btn btn5" type="submit">
+                <span>Submit Answers</span>
+            </button>
+        </div>
+
+    </form>
+{% endblock content%}
+
+{% block javascript %}
+    <script src="{% static 'galaxy/js/web_recorder/lib/WebAudioRecorder.js' %}"></script>
+
+    <script>
+        (function() {
+            var audioContext, saveRecording, startRecording, stopRecording, mixer;
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+            audioContext = new AudioContext();
+            mixer = audioContext.createGain();
+
+            audioRecorder = new WebAudioRecorder(mixer,
+                {
+                    workerDir: "{% static 'galaxy/js/web_recorder/lib/' %}",
+                    encoding: "wav"
+                });
+
+            //audioRecorder.setEncoding("mp3");
+
+            startRecording = function() {
+                audioRecorder.startRecording();
+                document.getElementById("recordButton").disabled = true;
+                document.getElementById("stopButton").disabled = false;
+            };
+
+            stopRecording = function() {
+				audioRecorder.finishRecording();
+            };
+
+
+            document.getElementById("recordButton").addEventListener("click", function () {
+                startRecording();
+            });
+
+            document.getElementById("stopButton").addEventListener("click", function () {
+                stopRecording();
+            });
+
+            audioRecorder.onComplete = function(recorder, blob) {
+                sendDataToServer(blob);
+                window.location.href = '{% url "home" %}';
+            };
+
+            function sendDataToServer(blob) {
+                var formData = new FormData();
+                formData.append("audio", blob, "recorded.wav");
+                // Get the CSRF token from the template
+                var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+                return fetch('{% url "debug" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                })
+                .then(response => response.json());
+
+            }
+        }).call(this);
+    </script>
+{% endblock javascript %}

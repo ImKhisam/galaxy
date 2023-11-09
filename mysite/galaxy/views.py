@@ -28,6 +28,7 @@ from .utils import generate_token, NotLoggedIn, ConfirmMixin, AddTestConstValues
     ConfirmStudentMixin, teacher_check, ChooseAddQuestForm
 from django.contrib.auth.views import PasswordResetView
 from pydub import AudioSegment
+import base64
 
 
 class Index(TemplateView, LoginRequiredMixin):
@@ -511,6 +512,8 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                 try:
                     media1_index = str(question.id) + '_media1'
                     media1 = request.FILES[media1_index]
+                    #audio_data = base64.b64decode(media1)
+                    #task_to_check.media1 = audio_data
                     task_to_check.media1 = media1
                 except:
                     pass
@@ -1119,3 +1122,37 @@ class ShowStudentAssessmentResults(LoginRequiredMixin, ListView):
                                   for key in user_assessment_dates}
 
         return assessments_dict
+
+
+class Debug(View):
+    template_name = 'galaxy/debug.html'
+
+    def get(self, request):
+        print('!!!!!!!!!!!!!!!!! DEBUG GET !!!!!!!!!!!!!!!!!!!')
+        return render(request, self.template_name)
+
+    def post(self, request):
+        print('!!!!!!!!!!!!!!!!! DEBUG POST !!!!!!!!!!!!!!!!!!!')
+        print(request.FILES)
+        audio_file = request.FILES['audio']
+        #print(type(audio_file))
+        #audio_data = base64.b64decode(file)
+        #print(type(audio_data))
+        #print(os.path)
+
+        destination_path = os.path.join(settings.MEDIA_ROOT, 'audio', 'recorded.wav')
+        with open(destination_path, 'wb') as destination_file:
+            for chunk in audio_file.chunks():
+                destination_file.write(chunk)
+
+        # Define a path to save the audio file
+        #file_path = os.path.join('path_to_your_desired_directory', 'audio_file.wav')
+
+        # Save the audio data to a file
+        #with open(file_path, 'wb') as audio_file:
+        #    audio_file.write(audio_data)
+
+        response_data = {'message': 'POST request processed successfully'}
+        return JsonResponse(response_data)
+        #return redirect('home')
+

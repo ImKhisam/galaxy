@@ -3,6 +3,9 @@ from .views import *
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('debug/', Debug.as_view(), name='debug'),
+    path('testing_page', TestingPage.as_view(), name='testing_page'),
+
     path('', Index.as_view(), name='home'),
     path('register/', SignUp.as_view(), name='register'),
     path('validate_username', validate_username, name='validate_username'),
@@ -69,5 +72,4 @@ urlpatterns = [
     path('show_student_assessments/', ShowStudentAssessments.as_view(), name='show_student_assessments'),
     path('show_assessment_results/', ShowStudentAssessmentResults.as_view(), name='show_student_assessment_results'),
 
-    path('testing_page', TestingPage.as_view(), name='testing_page'),
     ]
