@@ -142,7 +142,7 @@
                         .then(function (stream)
                             {
                                 mediaRecorders[index] = new MediaRecorder(stream, {type: 'audio/ogg; codecs=opus'});
-                                //recorder = new WebAudioRecorder(source, { workerDir: "javascripts/" });
+
                                 recordedChunks[index] = [];
 
                                 mediaRecorders[index].addEventListener('dataavailable', function (event)

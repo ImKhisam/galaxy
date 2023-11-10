@@ -23,63 +23,72 @@
 {% endblock content%}
 
 {% block javascript %}
-    <script src="{% static 'galaxy/js/web_recorder/lib/WebAudioRecorder.js' %}"></script>
+
+    <script src="https://cdn.WebRTC-Experiment.com/MediaStreamRecorder.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
     <script>
-        (function() {
-            var audioContext, saveRecording, startRecording, stopRecording, mixer;
-            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+        function captureUserMedia(mediaConstraints, successCallback, errorCallback) {
+            navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
+        }
 
-            audioContext = new AudioContext();
-            mixer = audioContext.createGain();
+        var mediaConstraints = {
+            audio: true
+        };
 
-            audioRecorder = new WebAudioRecorder(mixer,
-                {
-                    workerDir: "{% static 'galaxy/js/web_recorder/lib/' %}",
-                    encoding: "wav"
-                });
+        document.querySelector('#recordButton').onclick = function() {
+            this.disabled = true;
+            captureUserMedia(mediaConstraints, onMediaSuccess, onMediaError);
+        };
 
-            //audioRecorder.setEncoding("mp3");
+        document.querySelector('#stopButton').onclick = function() {
+            this.disabled = true;
+            mediaRecorder.stop();
+            mediaRecorder.stream.stop();
+        };
 
-            startRecording = function() {
-                audioRecorder.startRecording();
-                document.getElementById("recordButton").disabled = true;
-                document.getElementById("stopButton").disabled = false;
+         var mediaRecorder;
+
+        function onMediaSuccess(stream) {
+
+            mediaRecorder = new MediaStreamRecorder(stream);
+            mediaRecorder.stream = stream;
+
+            mediaRecorder.recorderType = StereoAudioRecorder;
+            mediaRecorder.mimeType = 'audio/wav';
+
+             mediaRecorder.audioChannels = 1
+
+            mediaRecorder.ondataavailable = function(blob) {
+                sendDataToServer(blob)
             };
 
-            stopRecording = function() {
-				audioRecorder.finishRecording();
-            };
+        timeInterval = 600 * 1000;
 
+        // get blob after specific time interval
+        mediaRecorder.start(timeInterval);
 
-            document.getElementById("recordButton").addEventListener("click", function () {
-                startRecording();
-            });
+        document.querySelector('#stopButton').disabled = false;
 
-            document.getElementById("stopButton").addEventListener("click", function () {
-                stopRecording();
-            });
+        }
 
-            audioRecorder.onComplete = function(recorder, blob) {
-                sendDataToServer(blob);
-                window.location.href = '{% url "home" %}';
-            };
+        function onMediaError(e) {
+            console.error('media error', e);
+        }
 
-            function sendDataToServer(blob) {
-                var formData = new FormData();
-                formData.append("audio", blob, "recorded.wav");
-                // Get the CSRF token from the template
-                var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-                return fetch('{% url "debug" %}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: formData
-                })
-                .then(response => response.json());
-
-            }
-        }).call(this);
+        function sendDataToServer(blob) {
+            var formData = new FormData();
+            formData.append("audio", blob, "recorded.wav");
+            // Get the CSRF token from the template
+            var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+            return fetch('{% url "debug" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData
+            })
+            .then(response => response.json());
+        }
     </script>
 {% endblock javascript %}
