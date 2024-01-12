@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from .models import *
 from django.forms.models import inlineformset_factory, BaseInlineFormSet, modelform_factory
 from django.forms import ModelForm, modelformset_factory
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 class LoginUserForm(AuthenticationForm):
@@ -75,15 +77,32 @@ class TaskCheckForm(forms.ModelForm):       # выставление балло�
         fields = ['points']
 
 
+#class MinuteSecondField(forms.FloatField):
+#    def to_python(self, value):
+#        # Convert minutes to seconds
+#        try:
+#            return super().to_python(value) * 60
+#        except forms.ValidationError:
+#            raise forms.ValidationError("Enter a valid number.")
+
+
 class QuestionAddForm(forms.ModelForm):
+    #preparation_time = MinuteSecondField(label='Preparation Time(in minutes)', required=False)
+    #time_limit = MinuteSecondField(label='Time limit(in minutes)', required=False)
+
     class Meta:
         model = Questions
-        fields = ['question_type', 'question', 'media', 'text_name', 'text',
-                  'addition_before', 'addition_after', 'points', 'time_limit']
+        fields = ['question_type', 'question', 'media', 'picture', 'text_name',
+                  'text', 'addition_before', 'addition_after', 'points',
+                  'preparation_time', 'time_limit']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question-add'}),
             'addition_before': forms.TextInput(attrs={'class': 'additions'}),
             'text': forms.Textarea(attrs={'class': 'question-add'})
+        }
+        labels = {
+            'preparation_time': 'Preparation_time(in seconds)',
+            'time_limit': 'Time_limit(in seconds)'
         }
 
 

@@ -20,14 +20,14 @@
                     {% if forloop.first %}
                         <div class="question-container"
                              id="task_{{ question.question_number }}"
-                             data-preparation-time="{{ question.preparation_time|multiply:60 }}"
-                             data-question-time="{{ question.time_limit|multiply:60 }}">
+                             data-preparation-time="{{ question.preparation_time }}"
+                             data-question-time="{{ question.time_limit }}">
                     {% else %}
                         <div class="question-container"
                              id="task_{{ question.question_number }}"
                              style="display: none;"
-                             data-preparation-time="{{ question.preparation_time|multiply:60 }}"
-                             data-question-time="{{ question.time_limit|multiply:60 }}">
+                             data-preparation-time="{{ question.preparation_time }}"
+                             data-question-time="{{ question.time_limit }}">
                     {% endif %}
                             {% if question.media %}
                                 <div class="audio">
@@ -40,6 +40,13 @@
                                 <p class="question_number">{{question.question_number}}</p>
     	                        <p class="question-text">{{question.question}}</p>
                             </div>
+                            <p>{{audio_media_fl}}</p>
+                            {% if question.picture %}
+                                <p>{{question.text_name}}</p>
+                                <div class="picture">
+                                    <p><img style="width: 100%; margin: auto;" src="{{question.picture.url}}"></p>
+                                </div>
+                            {% endif %}
                             {% if question.text %}
                                 <div class="chapter-text">
                                     <p>{{ question.text }}</p>
@@ -79,46 +86,41 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>
-
+    // Script for updating data-question-time if there is audio in question
+    // and autoplaying audio when div is shown
     document.addEventListener("DOMContentLoaded", function () {
-    // Select all audio elements inside question containers
-    const audioElements = document.querySelectorAll("div.question-container .audio audio");
+        // Select all audio elements inside question containers
+        const audioElements = document.querySelectorAll("div.question-container .audio audio");
 
-    // Add an event listener to each audio element
-    audioElements.forEach(function (audio) {
-        const questionContainer = audio.closest(".question-container");
+        // Add an event listener to each audio element
+        audioElements.forEach(function (audio) {
+            const questionContainer = audio.closest(".question-container");
 
-        // When the audio is loaded, set the data-question-time attribute to the audio duration in minutes
-        audio.addEventListener("loadeddata", function () {
-            const durationInSeconds = audio.duration;
-            const durationInMinutes = durationInSeconds / 60; // Convert to minutes
-            questionContainer.setAttribute("data-question-time", durationInSeconds);
-
-            // Update the countdown timer element
-           // const timerElement = questionContainer.querySelector(".record-answer #timer" + questionContainer.dataset.questionNumber);
-           //timerElement.textContent = formatTime(durationInSeconds);
-        });
-
-        // When the question container becomes visible, play the audio
-        const observer = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    audio.play();
-                } else {
-                    audio.pause();
-                }
+            // When the question container becomes visible, play the audio
+            const observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        audio.play();
+                    } else {
+                        audio.pause();
+                    }
+                });
             });
+            // Observe the question container
+            observer.observe(questionContainer);
         });
-
-        // Observe the question container
-        observer.observe(questionContainer);
     });
-});
 
 </script>
 
 
+<script src="https://cdn.WebRTC-Experiment.com/MediaStreamRecorder.js"></script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
 <script>
+
+    // script for recording audio?
+
     let mediaRecorders = [];
     let recordedChunks = [];
     let startTime = [];
@@ -237,6 +239,7 @@
         }
 
 </script>
+
 <script>
     // Get today's date and time
     var now = new Date().getTime();

@@ -1,5 +1,6 @@
 {% extends 'galaxy/base.html' %}
 {% load static %}
+{% load galaxy_tags %}
 
 {% block custom_styles %}
     <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet" />
@@ -45,6 +46,9 @@
                 </div>
             {% endif %}
             {% for question, answers in qa.items %}
+                {% if test.part == 'Speaking'%}
+
+                {% endif %}
                 <div class="question_obj">
                     {% if question.question_type == 'match_type' %}     <!-- Match type of question-->
                         <div class="question">
@@ -220,20 +224,32 @@
                             </div>
                         {% endif %}
                         {% if test.part == 'Speaking' %}
+                            {% if question.media %}
+                                <div class="audio">
+                                    <audio controls style="margin: auto;" id="audio{{ question.pk }}">
+                                        <source src="{{question.media.url}}">
+                                    </audio>
+                                </div>
+                            {% endif %}
+
+                            {% if question.picture %}
+                                <p style="text-align: center;">{{question.text_name}}</p>
+                                <div class="picture">
+                                    <img style="width: 40%; margin: auto;" src="{{question.picture.url}}">
+                                </div>
+                            {% endif %}
+
                             {% if question.text %}
                                 <div class="chapter-text">
                                     <p>{{ question.text }}</p>
                                 </div>
                             {% endif %}
                             <div class="record-answer">
-                                <p style="text-align:center;">REMEMBER! You have time limit for this task: {{ question.time_limit }} minutes.</p>
-                                <p style="text-align:center;" id="status{{ question.pk }}">Click the Record button to start recording.</p>
-                                <div style="text-align:center;">
-                                    <input type="button" id="recordButton{{ question.pk }}" value="Record" data-question-id="{{ question.pk }}" data-question-time="{{ question.time_limit }}">
-                                    <input type="button" id="stopButton{{ question.pk }}" value="Stop" disabled>
-                                </div>
-                                <p style="text-align:center;" id="timer{{ question.pk }}">00:00</p>
-
+                                <p style="text-align:center;">
+                                    REMEMBER! You have time limit for this task:
+                                    {{ question.time_limit|divide_integral:60 }} minute(s)
+                                    {{ question.time_limit|modulus:60 }} seconds
+                                </p>
                             </div>
                         {% else %}  <!-- Writing question answer input-->
                             <div class="add-files">

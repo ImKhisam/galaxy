@@ -13,8 +13,8 @@
         <button id="recordButton" type="button">Record</button>
         <button id="stopButton" type="button" disabled>Stop</button>
 
-        <div style="display: none"> <!--Submit button -->
-            <button class="btn btn5" type="submit">
+        <div> <!--Submit button -->
+            <button id="submitButton" class="btn btn5" type="button">
                 <span>Submit Answers</span>
             </button>
         </div>
@@ -28,6 +28,9 @@
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
     <script>
+
+        const formData = new FormData();
+
         function captureUserMedia(mediaConstraints, successCallback, errorCallback) {
             navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
         }
@@ -47,7 +50,7 @@
             mediaRecorder.stream.stop();
         };
 
-         var mediaRecorder;
+        var mediaRecorder;
 
         function onMediaSuccess(stream) {
 
@@ -60,7 +63,7 @@
              mediaRecorder.audioChannels = 1
 
             mediaRecorder.ondataavailable = function(blob) {
-                sendDataToServer(blob)
+                addDataToForm(blob)
             };
 
         timeInterval = 600 * 1000;
@@ -76,19 +79,9 @@
             console.error('media error', e);
         }
 
-        function sendDataToServer(blob) {
-            var formData = new FormData();
+        function addDataToForm(blob) {
             formData.append("audio", blob, "recorded.wav");
-            // Get the CSRF token from the template
-            var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-            return fetch('{% url "debug" %}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken
-                },
-                body: formData
-            })
-            .then(response => response.json());
         }
+
     </script>
 {% endblock javascript %}

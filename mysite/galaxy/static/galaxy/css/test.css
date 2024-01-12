@@ -246,6 +246,9 @@ option{
 .question{
     display: flex;
 }
+.picture, .audio{
+    display: flex;
+}
 .question_number{
     width: 50px;
     border: 2px solid black;

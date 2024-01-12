@@ -24,7 +24,7 @@
                         <p>Student forgot to load his answer</p>
                     {% endif %}
                     {% if task.media2 %}
-                        <p><img  src="{{task.media2.url}}"></p>
+                        <p><img class="task_check_photo" src="{{task.media2.url}}"></p>
                     {% endif %}
                 {% elif task.test_to_check_id.test_id.part == 'Speaking' %}
                     {% if task.media1 %}

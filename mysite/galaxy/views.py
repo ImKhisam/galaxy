@@ -3,7 +3,7 @@ import time
 import json
 from datetime import datetime, timedelta, date
 from itertools import groupby
-
+from mutagen.mp3 import MP3
 import requests
 from django.forms import formset_factory, modelform_factory
 
@@ -361,6 +361,9 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
             questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
             qa = {}
             for question in questions_for_test:
+                #audio_media_fl = 0
+                #if test.part == 'Speaking' and str(question.media)[-3:] in ['wav', 'mp3', 'aac']:
+                #    audio_media_fl = 1
                 if question.question_type == 'match_type':  # Если вопрос на сопоставление
                     qa[question] = {
                         key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
@@ -396,20 +399,20 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         record_to_add_in += answer_to_add
         return record_to_add_in
 
-    @staticmethod
-    def convert_to_mp3(file_path):
-        print('IM IN COVERT')
-        import subprocess
-        mp3_file_path = file_path.replace('.wav', '.mp3')
-        # Use FFmpeg to convert the WAV file to MP3
-        subprocess.run(["ffmpeg", "-i", file_path, mp3_file_path])
-        print('IM OUT CONVERT')
-        return mp3_file_path
+    #@staticmethod
+    #def convert_to_mp3(file_path):
+    #    print('IM IN COVERT')
+    #    import subprocess
+    #    mp3_file_path = file_path.replace('.wav', '.mp3')
+    #    # Use FFmpeg to convert the WAV file to MP3
+    #    subprocess.run(["ffmpeg", "-i", file_path, mp3_file_path])
+    #    print('IM OUT CONVERT')
+    #    return mp3_file_path
 
-    @staticmethod
-    def convert_wav_to_mp3(wav_path, mp3_path):
-        sound = AudioSegment.from_wav(wav_path)
-        sound.export(mp3_path, format="mp3")
+    #@staticmethod
+    #def convert_wav_to_mp3(wav_path, mp3_path):
+    #    sound = AudioSegment.from_wav(wav_path)
+    #    sound.export(mp3_path, format="mp3")
 
     def post(self, request, test_pk):
         print('!!!!!!!!!!!!!!!!!!!! WE ARE IN POST!!!!!!!!!!!!!!!!')
@@ -870,6 +873,11 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Vie
             question_obj.test_id = chapter_obj.test_id
             question_obj.chapter_id = chapter_obj
             question_obj.question_number = sum_of_questions + 1
+            # If question has audio media set time_limit exact as length of media
+            test_obj = chapter_obj.test_id
+            if test_obj.part == 'Speaking' and str(question_obj.media)[-3:] in ['wav', 'mp3', 'aac']:
+                audio = MP3(question_obj.media)
+                question_obj.time_limit = int(audio.info.length)
             # Save the question
             question_obj.save()
 
@@ -1141,6 +1149,7 @@ class Debug(View):
         #print(os.path)
 
         destination_path = os.path.join(settings.MEDIA_ROOT, 'audio', 'recorded.wav')
+        print(destination_path)
         with open(destination_path, 'wb') as destination_file:
             for chunk in audio_file.chunks():
                 destination_file.write(chunk)

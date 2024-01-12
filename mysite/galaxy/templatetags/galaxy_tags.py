@@ -48,3 +48,12 @@ def get_item(dictionary, key):
 def multiply(value, arg):
     return value * arg
 
+
+@register.filter(name='divide_integral')       # конвертация секунд в минуты
+def divide_integral(value, arg):
+    return value // arg
+
+
+@register.filter(name='modulus')       # конвертация секунд в минуты
+def modulus(value, arg):
+    return value % arg
