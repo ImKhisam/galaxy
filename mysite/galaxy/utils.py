@@ -62,12 +62,12 @@ class AddTestConstValues:
     timings = {'GSEListening': 30,
             'GSEReading': 30,
             'GSEGrammar and Vocabulary': 30,
-            'GSESpeaking': 15,
+            'GSESpeaking': 0,
             'GSEWriting': 30,
             'USEListening': 30,
             'USEReading': 30,
             'USEGrammar and Vocabulary': 40,
-            'USESpeaking': 17,
+            'USESpeaking': 0,
             'USEWriting': 90}
 
     texts = {'GSEListening': '''В разделе аудирования по ОГЭ Вам предлагается прослушать несколько текстов 

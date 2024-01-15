@@ -829,11 +829,17 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
             test_obj.save()                                     # Save the Test
             self.add_test_const_values(test_obj)
 
-            for chapter_form in chapter_formset.forms:          # Save the Chapters
-                if chapter_form.has_changed():
-                    chapter = chapter_form.save(commit=False)
-                    chapter.test_id = test_obj
-                    chapter.save()
+            if len(chapter_formset.forms) == 0:     # auto adding 1 chapter
+                chapter_obj = Chapters()
+                chapter_obj.test_id = test_obj
+                chapter_obj.chapter_number = 1
+                chapter_obj.save()
+            else:
+                for chapter_form in chapter_formset.forms:          # Save the Chapters
+                    if chapter_form.has_changed():
+                        chapter_obj = chapter_form.save(commit=False)
+                        chapter_obj.test_id = test_obj
+                        chapter_obj.save()
 
             return redirect('add_q_and_a', test_obj.id)
 
@@ -880,8 +886,11 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Vie
                 question_obj.time_limit = int(audio.info.length)
             # Save the question
             question_obj.save()
-
-            # Save the Chapters
+            # Test time limit for speaking depends on questions time limit and preparation time
+            if test_obj.part == 'Speaking':
+                test_obj.time_limit += (question_obj.time_limit + question_obj.preparation_time)
+                test_obj.save()
+            # Save the Answers
             for answer_form in answer_formset.forms:
                 if answer_form.has_changed():
                     answer_obj = answer_form.save(commit=False)
