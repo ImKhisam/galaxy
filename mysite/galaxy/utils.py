@@ -159,10 +159,51 @@ class AddTestConstValues:
         test_object.save()
 
 
+class AddQuestionConstValues:
+    question_preparation_times = {'USESpeaking1': 90,
+                                  'USESpeaking2': 90,
+                                  'USESpeaking3': 0,
+                                  'USESpeaking4': 150,
+                                  'GSESpeaking1': 90,
+                                  'GSESpeaking2': 0,
+                                  'GSESpeaking3': 90,
+                                  }
+    question_time_limits = {'USESpeaking1': 90,
+                            'USESpeaking2': 80,
+                            'USESpeaking3': 0,
+                            'USESpeaking4': 180,
+                            'GSESpeaking1': 120,
+                            'GSESpeaking2': 0,
+                            'GSESpeaking3': 120,
+                            }
+    question_points = {'USESpeaking1': 1,
+                       'USESpeaking2': 4,
+                       'USESpeaking3': 5,
+                       'USESpeaking4': 10,
+                       'GSESpeaking1': 90,
+                       'GSESpeaking2': 90,
+                       'GSESpeaking3': 90,
+                       }
+
+    def add_question_const_values(self, question_object):
+        question_object.preparation_time = self.question_preparation_times[question_object.test_id.type +
+                                                                           question_object.test_id.part +
+                                                                           str(question_object.question_number)]
+        question_object.time_limit = self.question_time_limits[question_object.test_id.type +
+                                                               question_object.test_id.part +
+                                                               str(question_object.question_number)]
+        question_object.points = self.question_points[question_object.test_id.type +
+                                                      question_object.test_id.part +
+                                                      str(question_object.question_number)]
+        question_object.save()
+
+
 class ChooseAddQuestForm:
     def choose_form(self, chapter_object):
         if chapter_object.test_id.part == 'Writing':
             return WritingQandAAddForm
+        elif chapter_object.test_id.part == 'Speaking':
+            return SpeakingQandAAddForm
         else:
             return QuestionAddForm
 

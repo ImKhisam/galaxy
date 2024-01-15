@@ -118,6 +118,16 @@ class WritingQandAAddForm(forms.ModelForm):
         }
 
 
+class SpeakingQandAAddForm(forms.ModelForm):
+    class Meta:
+        model = Questions
+        fields = ['question', 'media', 'picture', 'text_name', 'text']
+        widgets = {
+            'question': forms.Textarea(attrs={'class': 'question-add'}),
+            'text': forms.Textarea(attrs={'class': 'question-add'})
+        }
+
+
 class AnswerAddForm(forms.ModelForm):
     class Meta:
         model = Answers

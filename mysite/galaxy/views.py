@@ -25,7 +25,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
 from .utils import generate_token, NotLoggedIn, ConfirmMixin, AddTestConstValues, TeacherUserMixin, \
-    ConfirmStudentMixin, teacher_check, ChooseAddQuestForm
+    ConfirmStudentMixin, teacher_check, ChooseAddQuestForm, AddQuestionConstValues
 from django.contrib.auth.views import PasswordResetView
 from pydub import AudioSegment
 import base64
@@ -850,7 +850,7 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
         return render(request, 'galaxy/add_test.html', context)
 
 
-class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, View):
+class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, AddQuestionConstValues, View):
     login_url = '/login/'
     redirect_field_name = 'login'
     used_form = QuestionAddForm
@@ -871,16 +871,20 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Vie
         chapter_id = self.kwargs.get('chapter_id')
         chapter_obj = Chapters.objects.get(id=chapter_id)
         sum_of_questions = Questions.objects.filter(chapter_id=Chapters.objects.get(id=chapter_id)).count()
+        self.used_form = self.choose_form(chapter_obj)
         question_form = self.used_form(request.POST, request.FILES)
+        print(self.used_form)
         answer_formset = formset_factory(AnswerAddForm, extra=0)(request.POST, request.FILES)
-
         if question_form.is_valid() and answer_formset.is_valid():
             question_obj = question_form.save(commit=False)
             question_obj.test_id = chapter_obj.test_id
             question_obj.chapter_id = chapter_obj
             question_obj.question_number = sum_of_questions + 1
-            # If question has audio media set time_limit exact as length of media
             test_obj = chapter_obj.test_id
+            if test_obj.part in 'Speaking, Writing':
+                self.add_question_const_values(question_obj)
+                question_obj.question_type = 'file_adding_type'
+            # If question has audio media set time_limit exact as length of media
             if test_obj.part == 'Speaking' and str(question_obj.media)[-3:] in ['wav', 'mp3', 'aac']:
                 audio = MP3(question_obj.media)
                 question_obj.time_limit = int(audio.info.length)
