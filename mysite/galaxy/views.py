@@ -841,7 +841,7 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
                         chapter_obj.test_id = test_obj
                         chapter_obj.save()
 
-            return redirect('add_q_and_a', test_obj.id)
+            return redirect('add_q_and_a', chapter_obj.id)
 
         context = {
             'test_form': test_form,
