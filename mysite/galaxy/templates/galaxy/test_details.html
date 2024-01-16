@@ -1,4 +1,5 @@
 {% extends "galaxy/base.html" %}
+{% load galaxy_tags %}
 
 {% block custom_styles %}
 <style>
@@ -11,7 +12,10 @@
     <div class="dark-frame">
         {% if unfinished_try == 0 %}
             <p>{{test.test_details}}</p>
-            <p>Time limit for this test – {{test.time_limit}} minutes.</p>
+            <p> Time limit for this test –
+                {{ test.time_limit|divide_integral:60 }} minute(s)
+                {{ test.time_limit|modulus:60 }} seconds
+            </p>
             {% if test.part == 'Speaking' %}
                 <div class="audio-test">
                     <p>You can check your micro here:</p>

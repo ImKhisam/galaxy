@@ -59,16 +59,16 @@ class ConfirmStudentMixin(UserPassesTestMixin):
 
 
 class AddTestConstValues:
-    timings = {'GSEListening': 30,
-            'GSEReading': 30,
-            'GSEGrammar and Vocabulary': 30,
+    timings = {'GSEListening': 1800,
+            'GSEReading': 1800,
+            'GSEGrammar and Vocabulary': 1800,
             'GSESpeaking': 0,
-            'GSEWriting': 30,
-            'USEListening': 30,
-            'USEReading': 30,
-            'USEGrammar and Vocabulary': 40,
+            'GSEWriting': 1800,
+            'USEListening': 1800,
+            'USEReading': 1800,
+            'USEGrammar and Vocabulary': 2400,
             'USESpeaking': 0,
-            'USEWriting': 90}
+            'USEWriting': 5400}
 
     texts = {'GSEListening': '''В разделе аудирования по ОГЭ Вам предлагается прослушать несколько текстов 
                              и выполнить 11 заданий на понимание прослушанных текстов. 

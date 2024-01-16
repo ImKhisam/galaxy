@@ -234,10 +234,10 @@
   var now = new Date().getTime();
 
   // Set the date we're counting down to
-  var countDownDate = new Date(1000 * {{start_time}} + {{test.time_limit}}*60000).getTime();
+  var countDownDate = new Date(1000 * {{start_time}} + {{test.time_limit}}*1000).getTime();
 
   // Set the warning time to 5 minutes before the end of the countdown
-  var warningTime = new Date(1000 * {{start_time}} + {{test.time_limit}}*60000 - 5*60000).getTime();
+  var warningTime = new Date(1000 * {{start_time}} + {{test.time_limit}}*1000 - 5*60000).getTime();
 
   var warningShown = false;
 
