@@ -42,9 +42,10 @@
                             </div>
                             <p>{{audio_media_fl}}</p>
                             {% if question.picture %}
-                                <p>{{question.text_name}}</p>
+                                <p style="text-align: center;">{{question.text_name}}</p>
                                 <div class="picture">
-                                    <p><img style="width: 100%; margin: auto;" src="{{question.picture.url}}"></p>
+                                    <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
+
                                 </div>
                             {% endif %}
                             {% if question.text %}

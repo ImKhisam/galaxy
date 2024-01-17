@@ -415,15 +415,14 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
     #    sound.export(mp3_path, format="mp3")
 
     def post(self, request, test_pk):
-        print('!!!!!!!!!!!!!!!!!!!! WE ARE IN POST!!!!!!!!!!!!!!!!')
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
         
         '''Подсчитываем время, потраченное на тест и удаляем из сессии время старта'''
         time_obj = TestTimings.objects.get(test_id=test, user_id=user)
-        test_time = int(time.time() - time_obj.start_time)
-        if test_time > test.time_limit * 60:
-            test_time = test.time_limit * 60
+        test_time = int(time.time() - time_obj.start_time)  # in seconds?
+        if test_time > test.time_limit:
+            test_time = test.time_limit
         time_obj.delete()
 
         '''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''

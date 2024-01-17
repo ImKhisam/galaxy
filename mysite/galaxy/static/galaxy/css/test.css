@@ -258,7 +258,7 @@ option{
 }
 .question-text{
     font-size: 27px;
-    white-space: break-spaces;
+    
     margin-left: 20px;
     flex: 1;
 }

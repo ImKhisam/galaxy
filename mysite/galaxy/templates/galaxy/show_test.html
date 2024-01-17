@@ -218,54 +218,58 @@
                                 <p class="question_writing_text">{{question.writing_after}}</p>
                             </div>
                         {% else %}
-                            <div class="question">
-                                <p class="question_number">{{question.question_number}}</p>
-	                            <p class="question-text">{{question.question}}</p>
-                            </div>
-                        {% endif %}
-                        {% if test.part == 'Speaking' %}
-                            {% if question.media %}
-                                <div class="audio">
-                                    <audio controls style="margin: auto;" id="audio{{ question.pk }}">
-                                        <source src="{{question.media.url}}">
-                                    </audio>
+                            {% if test.part == 'Speaking' %}
+                                <div class="question">
+                                    <p class="question_number">{{question.question_number}}</p>
+	                                <p class="question-text" style="white-space: break-spaces;">{{question.question}}</p>
                                 </div>
-                            {% endif %}
-
-                            {% if question.picture %}
-                                <p style="text-align: center;">{{question.text_name}}</p>
-                                <div class="picture">
-                                    <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
-                                </div>
-                            {% endif %}
-
-                            {% if question.text %}
-                                <div class="chapter-text">
-                                    <p>{{ question.text }}</p>
-                                </div>
-                            {% endif %}
-                            <div class="record-answer">
-                                <p style="text-align:center;">
-                                    REMEMBER! You have time limit for this task:
-                                    {{ question.time_limit|divide_integral:60 }} minute(s)
-                                    {{ question.time_limit|modulus:60 }} seconds
-                                </p>
-                            </div>
-                        {% else %}  <!-- Writing question answer input-->
-                            <div class="add-files">
-                                <div class="file">
-                                    <label class="input-file">
-                                        <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
-                                        <span>Choose a file...</span>
-                                    </label>
-                                </div>
-                                {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
-                                <div class="file">
-                                    <label for="{{question.pk}}_media2">Additional:</label>
-                                    <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
-                                </div>
+                                {% if question.media %}
+                                    <div class="audio">
+                                        <audio controls style="margin: auto;" id="audio{{ question.pk }}">
+                                            <source src="{{question.media.url}}">
+                                        </audio>
+                                    </div>
                                 {% endif %}
-                            </div>
+
+                                {% if question.picture %}
+                                    <p style="text-align: center;">{{question.text_name}}</p>
+                                    <div class="picture">
+                                        <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
+                                    </div>
+                                {% endif %}
+
+                                {% if question.text %}
+                                    <div class="chapter-text">
+                                        <p>{{ question.text }}</p>
+                                    </div>
+                                {% endif %}
+                                <div class="record-answer">
+                                    <p style="text-align:center;">
+                                        REMEMBER! You have time limit for this task:
+                                        {{ question.time_limit|divide_integral:60 }} minute(s)
+                                        {{ question.time_limit|modulus:60 }} seconds
+                                    </p>
+                                </div>
+                            {% else %}  <!-- Writing question answer input-->
+                                <div class="question">
+                                    <p class="question_number">{{question.question_number}}</p>
+	                                <p class="question-text">{{question.question}}</p>
+                                </div>
+                                <div class="add-files">
+                                    <div class="file">
+                                        <label class="input-file">
+                                            <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                                            <span>Choose a file...</span>
+                                        </label>
+                                    </div>
+                                    {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
+                                    <div class="file">
+                                        <label for="{{question.pk}}_media2">Additional:</label>
+                                        <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
                 </div>
@@ -288,4 +292,55 @@
     	$(this).next().html(file.name);
     });
 </script>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Handle change event for all select elements
+    $('select').change(function() {
+        var selectedValue = $(this).val();  // Get the selected value
+
+        // Check if the selected value already exists in other selects
+        $('select').not(this).find('option').filter(function() {
+            return $(this).val() === selectedValue;
+        }).prop('selected', false);  // Remove selection
+    });
+});
+</script>
+
+<script>
+$(document).ready(function() {
+    var chosenValues = [];  // Initialize the list of chosen values
+
+    // Handle change event for all select elements
+    $('select').change(function() {
+        var selectedValue = $(this).val();  // Get the selected value
+
+        // Update the list of chosen values
+        if ($(this).prop('selectedIndex') !== 0) {  // Ignore the default option
+            chosenValues.push(selectedValue);
+        }
+
+        // Remove value from the list of chosen values if not selected in any select
+        chosenValues = chosenValues.filter(function(value) {
+            return $('select').find('option[value="' + value + '"]:selected').length > 0;
+        });
+
+        // Update all select elements
+        $('select').each(function() {
+            // Update option lists and color based on the list of chosen values
+            $(this).find('option').each(function() {
+                var optionValue = $(this).val();
+                if (chosenValues.includes(optionValue)) {
+                    $(this).css('background-color', 'red');  // Change the color as needed
+                } else {
+                    $(this).css('background-color', '');  // Reset the color
+                }
+            });
+        });
+    });
+});
+</script>
+
 {% endblock javascript %}

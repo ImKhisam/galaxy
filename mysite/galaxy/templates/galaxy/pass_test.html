@@ -386,5 +386,51 @@ var x = setInterval(function() {
     }
 
 </script>
+
+<!-- select options handling js -->
+
+<script>
+    $(document).ready(function() {
+        // Function to update the options in other select elements
+        function updateSelectOptions(selectedOption, questionNumber) {
+            // Loop through all select elements
+            $('select[name^="' + questionNumber + '"]').each(function() {
+                // Update options based on the selected option
+                $(this).find('option').prop('disabled', false);
+                if (selectedOption !== 'Выберите ответ') {
+                    $(this).find('option[value="' + selectedOption + '"]').not(':selected').prop('disabled', true);
+                }
+            });
+        }
+
+        // Event handler for change in select elements
+        $('select').on('change', function() {
+            var selectedOption = $(this).val();
+            var questionNumber = $(this).attr('name');
+
+            // If the selected option is not the default one
+            if (selectedOption !== 'Выберите ответ') {
+                // Check if this option is selected in other select elements
+                $('select[name^="' + questionNumber + '"]').not(this).each(function() {
+                    if ($(this).val() === selectedOption) {
+                        // Undo selection in the other select element
+                        $(this).val('Выберите ответ');
+                    }
+                });
+            }
+
+            // Update options in other select elements
+            updateSelectOptions(selectedOption, questionNumber);
+        });
+
+        // Initial update of select options based on the default values
+        $('select').each(function() {
+            var selectedOption = $(this).val();
+            var questionNumber = $(this).attr('name');
+            updateSelectOptions(selectedOption, questionNumber);
+        });
+    });
+</script>
+
 {% endif %}
 {% endblock javascript%}
