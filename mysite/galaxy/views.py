@@ -25,7 +25,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
 from .utils import generate_token, NotLoggedIn, ConfirmMixin, AddTestConstValues, TeacherUserMixin, \
-    ConfirmStudentMixin, teacher_check, ChooseAddQuestForm, AddQuestionConstValues
+    ConfirmStudentMixin, teacher_check, ChooseAddQuestForm, AddQuestionConstValues, AddChapterConstValues
 from django.contrib.auth.views import PasswordResetView
 from pydub import AudioSegment
 import base64
@@ -803,7 +803,7 @@ class CheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
 #    return response
 
 
-class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstValues, View):
+class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstValues, AddChapterConstValues, View):
     login_url = '/login/'
     redirect_field_name = 'login'
     def get(self, request, *args, **kwargs):
@@ -839,6 +839,8 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
                         chapter_obj = chapter_form.save(commit=False)
                         chapter_obj.test_id = test_obj
                         chapter_obj.save()
+                        if test_obj.part == 'Writing':
+                            self.add_chapter_const_valuse(chapter_obj)
 
             return redirect('add_q_and_a', chapter_obj.id)
 
@@ -880,8 +882,13 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
             question_obj.chapter_id = chapter_obj
             question_obj.question_number = sum_of_questions + 1
             test_obj = chapter_obj.test_id
+            self.add_question_points(question_obj)
+            if test_obj.part == 'Speaking':
+                self.add_question_timings(question_obj)     # adding time_limit and preparation_time
+                # Test time limit for speaking depends on questions time limit and preparation time
+                test_obj.time_limit += (question_obj.time_limit + question_obj.preparation_time)
+                test_obj.save()
             if test_obj.part in 'Speaking, Writing':
-                self.add_question_const_values(question_obj)
                 question_obj.question_type = 'file_adding_type'
             # If question has audio media set time_limit exact as length of media
             if test_obj.part == 'Speaking' and str(question_obj.media)[-3:] in ['wav', 'mp3', 'aac']:
@@ -889,10 +896,7 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
                 question_obj.time_limit = int(audio.info.length)
             # Save the question
             question_obj.save()
-            # Test time limit for speaking depends on questions time limit and preparation time
-            if test_obj.part == 'Speaking':
-                test_obj.time_limit += (question_obj.time_limit + question_obj.preparation_time)
-                test_obj.save()
+
             # Save the Answers
             for answer_form in answer_formset.forms:
                 if answer_form.has_changed():

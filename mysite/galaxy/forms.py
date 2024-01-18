@@ -93,25 +93,19 @@ class QuestionAddForm(forms.ModelForm):
     class Meta:
         model = Questions
         fields = ['question_type', 'question', 'media', 'picture', 'text_name',
-                  'text', 'addition_before', 'addition_after', 'points',
-                  'preparation_time', 'time_limit']
+                  'text', 'addition_before', 'addition_after']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question-add'}),
             'addition_before': forms.TextInput(attrs={'class': 'additions'}),
             'text': forms.Textarea(attrs={'class': 'question-add'})
-        }
-        labels = {
-            'preparation_time': 'Preparation_time(in seconds)',
-            'time_limit': 'Time_limit(in seconds)'
         }
 
 
 class WritingQandAAddForm(forms.ModelForm):
     class Meta:
         model = Questions
-        fields = ['question', 'media', 'points', 'time_limit',
-                  'writing_fl', 'writing_from', 'writing_to', 'writing_subject',
-                  'writing_letter', 'writing_after']
+        fields = ['question', 'media', 'writing_fl', 'writing_from', 'writing_to',
+                  'writing_subject', 'writing_letter', 'writing_after']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question-add'}),
             'addition_before': forms.TextInput(attrs={'class': 'additions'})

@@ -153,10 +153,26 @@ class AddTestConstValues:
                              Письмо недостаточного объёма, а также часть текста электронного письма, 
                              превышающая требуемый объём, не оцениваются.'''}
 
-    def add_test_const_values(self, test_object):
-        test_object.time_limit = self.timings[test_object.type + test_object.part]
-        test_object.test_details = self.texts[test_object.type + test_object.part]
-        test_object.save()
+    def add_test_const_values(self, test_obj):
+        test_obj.time_limit = self.timings[test_obj.type + test_obj.part]
+        test_obj.test_details = self.texts[test_obj.type + test_obj.part]
+        test_obj.save()
+
+
+class AddChapterConstValues:
+    info = {'USEWriting1': '''Для ответов на задания 1 и 2 используйте листы формата А4. 
+                              Запишите на них свои ответы, сфотографируйте и прикрепите каждый под своим заданием в поле ответа. 
+                              Черновики прикреплять не надо.
+                              Обратите внимание также на необходимость соблюдения указанного объёма текста. Тексты
+                              недостаточного объёма, а также часть текста, превышающая требуемый объём, не оцениваются.''',
+            'USEWriting2': '''Выберите только ОДНО из двух предложенных заданий (2.1 или 2.2), 
+                              укажите его номер в БЛАНКЕ ОТВЕТА и выполните согласно данному плану. 
+                              В ответе на задание 2 числительные пишите цифрами.'''}
+
+    def add_chapter_const_valuse(self, chapter_obj):
+        chapter_obj.info = self.info[chapter_obj.test_id.type +
+                                     chapter_obj.test_id.type +
+                                     str(chapter_obj.chapter_number)]
 
 
 class AddQuestionConstValues:
@@ -168,6 +184,7 @@ class AddQuestionConstValues:
                                   'GSESpeaking2': 0,
                                   'GSESpeaking3': 90,
                                   }
+
     question_time_limits = {'USESpeaking1': 90,
                             'USESpeaking2': 80,
                             'USESpeaking3': 0,
@@ -176,26 +193,41 @@ class AddQuestionConstValues:
                             'GSESpeaking2': 0,
                             'GSESpeaking3': 120,
                             }
+
     question_points = {'USESpeaking1': 1,
                        'USESpeaking2': 4,
                        'USESpeaking3': 5,
                        'USESpeaking4': 10,
-                       'GSESpeaking1': 90,
-                       'GSESpeaking2': 90,
-                       'GSESpeaking3': 90,
+                       'GSESpeaking1': 2,
+                       'GSESpeaking2': 6,
+                       'GSESpeaking3': 7,
+                       'GSEListening5': 5,
+                       'GSEReading1': 6,
+                       'USEListening1': 2,
+                       'USEListening2': 3,
+                       'USEReading1': 3,
+                       'USEReading2': 2,
+                       'USEWriting1': 6,
+                       'USEWriting2': 14,
+                       'GSEWriting1': 10,
                        }
 
-    def add_question_const_values(self, question_object):
-        question_object.preparation_time = self.question_preparation_times[question_object.test_id.type +
-                                                                           question_object.test_id.part +
-                                                                           str(question_object.question_number)]
-        question_object.time_limit = self.question_time_limits[question_object.test_id.type +
-                                                               question_object.test_id.part +
-                                                               str(question_object.question_number)]
-        question_object.points = self.question_points[question_object.test_id.type +
-                                                      question_object.test_id.part +
-                                                      str(question_object.question_number)]
-        question_object.save()
+    def add_question_timings(self, question_obj):
+        question_obj.preparation_time = self.question_preparation_times[question_obj.test_id.type +
+                                                                           question_obj.test_id.part +
+                                                                           str(question_obj.question_number)]
+        question_obj.time_limit = self.question_time_limits[question_obj.test_id.type +
+                                                               question_obj.test_id.part +
+                                                               str(question_obj.question_number)]
+        question_obj.save()
+
+    def add_question_points(self, question_obj):
+        key = question_obj.test_id.type + question_obj.test_id.part + str(question_obj.question_number)
+        if key in self.question_points.keys():
+            question_obj.points = self.question_points[key]
+        else:
+            question_obj.points = 1
+        question_obj.save()
 
 
 class ChooseAddQuestForm:
