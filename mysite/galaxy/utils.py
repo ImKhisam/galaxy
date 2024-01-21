@@ -209,6 +209,7 @@ class AddQuestionConstValues:
                        'USEReading2': 2,
                        'USEWriting1': 6,
                        'USEWriting2': 14,
+                       'USEWriting3': 14,
                        'GSEWriting1': 10,
                        }
 

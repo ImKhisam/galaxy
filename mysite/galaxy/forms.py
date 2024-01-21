@@ -104,7 +104,7 @@ class QuestionAddForm(forms.ModelForm):
 class WritingQandAAddForm(forms.ModelForm):
     class Meta:
         model = Questions
-        fields = ['question', 'media', 'writing_fl', 'writing_from', 'writing_to',
+        fields = ['question', 'picture', 'writing_fl', 'writing_from', 'writing_to',
                   'writing_subject', 'writing_letter', 'writing_after']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question-add'}),

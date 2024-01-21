@@ -201,7 +201,7 @@
                             </div>
                         </div>
                     {% else %}      <!-- File adding type question -->
-                        {% if question.writing_fl == 'letter'%}
+                        {% if question.writing_fl == 'letter'%}     <!-- letter -->
                             <div class="question">
                                 <p class="question_number">{{question.question_number}}</p>
 	                            <p class="question-text">{{question.question}}</p>
@@ -250,11 +250,15 @@
                                         {{ question.time_limit|modulus:60 }} seconds
                                     </p>
                                 </div>
-                            {% else %}  <!-- Writing question answer input-->
+                            {% else %}  <!-- essay -->
                                 <div class="question">
                                     <p class="question_number">{{question.question_number}}</p>
 	                                <p class="question-text">{{question.question}}</p>
                                 </div>
+                                <div class="picture">
+                                    <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
+                                </div>
+                                <p class="question_writing_text">{{question.writing_after}}</p>
                                 <div class="add-files">
                                     <div class="file">
                                         <label class="input-file">
@@ -262,7 +266,7 @@
                                             <span>Choose a file...</span>
                                         </label>
                                     </div>
-                                    {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
+                                    {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
                                     <div class="file">
                                         <label for="{{question.pk}}_media2">Additional:</label>
                                         <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
@@ -274,7 +278,7 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            <a class="btn btn5" href="{% url 'add_q_and_a' chapter.id %}"><span>Add question</span></a>
+            <a class="btn btn5" href="{% url 'add_q_and_a' chapter.id %}"><span>Add question to chapter</span></a>
         </div>
     {% endfor %}
     <br><br>

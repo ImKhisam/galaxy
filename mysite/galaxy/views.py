@@ -871,7 +871,7 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
     def post(self, request, *args, **kwargs):
         chapter_id = self.kwargs.get('chapter_id')
         chapter_obj = Chapters.objects.get(id=chapter_id)
-        sum_of_questions = Questions.objects.filter(chapter_id=Chapters.objects.get(id=chapter_id)).count()
+        sum_of_questions = Questions.objects.filter(test_id=chapter_obj.test_id).count()
         self.used_form = self.choose_form(chapter_obj)
         question_form = self.used_form(request.POST, request.FILES)
         print(self.used_form)

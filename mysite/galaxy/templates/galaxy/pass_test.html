@@ -176,32 +176,45 @@
                         </div>
                     </div>
                 {% else %}      <!-- File adding type question -->
-                    <div class="question_file_add">
-                        <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
-                    </div>
-                    {% if test.part == 'Speaking' %}
-                        <div class="record-answer">
-                            <p class="question_writing_text">Time limit for this task: {{ question.time_limit }} minutes.</p>
-                            <input type="button" id="recordButton{{ question.pk }}" value="Record" data-question-id="{{ question.pk }}" data-question-time="{{ question.time_limit }}">
-                            <input type="button" id="stopButton{{ question.pk }}" value="Stop" disabled>
-                            <p id="status{{ question.pk }}">Click the Record button to start recording.</p>
-                            <p id="timer{{ question.pk }}">00:00</p>
-
+                    {% if question.writing_fl == 'letter'%}
+                        <!-- Letter -->
+                        <div class="question">
+                            <p class="question_number">{{question.question_number}}</p>
+	                        <p class="question-text">{{question.question}}</p>
                         </div>
-                    {% else %}      <!-- Writing test -->
-                        <div class="add-files">
+                        <div style="display: flex; justify-content: center;">
+                            <div class="letter">
+                                <div class="letter_row"><p class="letter_data">{{question.writing_from}}</p></div>
+                                <div class="letter_row"><p class="letter_data">{{question.writing_to}}</p></div>
+                                <div class="letter_row"><p class="letter_data">{{question.writing_subject}}</p></div>
+                                <div class="letter_row"><p class="letter_text">{{question.writing_letter}}</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="question_writing_text">{{question.writing_after}}</p>
+                        </div>
+                    {% else %}
+                        <!-- Essay -->
+                        <div class="question_file_add">
+                            <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
+                            <div class="picture">
+                                <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
+                            </div>
+                            <p class="question_writing_text">{{question.writing_after}}</p>
+                        </div>
+                    {% endif %}
+                    <div class="add-files">
                             <div class="file">
                                 <label for="{{question.pk}}_media1">Answer:</label>
                                 <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
                             </div>
-                            {% if test.type == 'USE' and test.part == 'Writing' and question.number == 2 %}
+                            {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
                             <div class="file">
                                 <label for="{{question.pk}}_media2">Additional:</label>
                                 <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
                             </div>
                             {% endif %}
                         </div>
-                    {% endif %}
                 {% endif %}
             </div>
         {% endfor %}
