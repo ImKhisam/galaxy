@@ -13,7 +13,7 @@
         {% csrf_token %}
             <h1>Checking test {{test_to_check.test_id}}</h1>
             {% for task in tasks_to_check %}
-                <h2>Task: {{ task.question_id.question_number }} </h2>
+                <h2>Task {{ task.question_id.question_number }}. </h2>
                 <p class="question_writing_text">{{ task.question_id.question }}</p>
 
                 <h2>Student's answer:</h2>

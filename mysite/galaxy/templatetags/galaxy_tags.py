@@ -57,3 +57,8 @@ def divide_integral(value, arg):
 @register.filter(name='modulus')       # конвертация секунд в минуты
 def modulus(value, arg):
     return value % arg
+
+
+@register.filter(name='adding')
+def adding(value, arg):
+    return value + arg

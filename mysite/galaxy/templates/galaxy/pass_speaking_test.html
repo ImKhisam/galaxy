@@ -38,18 +38,22 @@
                             {% endif %}
                             <div class="question">
                                 <p class="question_number">{{question.question_number}}</p>
-    	                        <p class="question-text">{{question.question}}</p>
+    	                        <p class="question-text" style="white-space: break-spaces;">{{question.question}}</p>
                             </div>
                             <p>{{audio_media_fl}}</p>
                             {% if question.picture %}
-                                <p style="text-align: center;">{{question.text_name}}</p>
+                                <p style="text-align: center; font-weight: 600; font-size: 27px;">{{question.text_name}}</p>
                                 <div class="picture">
                                     <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
                                 </div>
                             {% endif %}
                             {% if question.text %}
                                 <div class="chapter-text">
+                                    {% if question.question_number == 1 %}
+                                    <p style="border: 1px solid black; padding: 5px;">{{ question.text }}</p>
+                                    {% else %}
                                     <p>{{ question.text }}</p>
+                                    {% endif %}
                                 </div>
                             {% endif %}
                             <div class="record-answer" style="display: none">

@@ -46,9 +46,6 @@
                 </div>
             {% endif %}
             {% for question, answers in qa.items %}
-                {% if test.part == 'Speaking'%}
-
-                {% endif %}
                 <div class="question_obj">
                     {% if question.question_type == 'match_type' %}     <!-- Match type of question-->
                         <div class="question">
@@ -230,17 +227,19 @@
                                         </audio>
                                     </div>
                                 {% endif %}
-
                                 {% if question.picture %}
-                                    <p style="text-align: center;">{{question.text_name}}</p>
+                                    <p style="text-align: center; font-weight: 600; font-size: 27px;">{{question.text_name}}</p>
                                     <div class="picture">
                                         <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
                                     </div>
                                 {% endif %}
-
                                 {% if question.text %}
                                     <div class="chapter-text">
+                                        {% if question.question_number == 1 %}
+                                        <p style="border: 1px solid black; padding: 5px;">{{ question.text }}</p>
+                                        {% else %}
                                         <p>{{ question.text }}</p>
+                                        {% endif %}
                                     </div>
                                 {% endif %}
                                 <div class="record-answer">
@@ -252,29 +251,33 @@
                                 </div>
                             {% else %}  <!-- essay -->
                                 <div class="question">
+                                    {% if question.question_number > 1 %}
+                                    <p class="question_number">2.{{question.question_number|adding:-1}}</p>
+                                    {% else %}
                                     <p class="question_number">{{question.question_number}}</p>
+                                    {% endif %}
 	                                <p class="question-text">{{question.question}}</p>
                                 </div>
                                 <div class="picture">
-                                    <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
+                                    <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
                                 </div>
                                 <p class="question_writing_text">{{question.writing_after}}</p>
-                                <div class="add-files">
-                                    <div class="file">
-                                        <label class="input-file">
-                                            <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
-                                            <span>Choose a file...</span>
-                                        </label>
-                                    </div>
-                                    {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
-                                    <div class="file">
-                                        <label for="{{question.pk}}_media2">Additional:</label>
-                                        <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
-                                    </div>
-                                    {% endif %}
-                                </div>
                             {% endif %}
                         {% endif %}
+                        <div class="add-files">
+                            <div class="file">
+                                <label class="input-file">
+                                    <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                                    <span>Choose a file...</span>
+                                </label>
+                            </div>
+                            {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
+                            <div class="file">
+                                <label for="{{question.pk}}_media2">Additional:</label>
+                                <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                            </div>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </div>
             {% endfor %}

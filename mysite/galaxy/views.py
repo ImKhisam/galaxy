@@ -365,12 +365,21 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                 #if test.part == 'Speaking' and str(question.media)[-3:] in ['wav', 'mp3', 'aac']:
                 #    audio_media_fl = 1
                 if question.question_type == 'match_type':  # Если вопрос на сопоставление
-                    qa[question] = {
-                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
-                            'answer',
-                            flat=True)
-                        for key in
-                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+                    if question.test_id.type == 'USE' and question.test_id.part == 'Listening' and question.question_number == 2:
+                        qa[question] = {
+                            key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                                'addition',
+                                flat=True)
+                            for key in
+                            Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').
+                                order_by('match')}
+                    else:
+                        qa[question] = {
+                            key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                                'answer',
+                                flat=True)
+                            for key in
+                            Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
                 elif question.question_type == 'input_type':  # Вопрос с вводом слова
                     qa[question] = Answers.objects.get(question_id__id=question.id)
                 else:  # Вопрос с radio или True/False

@@ -1,6 +1,6 @@
 {% extends 'galaxy/base.html' %}
 {% load static %}
-
+{% load galaxy_tags %}
 {% block custom_styles %}
     <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet" />
 {% endblock %}
@@ -17,196 +17,222 @@
         {{ form.non_field_errors }}
     </div>
     {% for chapter, qa in content_dict.items %}
-        {% if chapter.info %}
-            <div class="chapter-info">
-                {{chapter.info}}
-            </div>
-        {% endif %}
-        {% if chapter.text_name %}
-            <div class="chapter-text-name">
-                <h3>{{chapter.text_name}}</h3>
-            </div>
-            <div class="chapter-text">
-                <p>{{chapter.text}}</p>
-            </div>
-        {% endif %}
-        {% if chapter.media %}
-            <br><br>
-            <div class="question">
-                <audio controls src="{{chapter.media.url}} "></audio>
-            </div>
-        {% endif %}
-        {% if test.media and forloop.first %}
-            <div class="question">
-                <audio hidden autoplay>
-                    <source src="{{test.media.url}}">
-                </audio>
-            </div>
-        {% endif %}
-        {% for question, answers in qa.items %}
-            <div class="question">
-                {% if question.question_type == 'match_type' %}
-                    {% if test.type == 'USE' and test.part == 'Listening' and question.question_number == 2 %}
-                        <p class="question-text">{{question.question_number}}. {{question.question}}</p>
-                        <div class="matches">
-                            {% for answer, answer_list in answers.items %}
-                                <div class="select-wrapper listening-select">
-                                    <label>{{answer.match}}</label>
-                                    <select name="{{answer.pk}}">
-                                        <option>Выберите ответ</option>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                    </select>
-                                </div>
-                            {% endfor %}
+        <div class="chapter">
+            {% if chapter.info %}
+                <div class="chapter-info">
+                    {{chapter.info}}
+                </div>
+            {% endif %}
+            {% if chapter.text_name %}
+                <div class="chapter-text-name">
+                    <h3>{{chapter.text_name}}</h3>
+                </div>
+                <div class="chapter-text">
+                    <p>{{chapter.text}}</p>
+                </div>
+            {% endif %}
+            {% if chapter.media %}
+                <br><br>
+                <div class="question_obj">
+                    <audio controls src="{{chapter.media.url}} "></audio>
+                </div>
+            {% endif %}
+            {% if test.media and forloop.first %}
+                <div class="question_obj">
+                    <audio hidden autoplay>
+                        <source src="{{test.media.url}}">
+                    </audio>
+                </div>
+            {% endif %}
+            {% for question, answers in qa.items %}
+                <div class="question_obj">
+                    {% if question.question_type == 'match_type' %}     <!-- Match type of question-->
+                        <div class="question">
+                            <p class="question_number">{{question.question_number}}</p>
+                            <p class="question-text" style="border: 2px solid black;font-style: italic;padding:5px;">
+                                {{question.question}}
+                            </p>
                         </div>
-
-                    {% else %}
-                        <p class="question-text">{{question.question_number}}. {{question.question}}</p>
+                        {% if question.text %}
+                            <div class="chapter-text-name">
+                                <h3>{{question.text_name}}</h3>
+                            </div>
+                            <div class="chapter-text">
+                                <p>{{question.text}}</p>
+                            </div>
+                        {% endif %}
                         {% for answer, answer_list in answers.items %}
-                            {% if forloop.first %}
-                                <div class="match-answers">
+                            {% if forloop.first %}  <!-- Printing answer options -->
+                                <div class="list_of_match_options">
                                     {% for item in answer_list %}
                                         <p class="match-answer">{{ forloop.counter }}. {{item}}</p>
                                     {% endfor %}
                                     <br><br>
                                 </div>
                             {% endif %}
-                            {% if answer.addition != 'None' %}
-                                <div class="reading-match-element"><!-- Reading test match question-->
-                                    <div class="outer-addition">
-                                        <div class="reading-addition left-align">
-                                            <p>{{answer.match}}. {{answer.addition}}</p>
+                        {% endfor %}
+                        {% if test.type == 'USE' and test.part == 'Listening' and question.question_number == 2 %}
+                            <div class="matches">       <!-- USE Listening 2nd question matches -->
+                                {% for answer, answer_list in answers.items %}
+                                    <div class="select-wrapper listening-select">
+                                        <label>{{answer.match}}</label>
+                                        <select name="{{answer.pk}}">
+                                            <option>Выберите ответ</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </select>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {% for answer, answer_list in answers.items %}
+                                {% if test.part == 'Reading' and question.question_number == 1 %}   <!-- Reading match-->
+                                    <div class="reading-match-element">
+                                        <div class="outer-addition">
+                                            <div class="reading-addition left-align">
+                                                <p>{{answer.match}}. {{answer.addition}}</p>
+                                            </div>
+                                        </div>
+                                        <div class="outer-select">
+                                            <div class="select-wrapper">
+                                                <select class="reading-select" name="{{answer.pk}}">
+                                                    <option>Выберите ответ</option>
+                                                    {% for item in answer_list %}
+                                                        <option value="{{item}}">{{ forloop.counter }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="outer-select">
-                                        <div class="select-wrapper">
-                                            <select class="reading-select" name="{{answer.pk}}">
+                                {% else %}
+                                    {% if forloop.first %}
+                                        <div class="matches">
+                                    {% endif %}
+                                        <div class="select-wrapper listening-select">   <!-- Listening match -->
+                                            <label>{{answer.match}}</label>
+                                            <select name="{{answer.pk}}">
                                                 <option>Выберите ответ</option>
                                                 {% for item in answer_list %}
                                                     <option value="{{item}}">{{ forloop.counter }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                        <!-- Listening test match questions -->
-                        <div class="matches">
-                            {% for answer, answer_list in answers.items %}
-                                {% if answer.addition == 'None' %}
-                                    <div class="select-wrapper listening-select">
-                                        <label>{{answer.match}}</label>
-                                        <select name="{{answer.pk}}">
-                                            <option>Выберите ответ</option>
-                                            {% for item in answer_list %}
-                                                <option value="{{item}}">{{ forloop.counter }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
+                                    {% if forloop.last %}
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
-                        </div>
-                    {% endif %}
-                {% elif question.question_type == 'input_type'%}    <!-- Input type question -->
-                    <div class="input-outer">
-                        <div class="input-question">
-                            <p class="question-text">{{question.question_number}}. {{question.question}}</p>
-                        </div>
-                        {% if question.addition_before %}
-                            <div class="input-addition">
-                                <p class="input-addition-text">{{question.addition_before}}</p>
-                            </div>
-                        {% else %}
-                            <div class="input-addition"></div>
                         {% endif %}
-                        <div class="input-type">
-                            <input type="text" name="{{answers.pk}}">
-                        </div>
-                        {% if question.addition_after %}
-                            <div class="input-addition">
-                                <p class="input-addition-text">{{question.addition_after}}</p>
+                    {% elif question.question_type == 'input_type'%}    <!-- Input type question -->
+                        <div class="input-outer">
+                            <div class="input-question">
+                                <p class="question_number">{{question.question_number}}</p>
+                                <p class="question-text">{{question.question}}</p>
                             </div>
-                        {% else %}
-                            <div class="input-addition"></div>
-                        {% endif %}
-                    </div>
-                {% elif question.question_type == 'single_choice_type' %} <!-- Single choice type question -->
-                    <div class="question_radio">
-                        <p class="question-text">{{question.question_number}}. {{question.question}}</p>
-                        <div class="question-choices">
-                            {% for answer in answers %}
-                                <div class="question-choice">
-                                    <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
-                                        <label for="{{answer.pk}}">
-                                            <span class="center">{{ answer.answer }}</span>
-                                        </label>
+                            {% if question.addition_before %}
+                                <div class="input-addition">
+                                    <p class="input-addition-text">{{question.addition_before}}</p>
                                 </div>
-                            {% endfor %}
+                            {% else %}
+                                <div class="input-addition"></div>
+                            {% endif %}
+                            <div class="input-type">
+                                <input type="text" class="input-answer" name="{{answers.pk}}">
+                            </div>
+                            {% if question.addition_after %}
+                                <div class="input-addition">
+                                    <p class="input-addition-text">{{question.addition_after}}</p>
+                                </div>
+                            {% else %}
+                                <div class="input-addition"></div>
+                            {% endif %}
                         </div>
-                    </div>
-                {% elif question.question_type == 'true_false_type' %}  <!-- True/False type question -->
-                    <div class="question_true_false">
-                        <p class="question-text">{{question.question_number}}. {{question.question}}</p>
-                        <div class="question-choices">
-                            <div class="question-choice">
-                                <input type="radio" id="True{{question.pk}}" name="{{question.pk}}" value="True">
-                                <label for="True{{question.pk}}">
-                                    <span class="center">True</span>
-                                </label>
+                    {% elif question.question_type == 'single_choice_type' %} <!-- Single choice type question -->
+                        <div class="question_radio">
+                            <div class="question">
+                            	<p class="question_number">{{question.question_number}}</p>
+                            	<p class="question-text">{{question.question}}</p>
+                            </div>
+                            <div class="question-choices">
+                                {% for answer in answers %}
+                                    <div class="question-choice">
+                                        <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
+                                            <label for="{{answer.pk}}">
+                                                <span class="center">{{ answer.answer }}</span>
+                                            </label>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
-                        <div class="question-choices">
-                            <div class="question-choice">
-                                <input type="radio" id="False{{question.pk}}" name="{{question.pk}}" value="False">
-                                <label for="False{{question.pk}}">
-                                    <span class="center">False</span>
-                                </label>
+                    {% elif question.question_type == 'true_false_type' %}  <!-- True/False type question -->
+                        <div class="question_true_false">
+                            <div class="question">
+                            	<p class="question_number">{{question.question_number}}</p>
+                            	<p class="question-text">{{question.question}}</p>
+                            </div>
+                            <div class="question-choices">
+                                <div class="question-choice">
+                                    <input type="radio" id="True{{question.pk}}" name="{{question.pk}}" value="True">
+                                    <label for="True{{question.pk}}">
+                                        <span class="center">True</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="question-choices">
+                                <div class="question-choice">
+                                    <input type="radio" id="False{{question.pk}}" name="{{question.pk}}" value="False">
+                                    <label for="False{{question.pk}}">
+                                        <span class="center">False</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="question-choices">
+                                <div class="question-choice">
+                                    <input type="radio" id="Not stated{{question.pk}}" name="{{question.pk}}" value="Not stated">
+                                    <label for="Not stated{{question.pk}}">
+                                        <span class="center">Not stated</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                        <div class="question-choices">
-                            <div class="question-choice">
-                                <input type="radio" id="Not stated{{question.pk}}" name="{{question.pk}}" value="Not stated">
-                                <label for="Not stated{{question.pk}}">
-                                    <span class="center">Not stated</span>
-                                </label>
+                    {% else %}      <!-- File adding type question -->
+                        {% if question.writing_fl == 'letter'%}     <!-- letter -->
+                            <div class="question">
+                                <p class="question_number">{{question.question_number}}</p>
+	                            <p class="question-text">{{question.question}}</p>
                             </div>
-                        </div>
-                    </div>
-                {% else %}      <!-- File adding type question -->
-                    {% if question.writing_fl == 'letter'%}
-                        <!-- Letter -->
-                        <div class="question">
-                            <p class="question_number">{{question.question_number}}</p>
-	                        <p class="question-text">{{question.question}}</p>
-                        </div>
-                        <div style="display: flex; justify-content: center;">
-                            <div class="letter">
-                                <div class="letter_row"><p class="letter_data">{{question.writing_from}}</p></div>
-                                <div class="letter_row"><p class="letter_data">{{question.writing_to}}</p></div>
-                                <div class="letter_row"><p class="letter_data">{{question.writing_subject}}</p></div>
-                                <div class="letter_row"><p class="letter_text">{{question.writing_letter}}</p></div>
+                            <div style="display: flex; justify-content: center;">
+                                <div class="letter">
+                                    <div class="letter_row"><p class="letter_data">{{question.writing_from}}</p></div>
+                                    <div class="letter_row"><p class="letter_data">{{question.writing_to}}</p></div>
+                                    <div class="letter_row"><p class="letter_data">{{question.writing_subject}}</p></div>
+                                    <div class="letter_row"><p class="letter_text">{{question.writing_letter}}</p></div>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <p class="question_writing_text">{{question.writing_after}}</p>
-                        </div>
-                    {% else %}
-                        <!-- Essay -->
-                        <div class="question_file_add">
-                            <p class="question_writing_text">{{question.question_number}}. {{question.question}}</p>
+                            <div>
+                                <p class="question_writing_text">{{question.writing_after}}</p>
+                            </div>
+                        {% else %}      <!-- essay -->
+                            <div class="question">
+                                {% if question.question_number > 1 %}
+                                <p class="question_number">2.{{question.question_number|adding:-1}}</p>
+                                {% else %}
+                                <p class="question_number">{{question.question_number}}</p>
+                                {% endif %}
+	                            <p class="question-text">{{question.question}}</p>
+                            </div>
                             <div class="picture">
-                                <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
+                                <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
                             </div>
                             <p class="question_writing_text">{{question.writing_after}}</p>
-                        </div>
-                    {% endif %}
-                    <div class="add-files">
+                        {% endif %}
+                        <div class="add-files">
                             <div class="file">
-                                <label for="{{question.pk}}_media1">Answer:</label>
-                                <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                                <label class="input-file">
+                                    <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                                    <span>Choose a file...</span>
+                                </label>
                             </div>
                             {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
                             <div class="file">
@@ -215,9 +241,10 @@
                             </div>
                             {% endif %}
                         </div>
-                {% endif %}
-            </div>
-        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
     {% endfor %}
     <br><br>
     <div style="display: flex">
