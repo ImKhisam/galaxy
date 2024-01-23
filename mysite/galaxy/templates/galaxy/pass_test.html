@@ -76,7 +76,7 @@
                                 {% for answer, answer_list in answers.items %}
                                     <div class="select-wrapper listening-select">
                                         <label>{{answer.match}}</label>
-                                        <select name="{{answer.pk}}">
+                                        <select class="special-select" name="{{answer.pk}}">
                                             <option>Выберите ответ</option>
                                             <option value="1">1</option>
                                             <option value="2">2</option>
@@ -316,6 +316,59 @@ var x = setInterval(function() {
 }, 1000);
 
 </script>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+// Avoiding duplicating select options
+$(document).ready(function() {
+    // Handle change event for all select elements
+    $('select:not(.special-select)').change(function() {
+        var selectedValue = $(this).val();  // Get the selected value
+
+        // Check if the selected value already exists in other selects
+        $('select:not(.special-select)').not(this).find('option').filter(function() {
+            return $(this).val() === selectedValue;
+        }).prop('selected', false);  // Remove selection
+    });
+});
+</script>
+
+<script>
+// Highlighting already selected options
+$(document).ready(function() {
+    var chosenValues = [];  // Initialize the list of chosen values
+
+    // Handle change event for all select elements
+    $('select:not(.special-select)').change(function() {
+        var selectedValue = $(this).val();  // Get the selected value
+
+        // Update the list of chosen values
+        if ($(this).prop('selectedIndex') !== 0) {  // Ignore the default option
+            chosenValues.push(selectedValue);
+        }
+
+        // Remove value from the list of chosen values if not selected in any select
+        chosenValues = chosenValues.filter(function(value) {
+            return $('select:not(.special-select)').find('option[value="' + value + '"]:selected').length > 0;
+        });
+
+        // Update all select elements
+        $('select:not(.special-select)').each(function() {
+            // Update option lists and color based on the list of chosen values
+            $(this).find('option').each(function() {
+                var optionValue = $(this).val();
+                if (chosenValues.includes(optionValue)) {
+                    $(this).css('background-color', 'red');  // Change the color as needed
+                } else {
+                    $(this).css('background-color', '');  // Reset the color
+                }
+            });
+        });
+    });
+});
+</script>
+
 {% if test.part == 'Speaking' %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
@@ -425,51 +478,6 @@ var x = setInterval(function() {
 
     }
 
-</script>
-
-<!-- select options handling js -->
-
-<script>
-    $(document).ready(function() {
-        // Function to update the options in other select elements
-        function updateSelectOptions(selectedOption, questionNumber) {
-            // Loop through all select elements
-            $('select[name^="' + questionNumber + '"]').each(function() {
-                // Update options based on the selected option
-                $(this).find('option').prop('disabled', false);
-                if (selectedOption !== 'Выберите ответ') {
-                    $(this).find('option[value="' + selectedOption + '"]').not(':selected').prop('disabled', true);
-                }
-            });
-        }
-
-        // Event handler for change in select elements
-        $('select').on('change', function() {
-            var selectedOption = $(this).val();
-            var questionNumber = $(this).attr('name');
-
-            // If the selected option is not the default one
-            if (selectedOption !== 'Выберите ответ') {
-                // Check if this option is selected in other select elements
-                $('select[name^="' + questionNumber + '"]').not(this).each(function() {
-                    if ($(this).val() === selectedOption) {
-                        // Undo selection in the other select element
-                        $(this).val('Выберите ответ');
-                    }
-                });
-            }
-
-            // Update options in other select elements
-            updateSelectOptions(selectedOption, questionNumber);
-        });
-
-        // Initial update of select options based on the default values
-        $('select').each(function() {
-            var selectedOption = $(this).val();
-            var questionNumber = $(this).attr('name');
-            updateSelectOptions(selectedOption, questionNumber);
-        });
-    });
 </script>
 
 {% endif %}
