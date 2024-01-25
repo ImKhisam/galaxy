@@ -92,7 +92,7 @@ div.table {
         </tr>
       </thead>
       <tbody>
-      {% for test_to_check, points in tests_to_check.items %}
+      {% for checked_test, points in points.items %}
         <tr>
             {% if page_obj.number %}
                 {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
@@ -101,10 +101,10 @@ div.table {
             {% else %}
                 <td scope="row">{{ forloop.counter }}</td>
             {% endif %}
-            <td> {{test_to_check.student_id}}</td>
-            <td>{{test_to_check.test_id}}</td>
+            <td> {{checked_test.student_id}}</td>
+            <td>{{checked_test.test_id}}</td>
             <td>{{points}}</td>
-            <td><a href="{% url 'checking_test' test_to_check.id %}">Open</a></td>
+            <td><a href="{% url 'checking_test' checked_test.id %}">Open</a></td>
         </tr>
 
       {% endfor %}

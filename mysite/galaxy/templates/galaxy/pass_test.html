@@ -481,4 +481,14 @@ $(document).ready(function() {
 </script>
 
 {% endif %}
+
+{% if test.part == 'Writing' %}
+<script>
+// changing span of file-input to file name
+    $('.input-file input[type=file]').on('change', function(){
+    	let file = this.files[0];
+    	$(this).next().html(file.name);
+    });
+</script>
+{% endif %}
 {% endblock javascript%}

@@ -63,15 +63,28 @@
                 {% if request.user.is_authenticated %}
                     {% if request.user.is_confirmed %}
                         {% if request.user.role == 'Teacher' or request.user.is_staff %} <!-- Confirmed teacher or stuff -->
+                            {% if tests_to_check or students_to_confirm %}
                             <li class="first-row"><a href="#">{{user.username}}</a>
+                                <div class="notification"></div>
+                            {% else %}
+                            <li class="first-row"><a href="#">{{user.username}}</a>
+                            {% endif %}
                                 <ul>
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'show_results' %}">My results</a></li>
                                     <li><a href="{% url 'show_tests' 0 %}">Tests</a></li>
                                     <li><a href="{% url 'make_an_assessment' %}">Assessments</a></li>
                                     <li><a href="{% url 'show_groups' %}">Groups</a></li>
+                                    {% if students_to_confirm %}
+                                    <li><a href="{% url 'show_pending_students' %}">Students(!)</a></li>
+                                    {% else %}
                                     <li><a href="{% url 'show_confirmed_students' %}">Students</a></li>
+                                    {% endif %}
+                                    {% if tests_to_check %}
+                                    <li><a href="{% url 'show_tests_to_check' %}">Tests to check(!)</a></li>
+                                    {% else %}
                                     <li><a href="{% url 'show_tests_to_check' %}">Tests to check</a></li>
+                                    {% endif %}
                                 </ul>
                             </li>
                             <li class="first-row"><a href="{% url 'logout' %}">Log out</a></li>

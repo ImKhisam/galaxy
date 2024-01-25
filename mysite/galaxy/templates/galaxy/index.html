@@ -3,9 +3,11 @@
 {% block content %}
 {% if request.user.is_authenticated %}
     {% if request.user.role == 'Teacher' or request.user.is_staff %}
+        <!--
         {% if tests_to_check %}
             <h2>There're some tests to check</h2>
         {% endif %}
+        -->
     {% endif %}
 <h1>main page for {{ user.username }}</h1>
 <a href="{% url 'testing_page' %}">Testing page</a>

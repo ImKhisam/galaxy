@@ -36,9 +36,9 @@ class Index(TemplateView, LoginRequiredMixin):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        tests_to_check = TestsToCheck.objects.filter(is_checked=False)
+        #tests_to_check = TestsToCheck.objects.filter(is_checked=False)
         context['title'] = 'Main Page'
-        context['tests_to_check'] = tests_to_check
+        #context['tests_to_check'] = tests_to_check
         return context
 
 
@@ -696,18 +696,22 @@ class ShowCheckedTests(LoginRequiredMixin, TeacherUserMixin, ListView):
     paginate_by = 15
     model = TestsToCheck
     template_name = "galaxy/show_checked_tests.html"
+    context_object_name = 'checked_tests'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Tests to check'         # needed??
         context['pagination_number'] = self.paginate_by
-        context['tests_to_check'] = {x: self.forming_query(x) for x in TestsToCheck.objects.filter(is_checked=True)}
+        context['points'] = {x: self.forming_query(x) for x in TestsToCheck.objects.filter(is_checked=True)}
         return context
 
     @staticmethod
     def forming_query(test):
         tasks = TasksToCheck.objects.filter(test_to_check_id=test)
         return sum(int(x.points) for x in tasks)
+
+    def get_queryset(self):
+        return TestsToCheck.objects.filter(is_checked=True)
 
 
 class ShowConfirmedStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, ListView):

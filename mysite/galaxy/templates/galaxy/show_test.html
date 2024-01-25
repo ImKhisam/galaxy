@@ -11,7 +11,14 @@
 <div class="test-parent">
 <div class="test">
 <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
-
+{% if test.media %}
+    <div style="display: flex;">
+        <audio style="margin: auto;
+                      padding-bottom: 50px;"
+               controls src="{{test.media.url}} ">
+        </audio>
+    </div>
+{% endif %}
 <form action="{% url 'pass_test' test.pk %}" method="post" id="my_form" enctype="multipart/form-data">
 {% csrf_token %}
     <div class="form errors">
