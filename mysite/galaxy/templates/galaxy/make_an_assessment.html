@@ -49,11 +49,11 @@ input {
                 <div style="margin: auto; display: flex; width: 60%; justify-content: space-evenly;">
                     <div>
                         <select name="group" style="margin: auto; background-color: var(--dark-transparent);">
-                        <option>Choose group</option>
-                        {% for group in group_list %}
-                          <option value="{{group.pk}}">{{group.name}}</option>
-                        {% endfor %}
-                    </select>
+                            <option>Choose group</option>
+                            {% for group in group_list %}
+                              <option value="{{group.pk}}">{{group.name}}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div>
                         <p style="margin: auto;">Date: <input type="text" id="datepicker" name="datepicker"></p>

@@ -1,0 +1,197 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/show_students.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet" />
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_student_status_choice">
+        <div class="empty"></div>
+        <div class="student_status_choices">
+            <div class="student_status_choice_shell" style="width: 33%;">
+                <div class="student_status_choice">
+                    <input style="display: none;" type="radio" id="Denied" name="student-status" value="Denied">
+                    <label for="Denied"><span>Denied</span></label>
+                </div>
+                <div class="empty"></div>
+            </div>
+            <div class="student_status_choice_shell" style="width: 34%;">
+                <div class="student_status_choice">
+                    <input style="display: none;" type="radio" id="Pending" name="student-status" value="Pending">
+                    <label for="Pending"><span>Pending</span></label>
+                </div>
+            </div>
+            <div class="student_status_choice_shell" style="width: 33%;">
+                <div class="empty"></div>
+                <div class="student_status_choice">
+                    <input style="display: none;" type="radio" id="Confirmed" name="student-status" value="Confirmed">
+                    <label for="Confirmed"><span>Confirmed</span></label>
+                </div>
+            </div>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+<!-- Input text element for filtering -->
+<div class="parent">
+    <div class="outer_filter_input">
+            <div class="empty"></div>
+                <div class="filter">
+                    <input class="filter_input" type="text" id="filterInput" placeholder="Search">
+                </div>
+            <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+  <div class="table">
+      <table class="table">
+      <thead>
+          <tr>
+              <th scope="col">#</th>
+              <th scope="col">Name</th>
+              <th scope="col">Username</th>
+              <th scope="col">Action</th>
+          </tr>
+      </thead>
+      <tbody>
+      {% for student in students %}
+          <tr>
+              {% if page_obj.number %}
+                  {% with offset=page_obj.number|add:'-1'|multiply:15 %}
+                  <td scope="row">{{ forloop.counter|add:offset }}</td>
+                  {% endwith %}
+              {% else %}
+                  <td scope="row">{{ forloop.counter }}</td>
+              {% endif %}
+              <td> {{student.last_name}} {{student.first_name}} </td>
+              <td>{{student.username}}</td>
+              <td>
+                  <div style="display: inline-flex; width: 80%;">
+                        <button class="btn btn5 btn-action" data-student-id="{{ student.id }}" data-action="confirm">
+                            <span>Confirm</span>
+                        </button>
+                        <button class="btn btn5 btn-action" data-student-id="{{ student.id }}" data-action="deny">
+                            <span>Deny</span>
+                        </button>
+                    </div>
+              </td>
+          </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+  </div>
+</div>
+
+{% include "galaxy/pagination.html" %}
+
+{% endblock %}
+
+{% block javascript %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Pre-coloring chosen category
+    document.addEventListener('DOMContentLoaded', function() {
+    // Get the current category ID from the Django context
+    var currentCat = "{{type_flag}}";
+
+    // Set the checked state of the type radio buttons
+    $('#' + currentCat).prop('checked', true);
+});
+</script>
+
+<script>
+    // Changing categories
+    $(document).ready(function() {
+    var currentCategory = {{ type_flag }}
+
+    // Listening for clicks on type radio buttons
+    $('input[name="student-status"]').change(function() {
+        var type_flag = $(this).val(); // Get the ID of the selected radio button
+        currentCategory = type_flag
+        filterStudents(type_flag);
+    });
+
+    // Function to filter students based on input text
+    $('#filterInput').on('input', function() {
+        var filterValue = $(this).val().toLowerCase();
+        filterStudents(currentCategory, filterValue);
+    });
+
+    function filterStudents(type_flag, filterValue='') {
+        $.ajax({
+            url: "{% url 'filter_students' %}", // URL to your Django view for filtering
+            type: 'GET',
+            data: {
+                type_flag: type_flag,
+                filter_value: filterValue
+            },
+            success: function(data) {
+                // Update the table with the filtered data
+                $('.table').html(data.my_content);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+
+    // Use event delegation to handle click events on dynamically added buttons
+    $(document).on('click', '.btn-action', function(){
+        var student_id = $(this).data('student-id');
+        var action = $(this).data('action');
+        $.ajax({
+            url: '{% url 'confirm_deny_student' %}',
+            method: 'POST',
+            data: {
+                'student_id': student_id,
+                'action': action,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(data){
+                // Handle success response
+                // Reloading table
+                filterStudents(currentCategory);
+                console.log(data);
+
+            },
+            error: function(xhr, status, error){
+                // Handle error response
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+});
+</script>
+
+<script>
+// script for adding student to group
+$(document).ready(function() {
+    $('select[id^="group-select-"]').on('change', function() {
+        var student = $(this).attr('name');
+        var group = $(this).val();
+        $.ajax({
+            type: 'GET',
+            url: '{% url "update_student_group" %}',
+            data: {'student': student, 'group': group},
+            success: function(response) {
+                // Handle success response from server
+            },
+            error: function(xhr) {
+                // Handle error response from server
+            }
+        });
+    });
+});
+</script>
+
+{% endblock javascript %}

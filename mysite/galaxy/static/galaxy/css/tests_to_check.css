@@ -1,0 +1,43 @@
+:root {
+  --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
+  --gray-hover: #54514f;
+}
+
+.outer_type_choice{
+    width: 60%;
+    display: flex;
+    border-top: 2px solid;
+}
+.type_choices{
+    width: 100%;
+    display: flex;
+}
+.type_choice_shell{
+    width: 50%;
+    display: flex;
+}
+.type_choice{
+    width: 100%;
+    text-align: center;
+    font-size: 22px;
+}
+.type_choice label{
+    display: flex;
+    width: 100%;
+    background-color: var(--blue-transparent);
+
+}
+.type_choice label:hover{
+    color: grey;
+}
+.type_choice input:checked + label{
+    background-color: var(--white-transparent);
+    color: var(--blue-transparent);
+}
+.type_choice span{
+    margin: auto;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}

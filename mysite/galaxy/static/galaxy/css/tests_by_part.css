@@ -1,11 +1,17 @@
 :root {
-  --dark-transparent: #000000e3;
-  --gray-hover: #54514f;
+    --dark-transparent: #000000e3;
+    --blue-transparent: #365a99e3;
+    --gray-hover: #54514f;
 }
 
 table {
   border-collapse: collapse;
   width: 100%;
+}
+
+table, th, td {
+  border: 2px solid white;
+  border-collapse: collapse;
 }
 
 th, td {
@@ -14,7 +20,7 @@ th, td {
 }
 
 tr {
-  background-color: var(--dark-transparent);
+  background-color: var(--blue-transparent);
 }
 
 h1 {
@@ -47,7 +53,7 @@ div.table {
 .pagination-number {
     padding: 10px;
     color: #fff;
-    background-color: var(--dark-transparent);
+    background-color: var(--blue-transparent);
 }
 
 .pagination-number:hover,
@@ -72,18 +78,41 @@ div.table {
   margin: 3px;
 }
 .current{
-    background-color: var(--dark-transparent);
+    background-color: var(--blue-transparent);
     
 }
 td:first-child {
     width: 5%;
 }
 
+td {
+    height: 50px;
+}
+
+td:nth-child(2) {
+    width: 8%;
+}
+
+td:nth-child(3) {
+    width: 15%;
+}
+
+td:nth-child(4) {
+    width: 10%;
+}
+
+td:nth-child(6) {
+    width: 10%;
+}
+
+td:last-child {
+    width: 15%;
+}
 .search-button{
     display: flex;
 }
 .search-button > *{
-    background-color: var(--dark-transparent);
+    background-color: var(--blue-transparent);
     margin: 5px;
     padding: 3px;
     font-size: 20px;
@@ -91,9 +120,7 @@ td:first-child {
 .table{
   font-size: 20px;
 }
-.table_with_borders{
 
-}
 .search-button input{
     color: #ffffff;
     border: 2px solid #ffffff;
@@ -102,7 +129,7 @@ td:first-child {
 .dark-input{
     color: #ffffff;
     border: 2px solid #ffffff;
-    background-color: var(--dark-transparent);
+    background-color: var(--blue-transparent);
     margin: 5px;
     padding: 3px;
     font-size: 20px;
@@ -118,54 +145,107 @@ td:first-child {
     padding-top: 20px;
     padding-bottom: 20px;
 }
+
+.outer_type_choice{
+    width: 60%;
+    display: flex;
+    border-top: 2px solid;
+}
+.type_choices{
+    width: 100%;
+    display: flex;
+}
+.type_choice_shell{
+    width: 50%;
+    display: flex;
+}
 .type_choice{
-    width: 30%;
+    width: 100%;
     text-align: center;
     font-size: 22px;
 }
 .type_choice label{
     display: flex;
     width: 100%;
-    background-color: var(--dark-transparent);
+    background-color: var(--blue-transparent);
 }
 .type_choice label:hover{
-    color: #54514f;
+    color: grey;
 }
 .type_choice input:checked + label{
-    background-color: #dfeddf8a;
+    background-color: #fbfbfbe6;
+    color: #365a99e3;
 }
 .type_choice span{
     margin: auto;
     margin-bottom: 10px;
     margin-top: 10px;
 }
+
+
+
+.outer_part_choice{
+    width: 60%;
+    display: flex;
+    border-top: 2px solid;
+}
+.part_choices{
+    width: 100%;
+    display: flex;
+}
+.part_choice_shell{
+    width: 20%;
+    display: flex;
+}
 .part_choice{
-    width: 12%;
+    width: 100%;
     text-align: center;
     font-size: 22px;
 }
 .part_choice label{
     display: flex;
     width: 100%;
-    background-color: var(--dark-transparent);
+    background-color: var(--blue-transparent);
 }
 .part_choice label:hover{
-    color: #54514f;
+    color: grey;
 }
 .part_choice input:checked + label{
-    background-color: #dfeddf8a;
+    background-color: #fbfbfbe6;
+    color: #365a99e3;
 }
 .part_choice span{
     margin: auto;
     margin-bottom: 10px;
     margin-top: 10px;
 }
-.not_passed_checkbox{
+
+
+
+.outer_not_passed{
     width: 60%;
-    background-color: var(--dark-transparent);
+    display: flex;
+}
+.not_passed_checkbox{
+    width: 100%;
+    background-color: var(--blue-transparent);
     font-size: 20px;
     display: flex;
     justify-content: center;
     padding-top: 10px;
     padding-bottom: 10px;
+    border-top: 2px solid;
+}
+
+.empty{
+    border: 1px solid;
+}
+
+.btn5:hover span{
+  color: #365a99e3;
+}
+
+.button_shell{
+    display: inline-flex; 
+    width: 80%;
 }

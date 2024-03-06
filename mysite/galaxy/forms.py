@@ -7,13 +7,40 @@ from django.forms.models import inlineformset_factory, BaseInlineFormSet, modelf
 from django.forms import ModelForm, modelformset_factory
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import authenticate, get_user_model
+
+
+User = get_user_model()
 
 
 class LoginUserForm(AuthenticationForm):
     username = forms.CharField(
-        label='Login', widget=forms.TextInput(attrs={'class': 'auth_input', 'placeholder': 'Username'}))
+        label='Login', widget=forms.TextInput(attrs={'class': 'auth_input', 'placeholder': 'Username or Email'}))
     password = forms.CharField(
         label='Password', widget=forms.PasswordInput(attrs={'class': 'auth_input', 'placeholder': 'Password'}))
+
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username and password:
+            if '@' in username:
+                ogg = User.objects.get(email=username)
+                if ogg:
+                    self.user_cache = authenticate(username=ogg.username,
+                                                   password=password)
+            else:
+                self.user_cache = authenticate(username=username,
+                                               password=password)
+            if self.user_cache is None:
+                raise forms.ValidationError(
+                    self.error_messages['invalid_login'],
+                    code='invalid_login',
+                    params={'username': self.username_field.verbose_name},
+                )
+            else:
+                self.confirm_login_allowed(self.user_cache)
+        return self.cleaned_data
 
 
 class SignUpForm(UserCreationForm):
@@ -61,10 +88,9 @@ class TestAddForm(forms.ModelForm):
 class ChapterAddForm(forms.ModelForm):
     class Meta:
         model = Chapters
-        fields = ['chapter_number', 'info', 'text_name', 'text', 'media']
+        fields = ['chapter_number', 'text_name', 'text', 'media']
         widgets = {
             'chapter_number': forms.TextInput(attrs={'class': 'chapter-number-info-add'}),
-            'info': forms.Textarea(attrs={'class': 'chapter-info-add', 'oninput': "auto_grow(this)"}),
             'text': forms.Textarea(attrs={'class': 'chapter-text-add', 'oninput': "auto_grow(this)"}),
             'text_name': forms.TextInput(attrs={'class': 'chapter-text-name-add', 'oninput': "this.size = this.value.length"}),
             'media': forms.ClearableFileInput(attrs={'multiple': True}),

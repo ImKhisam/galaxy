@@ -1,0 +1,46 @@
+{% load galaxy_tags %}
+
+{% for assessment in assessments %}
+    <tr>
+        <td scope="row">{{ forloop.counter }}</td>
+        <td> {{assessment.group.name}}</td>
+        <td> {{assessment.date}}</td>
+        {% if current_category == 'Current' %}
+        <td><a class="btn btn5" href="{% url 'close_assessment' assessment.id %}"><span>Close assessment</span></a></td>
+        {% else %}
+        <td>
+            <a class="btn btn5" href="{% url 'show_assessment_results' assessment.id %}"><span>Open assessment</span></a>
+        </td>
+        {% endif %}
+    </tr>
+{% endfor %}
+    {% if current_category == 'Current' %}
+        <tr id="add-assessment-row">
+            <td style="border: none;"></td>
+            <td style="border: none;"></td>
+            <td style="border: none;"></td>
+            <td style="border: none;">
+                <button class="btn btn5" id="add-assessment-btn">
+                    <span>Add assessment</span>
+                </button>
+            </td>
+        </tr>
+        <tr id="new-assessment-row" class="hidden">
+            <td></td>
+            <td>
+                <select class="assessment_group_select" id="group" name="group">
+                    <option>Choose group</option>
+                    {% for group in group_list %}
+                      <option value="{{group.pk}}">{{group.name}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td> <p class="datepicker_obj"><input type="text" autocomplete="off" id="datepicker" name="datepicker"></p></td>
+            <td>
+                <div class="adding_assessment_actions">
+                    <button class="multiple_btn" id="save-assessment-btn"><span>Save assessment</span></button>
+                    <button class="multiple_btn" id="cancel-adding-btn"><span>Cancel</span></button>
+                </div>
+            </td>
+        </tr>
+    {% endif %}

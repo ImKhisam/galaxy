@@ -68,6 +68,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'mysite.context_processors.tests_to_check_notification',    # my context processor
                 'mysite.context_processors.student_to_confirm_notification',
+                'mysite.context_processors.current_assessments_notification',
             ],
         },
     },

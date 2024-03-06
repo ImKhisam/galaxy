@@ -3,116 +3,138 @@
 {% load static %}
 
 {% block custom_styles %}
-<link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
-<style>
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-th, td {
-  text-align: center;
-  padding: 8px;
-}
-
-th, td {
-  background-color: #000000c9;
-}
-
-h1 {
-    text-align: center;
-}
-
-div.parent {
-  display: flex;
-  justify-content: center;
-}
-
-div.table {
-  width: 60%;
-}
-
-.pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-}
-
-.pagination a {
-    text-decoration: none;
-}
-
-.pagination-number {
-    padding: 10px;
-    color: #fff;
-    background-color: #000000c9;
-}
-
-.pagination-number:hover,
-.pagination-current {
-    color: #c9b4b4;
-}
-
-.pagination-action {
-    margin: 0 0.1em;
-    display: inline-block;
-    padding: 0.5em 0.5em;
-    color: #B9B9B9;
-    font-size: 1.3em;
-}
-
-.pagination-action:hover,
-.pagination-previous,
-.pagination-next {
-    color: #c9b4b4;
-}
-
-
-</style>
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/tests_to_check.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet" />
 
 {% endblock %}
 
 {% block content %}
-<div class="parent">
-    <div class="current" style="width: 30%"><h1><span>Tests to check</span></h1></div>
-    <div style="width: 30%"><h1><a href="{% url 'show_checked_tests' %}">Checked tests</a></h1></div>
-</div>
-<div class="parent">
-  <div class="table">
-      <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Student</th>
-          <th scope="col">Test</th>
-          <th scope="col">Date</th>
-          <th scope="col">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for test_to_check in tests_to_check %}
-        <tr>
-            {% if page_obj.number %}
-                {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
-                <td scope="row">{{ forloop.counter|add:offset }}</td>
-                {% endwith %}
-            {% else %}
-                <td scope="row">{{ forloop.counter }}</td>
-            {% endif %}
-            <td> {{test_to_check.student_id}}</td>
-            <td>{{test_to_check.test_id}}</td>
-            <td>{{test_to_check.date}}</td>
-            <td><a href="{% url 'checking_test' test_to_check.id %}">Open</a></td>
-        </tr>
 
-      {% endfor %}
-      </tbody>
-      </table>
-  </div>
+<div class="parent">
+    <div class="outer_type_choice">
+            <div class="empty"></div>
+            <div class="type_choices">
+                <div class="type_choice_shell">
+                    <div class="type_choice">
+                        <input style="display: none;" type="radio" id="ToCheck" name="cat" value="ToCheck">
+                        <label for="ToCheck"><span>Tests to check</span></label>
+                    </div>
+                    <div class="empty"></div>
+                </div>
+                <div class="type_choice_shell">
+                    <div class="type_choice">
+                        <input style="display: none;" type="radio" id="Checked" name="cat" value="Checked">
+                        <label for="Checked"><span>Checked tests</span></label>
+                    </div>
+                </div>
+            </div>
+            <div class="empty"></div>
+        </div>
+</div>
+
+<!-- Input text element for filtering -->
+<div class="parent">
+    <div class="outer_filter_input">
+            <div class="empty"></div>
+                <div class="filter">
+                    <input class="filter_input" type="text" id="filterInput" placeholder="Search">
+                </div>
+            <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="table">
+        <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Student</th>
+                <th scope="col">Test</th>
+                <th scope="col">Date</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for test_to_check in tests_to_check %}
+            <tr>
+                {% if page_obj.number %}
+                    {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
+                    <td scope="row">{{ forloop.counter|add:offset }}</td>
+                    {% endwith %}
+                {% else %}
+                    <td scope="row">{{ forloop.counter }}</td>
+                {% endif %}
+                <td> {{test_to_check.student_id}}</td>
+                <td>{{test_to_check.test_id}}</td>
+                <td>{{test_to_check.date}}</td>
+                <td><a class="btn btn5" href="{% url 'checking_test' test_to_check.id %}"><span>Open</span></a></td>
+            </tr>
+
+        {% endfor %}
+        </tbody>
+        </table>
+    </div>
 </div>
 
 {% include "galaxy/pagination.html" %}
 
 {% endblock %}
+
+{% block javascript %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Pre-coloring chosen category
+    document.addEventListener('DOMContentLoaded', function() {
+    // Get the current category ID from the Django context
+    var currentCat = "{{current_category}}";
+
+    // Set the checked state of the type radio buttons
+    $('#' + currentCat).prop('checked', true);
+});
+</script>
+
+<script>
+    // Changing categories
+    $(document).ready(function() {
+    var currentCategory = {{current_category}}
+
+    // Listening for clicks on type radio buttons
+    $('input[name="cat"]').change(function() {
+        var filter_flag = $(this).val(); // Get the ID of the selected radio button
+        currentCategory = filter_flag
+        filterTestsToCheck(filter_flag);
+    });
+
+    // Function to filter tests based on input text
+    $('#filterInput').on('input', function() {
+        var filterValue = $(this).val().toLowerCase();
+        filterTestsToCheck(currentCategory, filterValue);
+    });
+
+    function filterTestsToCheck(filter_flag, filterValue='') {
+        $.ajax({
+            url: "{% url 'filter_tests_to_check' %}", // URL to your Django view for filtering
+            type: 'GET',
+            data: {
+                filter_flag: filter_flag,
+                filter_value: filterValue
+            },
+            success: function(data) {
+                // Update the table with the filtered data
+                $('.table').html(data.my_content);
+                // Update the pagination links
+                $('.pagination').html(data.pagination_html);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+});
+</script>
+{% endblock javascript %}

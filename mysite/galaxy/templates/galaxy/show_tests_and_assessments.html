@@ -1,0 +1,175 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+{% load galaxy_tags %}
+
+{% block custom_styles %}
+
+<link type="text/css" href="{% static 'galaxy/css/tests_and_assessments.css' %}" rel="stylesheet" />
+
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_type_choice">
+            <div class="empty"></div>
+            <div class="type_choices">
+                <div class="type_choice_shell">
+                    <div class="type_choice">
+                        <input style="display: none;" type="radio" id="Training" name="cat" value="Training">
+                        <label for="Training"><span>Training tests</span></label>
+                    </div>
+                    <div class="empty"></div>
+                </div>
+                <div class="type_choice_shell">
+                    <div class="type_choice">
+                        <input style="display: none;" type="radio" id="Assessment" name="cat" value="Assessment">
+                        <label for="Assessment"><span>Assessment tests</span></label>
+                    </div>
+                </div>
+            </div>
+            <div class="empty"></div>
+        </div>
+</div>
+
+<!-- Input text element for filtering -->
+<div class="parent">
+    <div class="outer_filter_input">
+            <div class="empty"></div>
+                <div class="filter">
+                    <input class="filter_input" type="text" id="filterInput" placeholder="Search">
+                </div>
+            <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Part</th>
+                    <th scope="col">Test number</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for test in tests %}
+                <tr>
+                    {% if page_obj.number %}
+                        {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
+                        <td scope="row">{{ forloop.counter|add:offset }}</td>
+                        {% endwith %}
+                    {% else %}
+                        <td scope="row">{{ forloop.counter }}</td>
+                    {% endif %}
+                    <td>{{test.type}}</td>
+                    {% if test.part == 'Grammar and Vocabulary' %}
+                    <td>Grammar</td>
+                    {% else %}
+                    <td>{{test.part}}</td>
+                    {% endif %}
+                    <td>{{test.test_num}}</td>
+                    <td><a class="btn btn5" href="{% url 'show_test' test.id %}"><span>Open</span></a></td>
+                </tr>
+            {% endfor %}
+                <tr>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"><a class="btn btn5" href="{% url 'add_test' %}"><span>Add test</span></a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a class="pagination-number" href="?cat={{ current_category }}&filter_value={{ filter_value }}&page=1"><</a>
+    {% else %}
+        <span class="pagination-number pagination-current"><</span>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <span class="pagination-number pagination-current">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %}
+            <a class="pagination-number" href="?cat={{ current_category }}&filter_value={{ filter_value }}&page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a class="pagination-number" href="?cat={{ current_category }}&filter_value={{ filter_value }}&page={{ page_obj.paginator.num_pages }}">></a>
+    {% else %}
+        <span class="pagination-number pagination-current">></span>
+    {% endif %}
+</div>
+{% else %}
+    <!-- only 1 page -->
+{% endif %}
+
+{% endblock %}
+
+{% block javascript %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Pre-coloring chosen category
+    document.addEventListener('DOMContentLoaded', function() {
+    // Get the current category ID from the Django context
+    var currentCat = "{{current_category}}";
+
+    // Set the checked state of the type radio buttons
+    $('#' + currentCat).prop('checked', true);
+});
+</script>
+
+<script>
+    // Changing categories
+    $(document).ready(function() {
+    var currentCategory = {{current_category}}
+
+    // Listening for clicks on type radio buttons
+    $('input[name="cat"]').change(function() {
+        //var filter_flag = $(this).val(); // Get the ID of the selected radio button
+        var filter_flag = $('input[name="cat"]:checked').val();
+        var filterValue = $('#filterInput').val().toLowerCase();
+        currentCategory = filter_flag
+        filterTestsAndAssessments(filter_flag, filterValue);
+    });
+
+    // Function to filter tests based on input text
+    $('#filterInput').on('input', function() {
+        var filterValue = $(this).val().toLowerCase();
+        filterTestsAndAssessments(currentCategory, filterValue);
+    });
+
+    function filterTestsAndAssessments(filter_flag, filterValue='') {
+        $.ajax({
+            url: "{% url 'filter_tests_and_assessments' %}", // URL to your Django view for filtering
+            type: 'GET',
+            data: {
+                filter_flag: filter_flag,
+                filter_value: filterValue
+            },
+            success: function(data) {
+                // Update the table with the filtered data
+                $('.table tbody').html(data.my_content);
+                // Update the pagination links
+                $('.pagination').html(data.pagination_html);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+});
+</script>
+
+{% endblock javascript %}

@@ -10,22 +10,33 @@
 
 <header>
     <nav>
-        <ul>
+        <ul class="menu_first_row">
             <div class="menu-left">
-                <a class="logo" href="{% url 'home' %}"></a>
+                <a style="padding: 0px; height: 70px;" href="{% url 'home' %}">
+                    <img src="../../static/galaxy/images/logo(3).png">
+                </a>
+
                 {% if request.user.is_confirmed %}
-                    <li class="first-row"><a href="#">GSE</a>
-                        <ul>
-                            {% drop_menu_test 'GSE' %}
+                    <li class="first-row wider-menu-item"><a href="#">GSE</a>
+                        <ul class="menu_second_row">
+                            <li><a href="{% url 'show_tests_by_part' 'GSE,Listening' %}">Listening</a></li>
+                            <li><a href="{% url 'show_tests_by_part' 'GSE,Reading' %}">Reading</a></li>
+                            <li><a href="{% url 'show_tests_by_part' 'GSE,Grammar and Vocabulary' %}">Grammar</a></li>
+                            <li><a href="{% url 'show_tests_by_part' 'GSE,Writing' %}">Writing</a></li>
+                            <li><a href="{% url 'show_tests_by_part' 'GSE,Speaking' %}">Speaking</a></li>
                         </ul>
                     </li>
-                    <li  class="first-row"><a href="#">USE</a>
-                        <ul>
-                            {% drop_menu_test 'USE' %}
+                    <li class="first-row wider-menu-item"><a href="#">USE</a>
+                        <ul class="menu_second_row">
+                            <li><a href="{% url 'show_tests_by_part' 'USE,Listening' %}">Listening</a></li>
+                            <li><a href="{% url 'show_tests_by_part' 'USE,Reading' %}">Reading</a></li>
+                            <li><a href="{% url 'show_tests_by_part' 'USE,Grammar and Vocabulary' %}">Grammar</a></li>
+                            <li><a href="{% url 'show_tests_by_part' 'USE,Writing' %}">Writing</a></li>
+                            <li><a href="{% url 'show_tests_by_part' 'USE,Speaking' %}">Speaking</a></li>
                         </ul>
                     </li>
                     <li class="first-row"><a href="#">Olymp Way</a>
-                        <ul>
+                        <ul class="menu_second_row">
                             {% drop_menu_olymp %}
                         </ul>
                     </li>
@@ -33,24 +44,24 @@
                 {% if request.user.is_authenticated %}
                     <li class="first-row"><a href="https://learnenglish.britishcouncil.org/skills">Develop your skills</a></li>
                     <li class="first-row"><a href="">British Bulldog</a>
-                        <ul>
+                        <ul class="menu_second_row">
                             {% drop_menu_bb %}
                         </ul>
                     </li>
                     <li class="first-row"><a href="#">Idioms & Collocations</a>
-                        <ul>
+                        <ul class="menu_second_row">
                             <li><a href="{% url 'play_video' %}">Watch & learn</a></li>
                             <li><a href="#">Read & learn</a></li>
                         </ul>
                     </li>
                     <li class="first-row"><a href="#">Fun room</a>
-                        <ul>
+                        <ul class="menu_second_row">
                             <li><a href="#">Cinema</a></li>
                             <li><a href="{% url 'quiz_preview' %}">Quiz</a></li>
-                            <li><a href="" target="_blank">Crosswords</a>
-                                <ul>
+                            <li><a href="{% url 'cross_choice' %}">Crosswords</a>
+                                <ul class="menu_third_row">
                                     <li><a href="{% url 'cross' 1 %}" target="_blank">Painting</a></li>
-                                    <li><a href="{% url 'cross' 2 %}" target="_blank">Saint Patricks Day</a></li>
+                                    <li><a href="{% url 'cross' 2 %}" target="_blank">St.Patricks</a></li>
                                     <li><a href="{% url 'cross' 3 %}" target="_blank">Spring</a></li>
                                     <li><a href="{% url 'cross' 4 %}" target="_blank">Easter</a></li>
                                 </ul>
@@ -64,21 +75,21 @@
                     {% if request.user.is_confirmed %}
                         {% if request.user.role == 'Teacher' or request.user.is_staff %} <!-- Confirmed teacher or stuff -->
                             {% if tests_to_check or students_to_confirm %}
-                            <li class="first-row"><a href="#">{{user.username}}</a>
+                            <li class="first-row"><a class="user_name_menu" href="#">{{user.username}}</a>
                                 <div class="notification"></div>
                             {% else %}
-                            <li class="first-row"><a href="#">{{user.username}}</a>
+                            <li class="first-row"><a class="user_name_menu" href="#">{{user.username}}</a>
                             {% endif %}
-                                <ul>
+                                <ul class="menu_second_row">
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'show_results' %}">My results</a></li>
-                                    <li><a href="{% url 'show_tests' 0 %}">Tests</a></li>
-                                    <li><a href="{% url 'make_an_assessment' %}">Assessments</a></li>
+                                    <li><a href="{% url 'show_tests_and_assessments' %}">Tests</a></li>
+                                    <li><a href="{% url 'show_assessments' %}">Assessments</a></li>
                                     <li><a href="{% url 'show_groups' %}">Groups</a></li>
                                     {% if students_to_confirm %}
-                                    <li><a href="{% url 'show_pending_students' %}">Students(!)</a></li>
+                                    <li><a href="{% url 'show_students' %}">Students(!)</a></li>
                                     {% else %}
-                                    <li><a href="{% url 'show_confirmed_students' %}">Students</a></li>
+                                    <li><a href="{% url 'show_students' %}">Students</a></li>
                                     {% endif %}
                                     {% if tests_to_check %}
                                     <li><a href="{% url 'show_tests_to_check' %}">Tests to check(!)</a></li>
@@ -89,17 +100,26 @@
                             </li>
                             <li class="first-row"><a href="{% url 'logout' %}">Log out</a></li>
                         {% else %} <!-- Confirmed student -->
-                            <li class="first-row"><a href="#">{{user.username}}</a>
-                                <ul>
+                            {% if current_assessments_notification %}
+                            <li class="first-row"><a class="user_name_menu" href="#">{{user.username}}</a>
+                                <div class="notification"></div>
+                            {% else %}
+                            <li class="first-row"><a class="user_name_menu" href="#">{{user.username}}</a>
+                            {% endif %}
+                                <ul class="menu_second_row">
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'show_results' %}">My results</a></li>
+                                    {% if current_assessments_notification %}
+                                    <li><a href="{% url 'show_student_assessments' %}">Assessments(!)</a></li>
+                                    {% else %}
                                     <li><a href="{% url 'show_student_assessments' %}">Assessments</a></li>
+                                    {% endif %}
                                 </ul>
                             </li>
                             <li class="first-row"><a href="{% url 'logout' %}">Log out</a></li>
                         {% endif %}
                     {% else %} <!-- Not confirmed person -->
-                        <li class="first-row"><a href="{{ user.get_absolute_url }}">{{user.username}}</a></li>
+                        <li class="first-row"><a class="user_name_menu" href="{{ user.get_absolute_url }}">{{user.username}}</a></li>
                         <li class="first-row"><a href="{% url 'logout' %}">Log out</a></li>
                     {% endif %}
                 {% else %} <!-- Not authenticated guest -->

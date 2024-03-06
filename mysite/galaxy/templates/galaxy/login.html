@@ -6,33 +6,35 @@
 {% endblock custom_styles %}
 
 {% block content %}
-<div class="auth_window">
-    <h1>Authentication</h1>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-error">{{ form.non_field_errors }}</div>
-        {% for f in form %}
+<div class="wrapper">
+    <div class="auth_window">
+        <h1>Authentication</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-error">{{ form.non_field_errors }}</div>
+            {% for f in form %}
+                <div class="auth_line">
+                    {{ f }}
+                    {% if f.label == 'Password' %}
+                        <div class="show_hide_pass">
+                            <button class="eye_button moon" type="button" id="toggle-password">
+                                <div class="tooltip">Show/Hide Password</div>
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-error">{{ f.errors }}</div>
+            {% endfor %}
             <div class="auth_line">
-                {{ f }}
-                {% if f.label == 'Password' %}
-                    <div class="show_hide_pass">
-                        <button class="eye_button moon" type="button" id="toggle-password">
-                            <div class="tooltip">Show/Hide Password</div>
-                        </button>
-                    </div>
-                {% endif %}
+                <button class="login_button" type="submit">
+                    <span>Login</span>
+                </button>
             </div>
-            <div class="form-error">{{ f.errors }}</div>
-        {% endfor %}
-        <div class="auth_line">
-            <button class="login_button" type="submit">
-                <span>Login</span>
-            </button>
-        </div>
-        <div class="auth_line">
-            <div class="forgot_pass"><a href="{% url 'reset_password' %}">Forgot Password?</a></div>
-        </div>
-    </form>
+            <div class="auth_line">
+                <div class="forgot_pass"><a href="{% url 'reset_password' %}">Forgot Password?</a></div>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock content %}
 

@@ -1,0 +1,174 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/show_assessments.css' %}" rel="stylesheet" />
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_type_choice">
+            <div class="empty"></div>
+            <div class="type_choices">
+                <div class="type_choice_shell">
+                    <div class="type_choice">
+                        <input style="display: none;" type="radio" id="Current" name="cat" value="Current">
+                        <label for="Current"><span>Current assessments</span></label>
+                    </div>
+                    <div class="empty"></div>
+                </div>
+                <div class="type_choice_shell">
+                    <div class="type_choice">
+                        <input style="display: none;" type="radio" id="Past" name="cat" value="Past">
+                        <label for="Past"><span>Past assessments</span></label>
+                    </div>
+                </div>
+            </div>
+            <div class="empty"></div>
+        </div>
+</div>
+
+<div class="parent">
+    <div class="table">
+        <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Group</th>
+                <th scope="col">Date</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for assessment in assessments %}
+            <tr>
+                <td scope="row">{{ forloop.counter }}</td>
+                <td> {{assessment.group.name}}</td>
+                <td> {{assessment.date}}</td>
+                <td><a class="btn btn5" data-id="{{ assessment.id }}" id="close-assessment-btn"><span>Close assessment</span></a></td>
+            </tr>
+        {% endfor %}
+            <tr id="add-assessment-row">
+                <td style="border: none;"></td>
+                <td style="border: none;"></td>
+                <td style="border: none;"></td>
+                <td style="border: none;">
+                    <button class="btn btn5" id="add-assessment-btn">
+                        <span>Add assessment</span>
+                    </button>
+                </td>
+            </tr>
+            <tr id="new-assessment-row" class="hidden">
+                <td></td>
+                <td>
+                    <select class="assessment_group_select" id="group" name="group">
+                        <option>Choose group</option>
+                        {% for group in group_list %}
+                          <option value="{{group.pk}}">{{group.name}}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td> <p class="datepicker_obj"><input type="text" autocomplete="off" id="datepicker" name="datepicker"></p></td>
+                <td>
+                    <div class="adding_assessment_actions">
+                        <button class="multiple_btn" id="save-assessment-btn"><span>Save assessment</span></button>
+                        <button class="multiple_btn" id="cancel-adding-btn"><span>Cancel</span></button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+</div>
+
+{% include "galaxy/pagination.html" %}
+
+{% endblock content %}
+
+{% block javascript %}
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+    <script>
+        function initializeDatepicker() {
+            $( "#datepicker" ).datepicker();
+        }
+
+        $(document).ready(function() {
+            initializeDatepicker(); // Initialize datepicker on page load
+
+            // Get the current category ID from the Django context
+            var currentCat = "{{current_category}}";
+            // Set the checked state of the type radio buttons
+            $('#' + currentCat).prop('checked', true);
+
+            // Delegate the click event for adding assessments
+            $(document).on('click', '#add-assessment-btn', function() {
+                $('#new-assessment-row').removeClass('hidden');
+                $('#add-assessment-row').addClass('hidden');
+            });
+
+            // Delegate the click event for canceling adding assessments
+            $(document).on('click', '#cancel-adding-btn', function() {
+                $('#new-assessment-row').addClass('hidden');
+                $('#add-assessment-row').removeClass('hidden');
+            });
+
+            // Delegate the click event for saving assessments
+            $(document).on('click', '#save-assessment-btn', function() {
+                var group = $('#group').val();
+                var date = $('#datepicker').val();
+                $.ajax({
+                    url: "{% url 'save_an_assessment' %}",
+                    data: {group: group, date: date},
+                    success: function() {
+                        location.reload();
+                    }
+                });
+            });
+
+            // Delegate the click event for closing assessments
+            $(document).on('click', '#close-assessment-btn', function() {
+                var id = $(this).data('id');
+                $.ajax({
+                    url: "{% url 'close_assessment'%}",
+                    data: {id: id},
+                    success: function() {
+                        location.reload();
+                    }
+                });
+            });
+
+            // Changing categories
+            $('input[name="cat"]').change(function() {
+                var filter_flag = $('input[name="cat"]:checked').val();
+                filterTestsAndAssessments(filter_flag);
+            });
+
+            function filterTestsAndAssessments(filter_flag) {
+                $.ajax({
+                    url: "{% url 'filter_assessments' %}",
+                    type: 'GET',
+                    data: {
+                        filter_flag: filter_flag
+                    },
+                    success: function(data) {
+                        // Update the table with the filtered data
+                        $('.table tbody').html(data.my_content);
+                        // Update the pagination links
+                        $('.pagination').html(data.pagination_html);
+
+                        // Reinitialize datepicker after content is reloaded
+                        initializeDatepicker();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock javascript %}

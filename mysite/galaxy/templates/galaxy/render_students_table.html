@@ -1,0 +1,73 @@
+{% load galaxy_tags %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Username</th>
+            {% if type_flag == 'Confirmed' %}
+                <th scope="col">Group</th>
+            {% endif %}
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for student in students %}
+        <tr>
+            {% if page_obj.number %}
+                {% with offset=page_obj.number|add:'-1'|multiply:15 %}
+                <td scope="row">{{ forloop.counter|add:offset }}</td>
+                {% endwith %}
+            {% else %}
+                <td scope="row">{{ forloop.counter }}</td>
+            {% endif %}
+            <td> {{student.last_name}} {{student.first_name}} </td>
+            <td>{{student.username}}</td>
+            {% if type_flag == 'Confirmed' %}
+                {% if student.group == Null %}
+                  <td>
+                      <select name="{{student.pk}}" id="group-select-{{student.pk}}">
+                          <option>No group</option>
+                          {% for item in group_list %}
+                            <option value="{{item.pk}}">{{item.name}}</option>
+                          {% endfor %}
+                      </select>
+                  </td>
+              {% else %}
+                  <td>
+                      <select name="{{student.pk}}" id="group-select-{{student.pk}}">
+                          <option>{{student.group.name}}</option>
+                          {% for item in group_list %}
+                            {% if item != student.group %}
+                                <option value="{{item.pk}}">{{item.name}}</option>
+                            {% endif %}
+                          {% endfor %}
+                      </select>
+                  </td>
+              {% endif %}
+            {% endif %}
+            <td>
+                {% if type_flag == 'Confirmed' %}
+                    <button class="btn btn5 btn-action" data-student-id="{{ student.id }}" data-action="deny">
+                        <span>Deny</span>
+                    </button>
+                {% elif type_flag == 'Denied' %}
+                    <button class="btn btn5 btn-action" data-student-id="{{ student.id }}" data-action="confirm">
+                        <span>Confirm</span>
+                    </button>
+                {% else %}
+                    <div style="display: inline-flex; width: 80%;">
+                        <button class="btn btn5 btn-action" data-student-id="{{ student.id }}" data-action="confirm">
+                            <span>Confirm</span>
+                        </button>
+                        <button class="btn btn5 btn-action" data-student-id="{{ student.id }}" data-action="deny">
+                            <span>Deny</span>
+                        </button>
+                    </div>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

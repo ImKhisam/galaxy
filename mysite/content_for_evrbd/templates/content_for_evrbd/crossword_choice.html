@@ -1,0 +1,49 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+
+<link type="text/css" href="{% static 'galaxy/css/cross_table.css' %}" rel="stylesheet"/>
+
+{% endblock custom_styles %}
+
+{% block content %}
+
+    <div class="parent">
+        <div class="table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Theme</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td scope="row">1</td>
+                        <td> Painting </td>
+                        <td><a href="{% url 'cross' 1 %}">Open</a></td>
+                    </tr>
+                    <tr>
+                        <td scope="row">2</td>
+                        <td> St. Patricks Day </td>
+                        <td><a href="{% url 'cross' 2 %}">Open</a></td>
+                    </tr>
+                    <tr>
+                        <td scope="row">3</td>
+                        <td> Spring </td>
+                        <td><a href="{% url 'cross' 3 %}">Open</a></td>
+                    </tr>
+                    <tr>
+                        <td scope="row">4</td>
+                        <td> Easter </td>
+                        <td><a href="{% url 'cross' 4 %}">Open</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+</div>
+
+{% endblock content %}

@@ -93,7 +93,7 @@ class Tests(models.Model):
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
     test_details = models.TextField(default="Текст, который выводится перед началом теста")
-    time_limit = models.PositiveIntegerField()
+    time_limit = models.PositiveIntegerField(null=True)
     media = models.FileField(upload_to=content_file_name_test, blank=True)
     is_assessment = models.BooleanField(default=False)           # Разделение тестов на проверочные работы и свободную практику
     groups = models.ManyToManyField(Groups, through="Assessments")
@@ -171,7 +171,7 @@ class Questions(models.Model):
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     chapter_id = models.ForeignKey(Chapters, on_delete=models.CASCADE)
     points = models.PositiveIntegerField()
-    question = models.TextField()
+    question = models.TextField(blank=True)
     addition_before = models.CharField(max_length=50, blank=True)
     addition_after = models.CharField(max_length=50, blank=True)
     question_number = models.PositiveIntegerField()

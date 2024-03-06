@@ -81,13 +81,20 @@ def play_video(request):
     return render(request, 'content_for_evrbd/play_video.html', context=context)
 
 
+def cross_choice(request):
+    context = {
+        'title': 'Crosswords',
+    }
+    return render(request, 'content_for_evrbd/crossword_choice.html', context=context)
+
+
 def cross(request, cross_num):
     crossword_template = "".join(('content_for_evrbd/crossword_', str(cross_num), '.html'))
     return render(request, crossword_template)
 
 
 def quizpreview(request):
-    return render(request, 'content_for_evrbd/quiz_preview.html')
+    return render(request, 'content_for_evrbd/quiz_preview.html')   # delete?
 
 
 class QuizPreview(ListView):

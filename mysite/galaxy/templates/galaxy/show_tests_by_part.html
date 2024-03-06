@@ -1,0 +1,213 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+{% load galaxy_tags %}
+
+{% block custom_styles %}
+
+<link type="text/css" href="{% static 'galaxy/css/tests_by_part.css' %}" rel="stylesheet" />
+
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="table_with_borders">
+    <div class="parent">
+        <div class="outer_type_choice">
+            <div class="empty"></div>
+            <div class="type_choices">
+                <div class="type_choice_shell">
+                    <div class="type_choice">
+                        <input style="display: none;" type="radio" id="GSE" name="type" value="GSE">
+                        <label for="GSE"><span>GSE</span></label>
+                    </div>
+                    <div class="empty"></div>
+                </div>
+                <div class="type_choice_shell">
+                    <div class="type_choice">
+                        <input style="display: none;" type="radio" id="USE" name="type" value="USE">
+                        <label for="USE"><span>USE</span></label>
+                    </div>
+                </div>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
+
+    <div class="parent">
+        <div class="outer_part_choice">
+            <div class="empty"></div>
+            <div class="part_choices">
+                <div class="part_choice_shell">
+                    <div class="part_choice">
+                        <input style="display: none;" type="radio" id="Listening" name="part" value="Listening">
+                        <label for="Listening"><span>Listening</span></label>
+                    </div>
+                    <div class="empty"></div>
+                </div>
+                <div class="part_choice_shell">
+                    <div class="part_choice">
+                        <input style="display: none;" type="radio" id="Reading" name="part" value="Reading">
+                        <label for="Reading"><span>Reading</span></label>
+                    </div>
+                    <div class="empty"></div>
+                </div>
+                <div class="part_choice_shell">
+                    <div class="part_choice">
+                        <input style="display: none;" type="radio" id="Grammar" name="part" value="Grammar and Vocabulary">
+                        <label for="Grammar"><span>Grammar</span></label>
+                    </div>
+                    <div class="empty"></div>
+                </div>
+                <div class="part_choice_shell">
+                    <div class="part_choice">
+                        <input style="display: none;" type="radio" id="Writing" name="part" value="Writing">
+                        <label for="Writing"><span>Writing</span></label>
+                    </div>
+                    <div class="empty"></div>
+                </div>
+                <div class="part_choice_shell">
+                    <div class="part_choice">
+                        <input style="display: none;" type="radio" id="Speaking" name="part" value="Speaking">
+                        <label for="Speaking"><span>Speaking</span></label>
+                    </div>
+                </div>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
+
+    <div class="parent">
+        <div class="outer_not_passed">
+            <div class="empty"></div>
+            <div class="not_passed_checkbox">
+                <input type="checkbox" id="not_passed">
+                <label for="not_passed">only not passed</label>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
+
+    <div class="parent">
+      <div class="table">
+          <table class="table">
+              <thead>
+                  <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Part</th>
+                      <th scope="col">Passed</th>
+                      <th scope="col">Date</th>
+                      <th scope="col">Result</th>
+                      <th scope="col">Action</th>
+                  </tr>
+              </thead>
+              <tbody>
+              {% for test in tests %}
+                  <tr>
+                      {% if page_obj.number %}
+                          {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
+                          <td scope="row">{{ forloop.counter|add:offset }}</td>
+                          {% endwith %}
+                      {% else %}
+                          <td scope="row">{{ forloop.counter }}</td>
+                      {% endif %}
+                      <td> {{test.type}}</td>
+                      <td>
+                          {% if test.part == 'Grammar and Vocabulary' %}
+                              Grammar {{test.test_num}}
+                          {% else %}
+                              {{test.part}} {{test.test_num}}
+                          {% endif %}
+                      </td>
+                      {% if test.passed_test == True %}
+                      <td>Yes</td>
+                      {% else %}
+                      <td>Nope</td>
+                      {% endif %}
+                      {% if test.max_result_date == None %}
+                      <td>-</td>
+                      {% else %}
+                      <td>{{test.max_result_date}}</td>
+                      {% endif %}
+                      <td>{{test.max_result_points}}</td>
+                      <td>
+                          <div class="button_shell">
+                              <a class="btn btn5" href="{% url 'test_details' test.id %}"><span>Pass</span></a>
+                          </div>
+                      </td>
+                  </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+      </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block javascript %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the current category ID from the Django context
+    var currentType = "{{current_type}}";
+    var currentPart = "{{current_part}}";
+
+    // Set the checked state of the type radio buttons
+    $('#' + currentType).prop('checked', true);
+
+    // Set the checked state of the part radio buttons
+    $('#' + currentPart).prop('checked', true);
+});
+</script>
+
+
+<script>
+    $(document).ready(function() {
+    var currentPart = "{{ current_part }}";
+    var currentType = "{{ current_type }}";
+
+    // Listening for clicks on type radio buttons
+    $('input[name="type"]').change(function() {
+        var type = $(this).val(); // Get the ID of the selected radio button
+        var part = $('input[name="part"]:checked').val();
+        filterTests(type, part, $('#not_passed').prop('checked'));
+    });
+
+    // Listening for clicks on part radio buttons
+    $('input[name="part"]').change(function() {
+        var type = $('input[name="type"]:checked').val();
+        var part = $(this).val(); // Get the ID of the selected radio button
+        filterTests(type, part, $('#not_passed').prop('checked'));
+    });
+
+    // Listening for changes on the "not passed" checkbox
+    $('#not_passed').change(function() {
+        var type = $('input[name="type"]:checked').val();
+        var part = $('input[name="part"]:checked').val();
+        filterTests(type, part, $(this).prop('checked'));
+    });
+
+    function filterTests(type, part, notPassed) {
+        $.ajax({
+            url: "{% url 'filter_tests_by_part' %}", // URL to your Django view for filtering
+            type: 'GET',
+            data: {
+                type: type,
+                part: part,
+                not_passed: notPassed
+            },
+            success: function(data) {
+                // Update the table with the filtered data
+                $('.table tbody').html(data.my_content);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

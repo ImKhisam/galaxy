@@ -19,7 +19,7 @@
     min-height: 200px;
 }
 .chapter-text-name-add{
-    width: 30%;
+    min-width: 30%;
 }
 p{
     display: flex;

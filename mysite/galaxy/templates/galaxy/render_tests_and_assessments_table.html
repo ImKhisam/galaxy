@@ -1,0 +1,32 @@
+{% load galaxy_tags %}
+
+{% for test in tests %}
+    <tr>
+        {% if page_obj.number %}
+            {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
+            <td scope="row">{{ forloop.counter|add:offset }}</td>
+            {% endwith %}
+        {% else %}
+            <td scope="row">{{ forloop.counter }}</td>
+        {% endif %}
+        <td>{{test.type}}</td>
+        {% if test.part == 'Grammar and Vocabulary' %}
+        <td>Grammar</td>
+        {% else %}
+        <td>{{test.part}}</td>
+        {% endif %}
+        <td>{{test.test_num}}</td>
+        <td>
+            <div style="display: inline-flex; width: 80%;">
+                <a class="btn btn5" href="{% url 'show_test' test.id %}"><span>Open</span></a>
+            </div>
+        </td>
+    </tr>
+{% endfor %}
+    <tr>
+        <td style="border: none;"></td>
+        <td style="border: none;"></td>
+        <td style="border: none;"></td>
+        <td style="border: none;"></td>
+        <td style="border: none;"><a class="btn btn5" href="{% url 'add_test' %}"><span>Add test</span></a></td>
+    </tr>

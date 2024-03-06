@@ -1,0 +1,40 @@
+
+{% load galaxy_tags %}
+
+
+{% for test in tests %}
+    <tr>
+        {% if page_obj.number %}
+            {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
+            <td scope="row">{{ forloop.counter|add:offset }}</td>
+            {% endwith %}
+        {% else %}
+            <td scope="row">{{ forloop.counter }}</td>
+        {% endif %}
+        <td> {{test.type}}</td>
+        <td>
+            {% if test.part == 'Grammar and Vocabulary' %}
+                Grammar {{test.test_num}}
+            {% else %}
+                {{test.part}} {{test.test_num}}
+            {% endif %}
+        </td>
+        {% if test.passed_test == True %}
+        <td>Yes</td>
+        {% else %}
+        <td>Nope</td>
+        {% endif %}
+        {% if test.max_result_date == None %}
+        <td>-</td>
+        {% else %}
+        <td>{{test.max_result_date}}</td>
+        {% endif %}
+        <td>{{test.max_result_points}}</td>
+        <td>
+            <div style="display: inline-flex; width: 80%;">
+                <a class="btn btn5" href="{% url 'test_details' test.id %}"><span>Pass</span></a>
+            </div>
+        </td>
+    </tr>
+{% endfor %}
+

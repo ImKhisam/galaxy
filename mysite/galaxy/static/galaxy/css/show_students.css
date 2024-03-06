@@ -1,0 +1,80 @@
+:root {
+  --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
+  --gray-hover: #54514f;
+}
+
+/* widths of table columns  */
+th:first-child {
+    width: 5%;
+}
+
+th:nth-child(2) {
+    width: 20%;
+}
+
+th:nth-child(3) {
+    width: 20%;
+}
+
+td:first-child {
+    width: 5%;
+}
+
+td:nth-child(2) {
+    width: 20%;
+}
+
+td:nth-child(3) {
+    width: 20%;
+}
+
+select{
+    padding: 3px;
+    color: #ffffff;
+    background-color: transparent;
+    font-size: 18px;
+    border: 2px solid #ffffff;
+}
+option{
+    background-color:black;
+    border: 2px solid #ffffff;
+    font-size: 18px;
+}
+
+
+.outer_student_status_choice{
+    width: 60%;
+    display: flex;
+    border-top: 2px solid var(--white-transparent);
+}
+.student_status_choices{
+    width: 100%;
+    display: flex;
+}
+.student_status_choice_shell{
+    display: flex;
+}
+.student_status_choice{
+    width: 100%;
+    text-align: center;
+    font-size: 22px;
+}
+.student_status_choice label{
+    display: flex;
+    width: 100%;
+    background-color: var(--blue-transparent);
+}
+.student_status_choice label:hover{
+    color: grey;
+}
+.student_status_choice input:checked + label{
+    background-color: var(--white-transparent);
+    color: var(--blue-transparent);
+}
+.student_status_choice span{
+    margin: auto;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}

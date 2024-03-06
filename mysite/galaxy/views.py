@@ -29,6 +29,7 @@ from .utils import generate_token, NotLoggedIn, ConfirmMixin, AddTestConstValues
 from django.contrib.auth.views import PasswordResetView
 from pydub import AudioSegment
 import base64
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 class Index(TemplateView, LoginRequiredMixin):
@@ -192,7 +193,7 @@ def delete_account(request, user_id):
 class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
-    paginate_by = 15
+    paginate_by = 10
     model = Results
     template_name = "galaxy/show_results.html"
     context_object_name = 'results'
@@ -483,7 +484,8 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                 elif question.question_type == 'input_type':  # Подсчет вопросов с вводом
                     answer = Answers.objects.get(question_id__id=question.id)
                     answers = str(answer.answer)
-                    right_answers = list(answers.split(','))
+                    right_answers = [x.strip() for x in list(answers.split(','))]
+                    print(right_answers)
                     student_answer = str(request.POST.get(str(answer.id)))
                     if student_answer in right_answers:
                         total_test_points += question.points
@@ -650,6 +652,118 @@ def julik(request):
     return render(request, 'galaxy/julik.html')
 
 
+class ShowTestsByPart(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = Tests
+    template_name = "galaxy/show_tests_by_part.html"
+    context_object_name = 'tests'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Available Tests'
+        context['pagination_number'] = self.paginate_by
+        context['current_type'] = self.kwargs.get('part').split(',')[0]
+        context['current_part'] = self.kwargs.get('part').split(',')[1].split(' ')[0]
+        return context
+
+    def get_queryset(self):
+        from django.db.models import Max, Case, When, Value, CharField, BooleanField, F, OuterRef, Subquery
+        user_id = self.request.user
+        #self.template_name = "galaxy/show_tests.html"
+        data = self.kwargs.get('part').split(',')
+        type = data[0]
+        part = data[1]
+        # Subquery to get the max result for each test
+        max_results_subquery = Results.objects.filter(
+            test_id=OuterRef('pk'),
+            student_id=user_id
+        ).order_by('-points').values('points')[:1]
+
+        # Query to fetch all tests along with user's results and applying filters
+        tests_with_results = Tests.objects.filter(
+            type=type,
+            part=part
+        ).annotate(
+            passed_test=Case(
+                When(results__student_id=user_id, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            ),
+            max_result_date=Case(
+                When(passed_test=True, then=Subquery(
+                    Results.objects.filter(test_id=OuterRef('pk'), student_id=user_id).order_by('-points').values(
+                        'date')[:1]
+                )),
+                default=Value(None),
+                output_field=CharField()
+            ),
+            max_result_points=Case(
+                When(passed_test=True, then=Subquery(
+                    Results.objects.filter(test_id=OuterRef('pk'), student_id=user_id).order_by('-points').values(
+                        'points')[:1]
+                )),
+                default=Value('-'),
+                output_field=CharField()
+            )
+        ).distinct()
+
+        return tests_with_results
+
+
+def filter_tests_by_part(request):
+    from django.db.models import Max, Case, When, Value, CharField, BooleanField, F, OuterRef, Subquery
+    data = dict()
+    # Get parameters from AJAX request
+    type = request.GET.get('type')
+    part = request.GET.get('part')
+    show_only_not_passed = request.GET.get('not_passed')
+    user_id = request.user
+
+    # Filter tests based on parameters
+    # Subquery to get the max result for each test
+    max_results_subquery = Results.objects.filter(
+        test_id=OuterRef('pk'),
+        student_id=user_id
+    ).order_by('-points').values('points')[:1]
+
+    # Query to fetch all tests along with user's results and applying filters
+    tests_with_results = Tests.objects.filter(
+        type=type,
+        part=part
+    ).annotate(
+        passed_test=Case(
+            When(results__student_id=user_id, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        ),
+        max_result_date=Case(
+            When(passed_test=True, then=Subquery(
+                Results.objects.filter(test_id=OuterRef('pk'), student_id=user_id).order_by('-points').values(
+                    'date')[:1]
+            )),
+            default=Value(None),
+            output_field=CharField()
+        ),
+        max_result_points=Case(
+            When(passed_test=True, then=Subquery(
+                Results.objects.filter(test_id=OuterRef('pk'), student_id=user_id).order_by('-points').values(
+                    'points')[:1]
+            )),
+            default=Value('-'),
+            output_field=CharField()
+        )
+    ).distinct()
+
+    if show_only_not_passed == 'true':
+        tests_with_results = tests_with_results.filter(passed_test=False)
+
+    context = {'tests': tests_with_results}
+    data['my_content'] = render_to_string('galaxy/render_table_tests_by_part.html',
+                                          context, request=request)
+    return JsonResponse(data)
+
+
 class ShowTests(LoginRequiredMixin, TeacherUserMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
@@ -672,10 +786,70 @@ class ShowTests(LoginRequiredMixin, TeacherUserMixin, ListView):
         return Tests.objects.filter(is_assessment=flag).order_by('type', 'part', 'test_num')
 
 
+class ShowTestsAndAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    paginate_by = 10
+    model = Tests
+    template_name = "galaxy/show_tests_and_assessments.html"
+    context_object_name = 'tests'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Available Tests'
+        context['current_category'] = 'Training'
+        context['pagination_number'] = self.paginate_by
+        return context
+
+    def get_queryset(self):
+        return Tests.objects.filter(is_assessment=False).order_by('type', 'part', 'test_num')
+
+
+def filter_tests_and_assessments(request):
+    data = dict()
+    # Get parameters from AJAX request
+    value_dict = {'Assessment': True, 'Training': False}
+    filter_flag = request.GET.get('filter_flag')
+    flag_value = value_dict[filter_flag]
+    filter_value = request.GET.get('filter_value')
+    if ' ' in filter_value:
+        filter_list = filter_value.split(' ')
+
+        query = Q()
+        for part in filter_list:
+            query &= (Q(type__icontains=part) |
+                      Q(part__icontains=part) |
+                      Q(test_num__icontains=part))
+        tests = Tests.objects.filter(is_assessment=flag_value).filter(query).order_by('type', 'part', 'test_num')
+    else:
+        tests = Tests.objects.filter(is_assessment=flag_value).filter(
+                    Q(type__icontains=filter_value) |
+                    Q(part__icontains=filter_value) |
+                    Q(test_num__icontains=filter_value)
+                ).order_by('type', 'part', 'test_num')
+
+    # Paginate the filtered tests
+    paginator = Paginator(tests, 10)
+    page_number = request.GET.get('page')
+    try:
+        paginated_tests = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_tests = paginator.page(1)
+    except EmptyPage:
+        paginated_tests = paginator.page(paginator.num_pages)
+
+    context = {'tests': paginated_tests}
+    context['current_category'] = filter_flag
+    data['my_content'] = render_to_string('galaxy/render_tests_and_assessments_table.html',
+                                          context, request=request)
+    data['pagination_html'] = render_to_string('galaxy/pagination.html', {'page_obj': paginated_tests}, request=request)
+    return JsonResponse(data)
+
+
 class ShowTestsToCheck(LoginRequiredMixin, TeacherUserMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
-    paginate_by = 15
+    paginate_by = 10
     model = TestsToCheck
     template_name = "galaxy/show_tests_to_check.html"
     context_object_name = 'tests_to_check'
@@ -683,11 +857,44 @@ class ShowTestsToCheck(LoginRequiredMixin, TeacherUserMixin, ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Tests to check'         # needed??
+        context['current_category'] = 'ToCheck'
         context['pagination_number'] = self.paginate_by
         return context
 
     def get_queryset(self):
         return TestsToCheck.objects.filter(is_checked=False)
+
+
+def filter_tests_to_check(request):
+    data = dict()
+    # Get parameters from AJAX request
+    value_dict = {'Checked': True, 'ToCheck': False}
+    filter_flag = request.GET.get('filter_flag')
+    flag_value = value_dict[filter_flag]
+    filter_value = request.GET.get('filter_value')
+    tests_to_check = TestsToCheck.objects.filter(is_checked=flag_value).filter(
+                Q(student_id__first_name__icontains=filter_value) |
+                Q(student_id__last_name__icontains=filter_value) |
+                Q(test_id__type__icontains=filter_value) |
+                Q(test_id__part__icontains=filter_value)
+            ).order_by('id')
+
+    # Paginate the filtered tests
+    paginator = Paginator(tests_to_check, 10)
+    page_number = request.GET.get('page')
+    try:
+        paginated_tests = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_tests = paginator.page(1)
+    except EmptyPage:
+        paginated_tests = paginator.page(paginator.num_pages)
+
+    context = {'tests_to_check': paginated_tests}
+    context['current_category'] = filter_flag
+    data['my_content'] = render_to_string('galaxy/render_tests_to_check_table.html',
+                                          context, request=request)
+    data['pagination_html'] = render_to_string('galaxy/pagination.html', {'page_obj': paginated_tests}, request=request)
+    return JsonResponse(data)
 
 
 class ShowCheckedTests(LoginRequiredMixin, TeacherUserMixin, ListView):
@@ -714,56 +921,75 @@ class ShowCheckedTests(LoginRequiredMixin, TeacherUserMixin, ListView):
         return TestsToCheck.objects.filter(is_checked=True)
 
 
-class ShowConfirmedStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, ListView):
+#class ShowConfirmedStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, ListView):
+#    login_url = '/login/'
+#    redirect_field_name = 'login'
+#    template_name = "galaxy/show_confirmed_students.html"
+#
+#    def get_context_data(self, *, object_list=None, **kwargs):
+#        context = super().get_context_data(**kwargs)
+#        context['title'] = 'Confirmed Students'
+#        context['pagination_number'] = self.paginate_by
+#        group_list = Groups.objects.all()
+#        context['group_list'] = group_list
+#        return context
+#
+#    def get_queryset(self):
+#        return self.foo(True)
+
+
+class ShowStudents(LoginRequiredMixin, TeacherUserMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
-    template_name = "galaxy/show_confirmed_students.html"
+    template_name = "galaxy/show_students.html"
+    paginate_by = 10
+    model = CustomUser
+    context_object_name = 'students'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Confirmed Students'
+        context['title'] = 'Students'
         context['pagination_number'] = self.paginate_by
-        group_list = Groups.objects.all()
-        context['group_list'] = group_list
+        context['type_flag'] = 'Pending'
+        context['group_list'] = Groups.objects.all()
         return context
 
     def get_queryset(self):
-        return self.foo(True)
+        return CustomUser.objects.filter(role='Student', is_confirmed=None).order_by('id')
 
 
-class ShowPendingStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, ListView):
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    template_name = "galaxy/show_pending_students.html"
+def filter_students(request):
+    data = dict()
+    # Get parameters from AJAX request
+    value_dict = {'Denied': False, 'Pending': None, 'Confirmed': True}
+    type_flag = request.GET.get('type_flag')
+    flag_value = value_dict[type_flag]
+    filter_value = request.GET.get('filter_value')
+    # Query to fetch all tests along with user's results and applying filters
+    #students = CustomUser.objects.filter(role='Student', is_confirmed=flag_value).order_by('id')
+    students = CustomUser.objects.filter(role='Student', is_confirmed=flag_value).filter(
+                Q(username__icontains=filter_value) |
+                Q(first_name__icontains=filter_value) |
+                Q(last_name__icontains=filter_value)
+            ).order_by('id')
 
-    def get_queryset(self):
-        return self.foo(None)
-
-
-class ShowDeniedStudents(LoginRequiredMixin, ConfirmMixin, TeacherUserMixin, ListView):
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    template_name = "galaxy/show_denied_students.html"
-
-    def get_queryset(self):
-        return self.foo(False)
+    context = {'students': students}
+    context['type_flag'] = type_flag
+    context['group_list'] = Groups.objects.all()
+    data['my_content'] = render_to_string('galaxy/render_students_table.html',
+                                          context, request=request)
+    return JsonResponse(data)
 
 
 @user_passes_test(teacher_check, login_url='home')
-def deny_student(request, student_id, template):
-    student = CustomUser.objects.get(id=student_id)
-    student.is_confirmed = False
+def confirm_deny_student(request):
+    student = CustomUser.objects.get(id=int(request.POST.get('student_id')))
+    action = request.POST.get('action')
+    operation_dict = {'confirm': True, 'deny': False}
+    student.is_confirmed = operation_dict[action]
     student.group = None
     student.save()
-    return redirect(reverse_lazy(template))
-
-
-@user_passes_test(teacher_check, login_url='home')
-def confirm_student(request, student_id, template):
-    student = CustomUser.objects.get(id=student_id)
-    student.is_confirmed = True
-    student.save()
-    return redirect(reverse_lazy(template))
+    return JsonResponse({'success': True})
 
 
 class CheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
@@ -844,16 +1070,18 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
                 chapter_obj.test_id = test_obj
                 chapter_obj.chapter_number = 1
                 chapter_obj.save()
+                first_chapter_obj = chapter_obj
             else:
                 for chapter_form in chapter_formset.forms:          # Save the Chapters
                     if chapter_form.has_changed():
                         chapter_obj = chapter_form.save(commit=False)
                         chapter_obj.test_id = test_obj
                         chapter_obj.save()
-                        if test_obj.part == 'Writing':
-                            self.add_chapter_const_valuse(chapter_obj)
+                        self.add_chapter_const_value(chapter_obj)
+                        # picking up first chapter in this test to add questions to it
+                        first_chapter_obj = Chapters.objects.get(test_id=test_obj, chapter_number=1)
 
-            return redirect('add_q_and_a', chapter_obj.id)
+            return redirect('add_q_and_a', first_chapter_obj.id)
 
         context = {
             'test_form': test_form,
@@ -1016,71 +1244,149 @@ class TestingPage(View):        # wtf is this
             return render(request, 'galaxy/julik.html')
 
 
-class MakeAnAssessment(LoginRequiredMixin, TeacherUserMixin, TemplateView):
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    template_name = 'galaxy/make_an_assessment.html'
+#class MakeAnAssessment(LoginRequiredMixin, TeacherUserMixin, TemplateView):
+#    login_url = '/login/'
+#    redirect_field_name = 'login'
+#    template_name = 'galaxy/make_an_assessment.html'
+#
+#    def get_context_data(self, *, object_list=None, **kwargs):
+#        context = super().get_context_data(**kwargs)
+#        context['title'] = 'Make an assessment'
+#        group_list = Groups.objects.all().order_by('name')
+#        context['group_list'] = group_list
+#        return context
+#
+#    def post(self, request, *args, **kwargs):
+#        group = Groups.objects.get(id=request.POST['group'])
+#        assessment_date = request.POST['datepicker']  # 06/09/2023
+#        assessment_date = datetime.strptime(assessment_date, "%m/%d/%Y").date()
+#
+#        '''Собираем свободные тесты для ассессмента по типам '''
+#        assessment_tests_by_part = []
+#        for part in ['Grammar and Vocabulary', 'Listening', 'Reading', 'Speaking', 'Writing']:
+#            assessment_tests_by_part.append(
+#                Tests.objects.filter(is_assessment=True, type=group.test_type, part=part).
+#                exclude(used_in_groups__contains=group.name)
+#                                       )
+#
+#        '''Проверяем на каждый ли тип теста есть свободный тест для назначения'''
+#        if len(assessment_tests_by_part) != 5:
+#            print('НЕ ХВАТАЕТ ТИПОВ АССЕССМЕНТА:', len(assessment_tests_by_part))
+#            return redirect('make_an_assessment')
+#
+#        '''Назначение даты 5 рандомным тестам '''
+#        for test_query in assessment_tests_by_part:
+#            '''Уведомление о том, что осталось мало свободных ассессментов для этой группы'''
+#            if len(test_query) < 3:
+#                pass        # notification, that few tests left
+#
+#            '''Назначение даты 5 рандомным тестам '''
+#            if len(test_query) > 0:
+#                random_test = test_query.order_by('?')[0]       # rly random or everytime the same?
+#                list_used_in_groups = random_test.used_in_groups.split(', ')
+#                if list_used_in_groups == ['']:
+#                    random_test.used_in_groups = group.name
+#                else:
+#                    list_used_in_groups.append(group.name)
+#                    random_test.used_in_groups = ', '.join(list_used_in_groups)
+#                random_test.save()
+#                assessment = Assessments(test=random_test, group=group, date=assessment_date)
+#                assessment.save()
+#        return redirect('show_current_assessments')
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Make an assessment'
-        group_list = Groups.objects.all().order_by('name')
-        context['group_list'] = group_list
-        return context
 
-    def post(self, request, *args, **kwargs):
-        group = Groups.objects.get(id=request.POST['group'])
-        assessment_date = request.POST['datepicker']  # 06/09/2023
-        assessment_date = datetime.strptime(assessment_date, "%m/%d/%Y").date()
-
-        '''Собираем свободные тесты для ассессмента по типам '''
-        assessment_tests_by_part = []
-        for part in ['Grammar and Vocabulary', 'Listening', 'Reading', 'Speaking', 'Writing']:
-            assessment_tests_by_part.append(
-                Tests.objects.filter(is_assessment=True, type=group.test_type, part=part).
-                exclude(used_in_groups__contains=group.name)
-                                       )
-
-        '''Проверяем на каждый ли тип теста есть свободный тест для назначения'''
-        if len(assessment_tests_by_part) != 5:
-            print('НЕ ХВАТАЕТ ТИПОВ АССЕССМЕНТА:', len(assessment_tests_by_part))
-            return redirect('make_an_assessment')
-
-        '''Назначение даты 5 рандомным тестам '''
-        for test_query in assessment_tests_by_part:
-            '''Уведомление о том, что осталось мало свободных ассессментов для этой группы'''
-            if len(test_query) < 3:
-                pass        # notification, that few tests left
-
-            '''Назначение даты 5 рандомным тестам '''
-            if len(test_query) > 0:
-                random_test = test_query.order_by('?')[0]       # rly random or everytime the same?
-                list_used_in_groups = random_test.used_in_groups.split(', ')
-                if list_used_in_groups == ['']:
-                    random_test.used_in_groups = group.name
-                else:
-                    list_used_in_groups.append(group.name)
-                    random_test.used_in_groups = ', '.join(list_used_in_groups)
-                random_test.save()
-                assessment = Assessments(test=random_test, group=group, date=assessment_date)
-                assessment.save()
-        return redirect('show_current_assessments')
-
-
-class ShowCurrentAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
+class ShowAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = Assessments
     context_object_name = 'assessments'
-    template_name = "galaxy/show_current_assessments.html"
+    template_name = "galaxy/show_assessments.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Current assessments'
+        group_list = Groups.objects.all().order_by('name')
+        context['group_list'] = group_list
+        context['current_category'] = 'Current'
+        return context
 
     def get_queryset(self):
         #return Tests.objects.exclude(appointed_to_group=None)
         return Assessments.objects.filter(is_passed=False).distinct('group', 'date')
 
 
+def filter_assessments(request):
+    data = dict()
+    # Get parameters from AJAX request
+    value_dict = {'Current': False, 'Past': True}
+    filter_flag = request.GET.get('filter_flag')
+    flag_value = value_dict[filter_flag]
+
+    assessments = Assessments.objects.filter(is_passed=flag_value).distinct('group', 'date')
+
+    # Paginate the filtered tests
+    paginator = Paginator(assessments, 10)
+    page_number = request.GET.get('page')
+    try:
+        paginated_tests = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_tests = paginator.page(1)
+    except EmptyPage:
+        paginated_tests = paginator.page(paginator.num_pages)
+
+    context = {'assessments': paginated_tests}
+    context['current_category'] = filter_flag
+    group_list = Groups.objects.all().order_by('name')
+    context['group_list'] = group_list
+    data['my_content'] = render_to_string('galaxy/render_assessments_table.html',
+                                          context, request=request)
+    data['pagination_html'] = render_to_string('galaxy/pagination.html', {'page_obj': paginated_tests}, request=request)
+    return JsonResponse(data)
+
+
 @user_passes_test(teacher_check, login_url='home')
-def delete_an_assessment(request, assessment_id):
+def save_an_assessment(request):
+    group = Groups.objects.get(id=request.GET.get('group'))
+    assessment_date = request.GET.get('date')
+    assessment_date = datetime.strptime(assessment_date, "%m/%d/%Y").date()
+
+    '''Собираем свободные тесты для ассессмента по типам '''
+    assessment_tests_by_part = []
+    for part in ['Grammar and Vocabulary', 'Listening', 'Reading', 'Speaking', 'Writing']:
+        assessment_tests_by_part.append(
+            Tests.objects.filter(is_assessment=True, type=group.test_type, part=part).
+                exclude(used_in_groups__contains=group.name)
+        )
+
+    '''Проверяем на каждый ли тип теста есть свободный тест для назначения'''
+    if len(assessment_tests_by_part) != 5:
+        print('НЕ ХВАТАЕТ ТИПОВ АССЕССМЕНТА:', len(assessment_tests_by_part))
+        return redirect('make_an_assessment')
+
+    '''Назначение даты 5 рандомным тестам '''
+    for test_query in assessment_tests_by_part:
+        '''Уведомление о том, что осталось мало свободных ассессментов для этой группы'''
+        if len(test_query) < 3:
+            pass  # notification, that few tests left
+
+        '''Назначение даты 5 рандомным тестам '''
+        if len(test_query) > 0:
+            random_test = test_query.order_by('?')[0]  # rly random or everytime the same?
+            list_used_in_groups = random_test.used_in_groups.split(', ')
+            if list_used_in_groups == ['']:
+                random_test.used_in_groups = group.name
+            else:
+                list_used_in_groups.append(group.name)
+                random_test.used_in_groups = ', '.join(list_used_in_groups)
+            random_test.save()
+            assessment = Assessments(test=random_test, group=group, date=assessment_date)
+            assessment.save()
+    return JsonResponse({'success': True})
+
+
+@user_passes_test(teacher_check, login_url='home')
+def close_assessment(request):
+    assessment_id = request.GET.get('id')
     assessment_object = Assessments.objects.get(id=assessment_id)
     group = assessment_object.group
     date = assessment_object.date
@@ -1089,19 +1395,7 @@ def delete_an_assessment(request, assessment_id):
         assessment.is_passed = True
         assessment.save()
 
-    return redirect('show_current_assessments')
-
-
-class ShowPastAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    model = Assessments
-    context_object_name = 'assessments'
-    template_name = "galaxy/show_past_assessments.html"
-
-    def get_queryset(self):
-        #return Tests.objects.exclude(appointed_to_group=None)
-        return Assessments.objects.filter(is_passed=True).distinct('group', 'date')
+    return redirect('show_assessments')
 
 
 class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
