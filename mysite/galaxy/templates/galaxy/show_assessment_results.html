@@ -3,17 +3,24 @@
 {% load static %}
 
 {% block custom_styles %}
-    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet" />
-    <style>
-        div.table {
-          width: 70%;
-        }
-    </style>
+
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/show_assessment_results.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet"/>
+
 {% endblock custom_styles %}
 
 {% block content %}
-<h1> Assessment contestants</h1>
+
+<div class="parent">
+    <div class="outer_table_head">
+        <div class="empty"></div>
+        <div class="table_head">
+            <h1>{{ assessment.group }} assessment on {{assessment.date}}</h1>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
 
 <div class="parent">
   <div class="table">
@@ -25,11 +32,11 @@
               <tr>
                   <th scope="col">#</th>
                   <th scope="col">Name</th>
-                  <th scope="col">Grammar</th>
                   <th scope="col">Listening</th>
                   <th scope="col">Reading</th>
-                  <th scope="col">Speaking</th>
+                  <th scope="col">Grammar</th>
                   <th scope="col">Writing</th>
+                  <th scope="col">Speaking</th>
               </tr>
           </thead>
           <tbody>

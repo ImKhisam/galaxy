@@ -40,21 +40,21 @@ urlpatterns = [
     path('delete_group/<int:group_id>/', delete_group, name='delete_group'),
     path('update_student_group', update_student_group, name='update_student_group'),
 
-    path('results/', ShowResults.as_view(), name='show_results'),
+    path('my_results/', ShowResults.as_view(), name='show_results'),
     path('show_students/', ShowStudents.as_view(), name='show_students'),
     path('filter_students/', filter_students, name='filter_students'),
     path('confirm_deny_student/', confirm_deny_student, name='confirm_deny_student'),
     path('show_tests_to_check/', ShowTestsToCheck.as_view(), name='show_tests_to_check'),
     path('filter_tests_to_check/', filter_tests_to_check, name='filter_tests_to_check'),
-    path('checking_test/<int:test_to_check_id>', CheckingTest.as_view(), name='checking_test'),
+    path('checking_test/<int:test_to_check_id>/', CheckingTest.as_view(), name='checking_test'),
 
 
     path('test_details/<int:test_pk>/', TestDetails.as_view(), name='test_details'),
     path('pass_test/<int:test_pk>/', PassTest.as_view(), name='pass_test'),
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
-    path('result_preview/<int:result_pk>', ResultPreview.as_view(), name='result_preview'),
-    path('show_colour_result/<int:result_pk>', ShowColouredResult.as_view(), name='show_colour_result'),
+    path('result_preview/<int:result_id>/', ResultPreview.as_view(), name='result_preview'),
+    path('show_colour_result/<int:result_pk>/', ShowColouredResult.as_view(), name='show_colour_result'),
 
     #path('show_tests/<int:assessment_fl>', ShowTests.as_view(), name='show_tests'),
     path('show_tests_and_assessments/', ShowTestsAndAssessments.as_view(), name='show_tests_and_assessments'),
@@ -71,7 +71,7 @@ urlpatterns = [
     path('filter_assessments/', filter_assessments, name='filter_assessments'),
     path('save_an_assessment/', save_an_assessment, name='save_an_assessment'),
     path('close_assessment/', close_assessment, name='close_assessment'),
-    path('show_assessment_results/<int:assessment_pk>', ShowAssessmentResults.as_view(), name='show_assessment_results'),
+    path('show_assessment_results/<int:assessment_pk>/', ShowAssessmentResults.as_view(), name='show_assessment_results'),
     path('show_student_assessments/', ShowStudentAssessments.as_view(), name='show_student_assessments'),
     path('show_assessment_results/', ShowStudentAssessmentResults.as_view(), name='show_student_assessment_results'),
 

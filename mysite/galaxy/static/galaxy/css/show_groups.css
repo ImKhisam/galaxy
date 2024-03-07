@@ -74,16 +74,6 @@ div.table {
 .pagination-next {
     color: #c9b4b4;
 }
-.outer_table_head{
-    width: 60%;
-    display: flex;
-    border-top: 2px solid;
-}
-
-.table_head{
-    width: 100%;
-    background-color: var(--blue-transparent);
-}
 
 .empty{
     border: 1px solid;

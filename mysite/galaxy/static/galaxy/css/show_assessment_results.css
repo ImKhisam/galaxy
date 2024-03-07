@@ -1,0 +1,15 @@
+:root {
+    --dark-transparent: #000000e3;
+    --blue-transparent: #365a99e3;
+    --white-transparent: #fbfbfbe6;
+    --gray-hover: #54514f;
+}
+
+.outer_table_head{
+    width: 70%;
+}
+
+div.table {
+    width: 70%;
+}
+

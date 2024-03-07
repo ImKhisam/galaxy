@@ -3,14 +3,11 @@
 {% load static %}
 
 {% block custom_styles %}
-<link type="text/css" href="{% static 'galaxy/css/show_results.css' %}" rel="stylesheet" />
-<style>
 
+    <link type="text/css" href="{% static 'galaxy/css/show_results.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet"/>
 
-
-</style>
-
-{% endblock %}
+{% endblock custom_styles %}
 
 {% block content %}
 
@@ -51,11 +48,19 @@
             <td>{{result.date}}</td>
             <td>{{result.points}} / {{ dict|get_item:result.test_id }}</td>
             <td>{{result.time}}</td>
+            {% if result.test_id.part == 'Speaking' or result.test_id.part == 'Writing' %}
+                <td>
+                    <div class="button_shell">
+                        <a class="btn btn5" href="{% url 'show_colour_result' result.id %}"><span>Open</span></a>
+                    </div>
+                </td>
+            {% else %}
             <td>
                 <div class="button_shell">
-                    <a class="btn btn5" href="{% url 'result_preview' result.id %}"><span>Open</span></a>
+                    <a class="btn btn5" href="{% url 'result_preview' result.id %}"><span>Summary</span></a>
                 </div>
             </td>
+            {% endif %}
         </tr>
 
       {% endfor %}

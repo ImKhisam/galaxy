@@ -19,19 +19,19 @@
                 {{test.part}} {{test.test_num}}
             {% endif %}
         </td>
-        {% if test.passed_test == True %}
+        {% if test in best_result_dict %}
         <td>Yes</td>
+        {% with result=best_result_dict|get_item:test %}
+        <td>{{ result.date }}</td>
+        <td>{{ result.points }}</td>
+        {% endwith %}
         {% else %}
         <td>Nope</td>
-        {% endif %}
-        {% if test.max_result_date == None %}
         <td>-</td>
-        {% else %}
-        <td>{{test.max_result_date}}</td>
+        <td>-</td>
         {% endif %}
-        <td>{{test.max_result_points}}</td>
         <td>
-            <div style="display: inline-flex; width: 80%;">
+            <div class="button_shell">
                 <a class="btn btn5" href="{% url 'test_details' test.id %}"><span>Pass</span></a>
             </div>
         </td>

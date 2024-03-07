@@ -215,13 +215,64 @@ class ResultPreview(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
     redirect_field_name = 'login'
     model = Results
     template_name = 'galaxy/result_preview.html'
-    pk_url_kwarg = 'result_pk'
+    pk_url_kwarg = 'result_id'
     context_object_name = 'result'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Result commentary'
+        result_id = self.kwargs['result_id']
+        result_obj = Results.objects.get(id=result_id)
+        result_commentary = str(result_obj.record_answers)
+        context['commentary'] = [x for x in result_commentary.split(';')]
         return context
+
+
+class ShowColouredResult(LoginRequiredMixin, View):                    # exact copy of ShowTest (inherit it?)
+    login_url = '/login/'
+    redirect_field_name = 'login'
+
+    def get(self, request, result_pk):
+        result_object = Results.objects.get(id=str(result_pk))
+        test = get_object_or_404(Tests, id=result_object.test_id.id)
+        result_record_answers = str(result_object.record_answers)
+        student_answers_list = [x.lstrip('1234567890) ') for x in result_record_answers.split(';')]
+        content_dict = {}
+        right_answers_list = []
+
+        chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
+        for chapter in chapters_for_test:
+            questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+            qa = {}
+            for question in questions_for_test:
+                if question.question_type == 'match_type':
+                    qa[question] = {
+                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                            'answer',
+                            flat=True)
+                        for key in
+                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+                    #right_answers_list.append(Answers.objects.filter(question_id__id=question.id, is_true=True))
+                elif question.question_type == 'input_type':
+                    qa[question] = Answers.objects.get(question_id__id=question.id)
+                    right_answers_list.append(Answers.objects.get(question_id__id=question.id))
+                elif question.question_type == 'single_choice_type':
+                    qa[question] = Answers.objects.filter(question_id__id=question.id)
+                    right_answers_list.append(Answers.objects.get(question_id__id=question.id, is_true=True))
+                else:       # true/false
+                    qa[question] = Answers.objects.filter(question_id__id=question.id)
+                    right_answers_list.append(Questions.objects.get(id=question.id).values_list('addition_after'))
+            content_dict[chapter] = qa
+
+        print(right_answers_list)
+
+        context = {'test': test,
+                   'content_dict': content_dict,
+                   'student_answers_list': student_answers_list,
+                   'right_answers_list': right_answers_list,
+                   }
+
+        return render(request, 'galaxy/show_colour_result.html', context)
 
 
 class ShowGroups(LoginRequiredMixin, TeacherUserMixin, ListView):
@@ -399,12 +450,12 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         return detailed_test_points
 
     @staticmethod
-    def add_answer_to_record(record_to_add_in, answer_to_add, separation_item):
+    def add_answer_to_record(record_to_add_in, answer_match, answer_to_add, separation_item):
         if len(record_to_add_in) > 0:
             record_to_add_in += separation_item
         if answer_to_add == 'Выберите ответ':
             answer_to_add = 'No answer'
-        record_to_add_in += answer_to_add
+        record_to_add_in += (str(answer_match) + '-' + answer_to_add)
         return record_to_add_in
 
     #@staticmethod
@@ -472,7 +523,7 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                     for answer in Answers.objects.filter(question_id__id=question.id).exclude(
                             match__exact=''):  # ??перебираем только "правильные" ответы, отрезая пустышку без match
                         student_answer = request.POST.get(str(answer.id))
-                        record_match_answers = self.add_answer_to_record(record_match_answers, student_answer, ', ')
+                        record_match_answers = self.add_answer_to_record(record_match_answers, answer.match, student_answer, ', ')
                         if student_answer != answer.answer:
                             question_points -= 1
                     if question_points > 0:
@@ -665,48 +716,33 @@ class ShowTestsByPart(LoginRequiredMixin, TeacherUserMixin, ListView):
         context['pagination_number'] = self.paginate_by
         context['current_type'] = self.kwargs.get('part').split(',')[0]
         context['current_part'] = self.kwargs.get('part').split(',')[1].split(' ')[0]
-        return context
 
-    def get_queryset(self):
-        from django.db.models import Max, Case, When, Value, CharField, BooleanField, F, OuterRef, Subquery
         user_id = self.request.user
-        #self.template_name = "galaxy/show_tests.html"
         data = self.kwargs.get('part').split(',')
         type = data[0]
         part = data[1]
-        # Subquery to get the max result for each test
-        max_results_subquery = Results.objects.filter(
-            test_id=OuterRef('pk'),
-            student_id=user_id
-        ).order_by('-points').values('points')[:1]
 
-        # Query to fetch all tests along with user's results and applying filters
-        tests_with_results = Tests.objects.filter(
-            type=type,
-            part=part
-        ).annotate(
-            passed_test=Case(
-                When(results__student_id=user_id, then=Value(True)),
-                default=Value(False),
-                output_field=BooleanField()
-            ),
-            max_result_date=Case(
-                When(passed_test=True, then=Subquery(
-                    Results.objects.filter(test_id=OuterRef('pk'), student_id=user_id).order_by('-points').values(
-                        'date')[:1]
-                )),
-                default=Value(None),
-                output_field=CharField()
-            ),
-            max_result_points=Case(
-                When(passed_test=True, then=Subquery(
-                    Results.objects.filter(test_id=OuterRef('pk'), student_id=user_id).order_by('-points').values(
-                        'points')[:1]
-                )),
-                default=Value('-'),
-                output_field=CharField()
-            )
-        ).distinct()
+        # Query to fetch all tests along with the best result points
+        tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False)
+        best_result_dict = {}
+        for test in tests_with_results:
+            best_result_points_obj = Results.objects.filter(test_id=test.id,
+                                                            student_id=user_id
+                                                            ).order_by('-points')[:1]
+
+            if len(best_result_points_obj) > 0:
+                key = best_result_points_obj[0].test_id
+                best_result_dict[key] = best_result_points_obj[0]
+        context['best_result_dict'] = best_result_dict
+        return context
+
+    def get_queryset(self):
+        user_id = self.request.user
+        data = self.kwargs.get('part').split(',')
+        type = data[0]
+        part = data[1]
+
+        tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False)
 
         return tests_with_results
 
@@ -720,45 +756,26 @@ def filter_tests_by_part(request):
     show_only_not_passed = request.GET.get('not_passed')
     user_id = request.user
 
-    # Filter tests based on parameters
-    # Subquery to get the max result for each test
-    max_results_subquery = Results.objects.filter(
-        test_id=OuterRef('pk'),
-        student_id=user_id
-    ).order_by('-points').values('points')[:1]
+    tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False)
 
-    # Query to fetch all tests along with user's results and applying filters
-    tests_with_results = Tests.objects.filter(
-        type=type,
-        part=part
-    ).annotate(
-        passed_test=Case(
-            When(results__student_id=user_id, then=Value(True)),
-            default=Value(False),
-            output_field=BooleanField()
-        ),
-        max_result_date=Case(
-            When(passed_test=True, then=Subquery(
-                Results.objects.filter(test_id=OuterRef('pk'), student_id=user_id).order_by('-points').values(
-                    'date')[:1]
-            )),
-            default=Value(None),
-            output_field=CharField()
-        ),
-        max_result_points=Case(
-            When(passed_test=True, then=Subquery(
-                Results.objects.filter(test_id=OuterRef('pk'), student_id=user_id).order_by('-points').values(
-                    'points')[:1]
-            )),
-            default=Value('-'),
-            output_field=CharField()
-        )
-    ).distinct()
+    best_result_dict = {}
+    for test in tests_with_results:
+        best_result_points_obj = Results.objects.filter(test_id=test.id,
+                                                        student_id=user_id
+                                                        ).order_by('-points')[:1]
+
+        if len(best_result_points_obj) > 0:
+            key = best_result_points_obj[0].test_id
+            best_result_dict[key] = best_result_points_obj[0]
 
     if show_only_not_passed == 'true':
-        tests_with_results = tests_with_results.filter(passed_test=False)
+
+        best_result_tests = best_result_dict.keys()
+        best_result_test_ids = [test.id for test in best_result_tests]
+        tests_with_results = tests_with_results.exclude(id__in=best_result_test_ids)
 
     context = {'tests': tests_with_results}
+    context['best_result_dict'] = best_result_dict
     data['my_content'] = render_to_string('galaxy/render_table_tests_by_part.html',
                                           context, request=request)
     return JsonResponse(data)
@@ -1182,7 +1199,7 @@ class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
                                 order_by('match')}
                 elif question.question_type == 'input_type':
                     qa[question] = Answers.objects.get(question_id__id=question.id)     # незачем запрашивать?
-                else:
+                else:       #
                     qa[question] = Answers.objects.filter(question_id__id=question.id)
             content_dict[chapter] = qa
 
@@ -1191,39 +1208,6 @@ class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
                    }
 
         return render(request, 'galaxy/show_test.html', context)
-
-
-class ShowColouredResult(LoginRequiredMixin, View):                    # exact copy of previous (inherit it?)
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    def get(self, request, result_pk):
-        result_object = Results.objects.get(id=str(result_pk))
-        test = get_object_or_404(Tests, id=result_object.test_id.id)
-
-        content_dict = {}
-        chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
-        for chapter in chapters_for_test:
-            questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
-            qa = {}
-            for question in questions_for_test:
-                if question.question_type == 'match_type':
-                    qa[question] = {
-                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
-                            'answer',
-                            flat=True)
-                        for key in
-                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
-                elif question.question_type == 'input_type':
-                    qa[question] = Answers.objects.get(question_id__id=question.id)
-                else:
-                    qa[question] = Answers.objects.filter(question_id__id=question.id)
-            content_dict[chapter] = qa
-
-        context = {'test': test,
-                   'content_dict': content_dict,
-                   }
-        print(content_dict)
-        return render(request, 'galaxy/show_colour_result.html', context)
 
 
 #def testing_page(request):
@@ -1405,18 +1389,29 @@ class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
     context_object_name = 'assessment_contestants'
     template_name = "galaxy/show_assessment_results.html"
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        assessment_obj = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
+        context['title'] = str(assessment_obj.group) + 'assessment'
+        context['assessment'] = assessment_obj
+        return context
+
     def get_queryset(self):
+        from django.db.models import Case, When, Value, CharField
         assessment = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
         group = assessment.group
         users = CustomUser.objects.filter(group=group)
-        assessments = Assessments.objects.filter(group=group, date=assessment.date).order_by("test__part")
-        print(assessments)
-        tests = [assessment.test for assessment in assessments]
+        right_order = ['Listening', 'Reading', 'Grammar and Vocabulary', 'Writing', 'Speaking']
+        whens = [When(test__part=part, then=Value(i)) for i, part in enumerate(right_order)]
+        assessments = Assessments.objects.filter(group=group, date=assessment.date).annotate(
+            custom_order=Case(*whens, output_field=CharField())
+        ).order_by('custom_order')
+        tests = [assessment.test for assessment in assessments]     # 5 appointed tests
+
         print({user: [Results.objects.get(student_id=user, test_id=test)
                       if Results.objects.filter(student_id=user, test_id=test).exists()
                       else "no result" for test in tests] for user in users})
         return {user: [Results.objects.filter(student_id=user, test_id=test) for test in tests] for user in users}
-        #return CustomUser.objects.filter(group=group)
 
 
 class ShowStudentAssessments(LoginRequiredMixin, ListView):
@@ -1425,6 +1420,7 @@ class ShowStudentAssessments(LoginRequiredMixin, ListView):
     model = Assessments
     context_object_name = 'assessments'
     template_name = "galaxy/show_student_assessments.html"
+
 
     def get_queryset(self):
         user = self.request.user

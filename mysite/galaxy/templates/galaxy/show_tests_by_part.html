@@ -88,58 +88,58 @@
     </div>
 
     <div class="parent">
-      <div class="table">
-          <table class="table">
-              <thead>
-                  <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">Part</th>
-                      <th scope="col">Passed</th>
-                      <th scope="col">Date</th>
-                      <th scope="col">Result</th>
-                      <th scope="col">Action</th>
-                  </tr>
-              </thead>
-              <tbody>
-              {% for test in tests %}
-                  <tr>
-                      {% if page_obj.number %}
-                          {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
-                          <td scope="row">{{ forloop.counter|add:offset }}</td>
-                          {% endwith %}
-                      {% else %}
-                          <td scope="row">{{ forloop.counter }}</td>
-                      {% endif %}
-                      <td> {{test.type}}</td>
-                      <td>
-                          {% if test.part == 'Grammar and Vocabulary' %}
-                              Grammar {{test.test_num}}
-                          {% else %}
-                              {{test.part}} {{test.test_num}}
-                          {% endif %}
-                      </td>
-                      {% if test.passed_test == True %}
-                      <td>Yes</td>
-                      {% else %}
-                      <td>Nope</td>
-                      {% endif %}
-                      {% if test.max_result_date == None %}
-                      <td>-</td>
-                      {% else %}
-                      <td>{{test.max_result_date}}</td>
-                      {% endif %}
-                      <td>{{test.max_result_points}}</td>
-                      <td>
-                          <div class="button_shell">
-                              <a class="btn btn5" href="{% url 'test_details' test.id %}"><span>Pass</span></a>
-                          </div>
-                      </td>
-                  </tr>
-              {% endfor %}
-              </tbody>
-          </table>
-      </div>
+        <div class="table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Part</th>
+                        <th scope="col">Passed</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Result</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for test in tests %}
+                    <tr>
+                        {% if page_obj.number %}
+                            {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
+                            <td scope="row">{{ forloop.counter|add:offset }}</td>
+                            {% endwith %}
+                        {% else %}
+                            <td scope="row">{{ forloop.counter }}</td>
+                        {% endif %}
+                        <td> {{test.type}}</td>
+                        <td>
+                            {% if test.part == 'Grammar and Vocabulary' %}
+                                Grammar {{test.test_num}}
+                            {% else %}
+                                {{test.part}} {{test.test_num}}
+                            {% endif %}
+                        </td>
+                        {% if test in best_result_dict %}
+                        <td>Yes</td>
+                        {% with result=best_result_dict|get_item:test %}
+                        <td>{{ result.date }}</td>
+                        <td>{{ result.points }}</td>
+                        {% endwith %}
+                        {% else %}
+                        <td>Nope</td>
+                        <td>-</td>
+                        <td>-</td>
+                        {% endif %}
+                        <td>
+                            <div class="button_shell">
+                                <a class="btn btn5" href="{% url 'test_details' test.id %}"><span>Pass</span></a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

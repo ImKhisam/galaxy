@@ -17,6 +17,9 @@ class Groups(models.Model):
     test_type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     #has_assessment = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.name            # self.username
+
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
