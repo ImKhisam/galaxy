@@ -15,7 +15,11 @@
     <div class="outer_table_head">
         <div class="empty"></div>
         <div class="table_head">
-            <h1>Your results</h1>
+            {% if student %}
+                <h1>{{ student.last_name }} {{ student.first_name }} results</h1>
+            {% else %}
+                <h1>Your results</h1>
+            {% endif %}
         </div>
         <div class="empty"></div>
     </div>
@@ -51,15 +55,23 @@
             {% if result.test_id.part == 'Speaking' or result.test_id.part == 'Writing' %}
                 <td>
                     <div class="button_shell">
-                        <a class="btn btn5" href="{% url 'show_colour_result' result.id %}"><span>Open</span></a>
+                        <a class="btn btn5" href="{% url 'result_preview' result.id %}"><span>Open</span></a>
                     </div>
                 </td>
             {% else %}
-            <td>
-                <div class="button_shell">
-                    <a class="btn btn5" href="{% url 'result_preview' result.id %}"><span>Summary</span></a>
-                </div>
-            </td>
+                {% if request.user.role == 'Teacher' or request.user.is_staff %}
+                    <td>
+                        <div class="button_shell">
+                            <a class="btn btn5" href="{% url 'show_colour_result' result.id %}"><span>Summary</span></a>
+                        </div>
+                    </td>
+                {% else %}
+                    <td>
+                        <div class="button_shell">
+                            <a class="btn btn5" href="{% url 'result_preview' result.id %}"><span>Summary</span></a>
+                        </div>
+                    </td>
+                {% endif %}
             {% endif %}
         </tr>
 

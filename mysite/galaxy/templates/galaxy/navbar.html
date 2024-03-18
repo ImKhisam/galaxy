@@ -84,7 +84,7 @@
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'show_results' %}">My results</a></li>
                                     <li><a href="{% url 'show_tests_and_assessments' %}">Tests</a></li>
-                                    <li><a href="{% url 'show_assessments' %}">Assessments</a></li>
+                                    <li><a href="{% url 'show_assessments_for_teacher' %}">Assessments</a></li>
                                     <li><a href="{% url 'show_groups' %}">Groups</a></li>
                                     {% if students_to_confirm %}
                                     <li><a href="{% url 'show_students' %}">Students(!)</a></li>
@@ -110,9 +110,9 @@
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'show_results' %}">My results</a></li>
                                     {% if current_assessments_notification %}
-                                    <li><a href="{% url 'show_student_assessments' %}">Assessments(!)</a></li>
+                                    <li><a href="{% url 'show_assessments_for_student' %}">Assessments(!)</a></li>
                                     {% else %}
-                                    <li><a href="{% url 'show_student_assessments' %}">Assessments</a></li>
+                                    <li><a href="{% url 'show_assessments_for_student' %}">Assessments</a></li>
                                     {% endif %}
                                 </ul>
                             </li>

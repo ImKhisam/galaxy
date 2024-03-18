@@ -238,15 +238,12 @@ class AddQuestionConstValues:
                             'GSESpeaking3': 120,
                             }
 
-    question_points = {'USESpeaking1': 1,
-                       'USESpeaking2': 4,
-                       'USESpeaking3': 5,
-                       'USESpeaking4': 10,
+    question_points = {'GSEListening5': 5,
+                       'GSEReading1': 6,
+                       'GSEWriting1': 10,
                        'GSESpeaking1': 2,
                        'GSESpeaking2': 6,
                        'GSESpeaking3': 7,
-                       'GSEListening5': 5,
-                       'GSEReading1': 6,
                        'USEListening1': 2,
                        'USEListening2': 3,
                        'USEReading1': 3,
@@ -254,7 +251,10 @@ class AddQuestionConstValues:
                        'USEWriting1': 6,
                        'USEWriting2': 14,
                        'USEWriting3': 14,
-                       'GSEWriting1': 10,
+                       'USESpeaking1': 1,
+                       'USESpeaking2': 4,
+                       'USESpeaking3': 5,
+                       'USESpeaking4': 10,
                        }
 
     def add_question_timings(self, question_obj):
@@ -287,3 +287,34 @@ class ChooseAddQuestForm:
 
 def teacher_check(user):
     return user.role == 'Teacher'
+
+
+def form_assessment_dict(user_id):
+    user = CustomUser.objects.get(id=user_id)
+    user_assessment_dates = Assessments.objects \
+        .filter(group=user.group).order_by('date').distinct('date')
+    assessment_dict = {x: Assessments.objects.filter(date=x.date) for x in user_assessment_dates}
+    ordered_dict = {}
+    right_order = ['Listening', 'Reading', 'Grammar and Vocabulary', 'Writing', 'Speaking']
+    for key in assessment_dict:
+        ordered_dict[key] = sorted(assessment_dict[key], key=lambda x: right_order.index(x.test.part))
+
+    content_dict = {x: [Results.objects.get(test_id=y.test, student_id=user)
+                        if Results.objects.filter(student_id=user, test_id=y.test).exists()
+                        else "no result" for y in ordered_dict[x]]
+                    for x in ordered_dict.keys()}
+
+    # counting %
+    for assessment_object, results in content_dict.items():
+        if assessment_object.test.type == 'USE':
+            max_points = 82
+        else:
+            max_points = 68
+        while len(results) < 5:
+            results.append('no result')
+        cleared_list = [i for i in results if i != 'no result']
+        sum_of_points = sum([int(result.points) for result in cleared_list])
+        results.append(str(sum_of_points) + '(' + str(max_points) + ')')
+        results.append(str(round(sum_of_points / (max_points / 100))) + '%')
+
+    return content_dict

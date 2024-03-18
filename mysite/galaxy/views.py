@@ -24,8 +24,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
-from .utils import generate_token, NotLoggedIn, ConfirmMixin, AddTestConstValues, TeacherUserMixin, \
-    ConfirmStudentMixin, teacher_check, ChooseAddQuestForm, AddQuestionConstValues, AddChapterConstValues
+from .utils import *
 from django.contrib.auth.views import PasswordResetView
 from pydub import AudioSegment
 import base64
@@ -207,7 +206,7 @@ class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         return context
 
     def get_queryset(self):
-        return Results.objects.filter(student_id=self.request.user)
+        return Results.objects.filter(student_id=self.request.user, test_id__is_assessment=False)
 
 
 class ResultPreview(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
@@ -235,10 +234,16 @@ class ShowColouredResult(LoginRequiredMixin, View):                    # exact c
     def get(self, request, result_pk):
         result_object = Results.objects.get(id=str(result_pk))
         test = get_object_or_404(Tests, id=result_object.test_id.id)
+        # forming student_answers_dict
         result_record_answers = str(result_object.record_answers)
-        student_answers_list = [x.lstrip('1234567890) ') for x in result_record_answers.split(';')]
+        temp_list = [x.lstrip(' ') for x in result_record_answers.split(';')]
+        student_answers_dict = {int(x.split(') ')[0]): {y.split('-')[0]: y.split('-')[1]
+                                                   for y in x.split(') ')[1].split(', ')}
+                                                   if '-' in x.split(') ')[1]
+                                                   else x.split(') ')[1] for x in temp_list[:-1]}
+
+        right_answers_dict = {}
         content_dict = {}
-        right_answers_list = []
 
         chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
         for chapter in chapters_for_test:
@@ -252,24 +257,27 @@ class ShowColouredResult(LoginRequiredMixin, View):                    # exact c
                             flat=True)
                         for key in
                         Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
-                    #right_answers_list.append(Answers.objects.filter(question_id__id=question.id, is_true=True))
+                    right_answers_dict[question.question_number] = \
+                        {answer.match: answer.answer for answer in Answers.objects.filter(question_id__id=question.id)}
+
                 elif question.question_type == 'input_type':
                     qa[question] = Answers.objects.get(question_id__id=question.id)
-                    right_answers_list.append(Answers.objects.get(question_id__id=question.id))
+                    right_answers_dict[question.question_number] = \
+                        (Answers.objects.get(question_id__id=question.id)).answer.split(',') if \
+                            ',' in (Answers.objects.get(question_id__id=question.id)).answer else \
+                            (Answers.objects.get(question_id__id=question.id)).answer
                 elif question.question_type == 'single_choice_type':
                     qa[question] = Answers.objects.filter(question_id__id=question.id)
-                    right_answers_list.append(Answers.objects.get(question_id__id=question.id, is_true=True))
+                    right_answers_dict[question.question_number] = (Answers.objects.get(question_id__id=question.id, is_true=True)).answer
                 else:       # true/false
                     qa[question] = Answers.objects.filter(question_id__id=question.id)
-                    right_answers_list.append(Questions.objects.get(id=question.id).values_list('addition_after'))
+                    right_answers_dict[question.question_number] = Questions.objects.get(id=question.id).addition_after
             content_dict[chapter] = qa
-
-        print(right_answers_list)
 
         context = {'test': test,
                    'content_dict': content_dict,
-                   'student_answers_list': student_answers_list,
-                   'right_answers_list': right_answers_list,
+                   'student_answers_dict': student_answers_dict,
+                   'right_answers_dict': right_answers_dict,
                    }
 
         return render(request, 'galaxy/show_colour_result.html', context)
@@ -334,6 +342,107 @@ class ShowGroupParticipants(LoginRequiredMixin, TeacherUserMixin, ListView):
         context['title'] = 'Group' + group_obj.name
         context['group'] = group_obj
         return context
+
+
+class ShowUserProfile(LoginRequiredMixin, TeacherUserMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = CustomUser
+    template_name = "galaxy/show_user_profile.html"
+    pk_url_kwarg = 'user_pk'
+    context_object_name = 'student'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = CustomUser.objects.get(id=context['student'].pk)
+        # counting results data
+        user_results = Results.objects.filter(student_id=user.id, test_id__is_assessment=False)
+        test_points = {'GSEListening': 15,
+                       'GSEReading': 13,
+                       'GSEGrammar and Vocabulary': 15,
+                       'GSEWriting': 10,
+                       'GSESpeaking': 15,
+                       'USEListening': 12,
+                       'USEReading': 12,
+                       'USEGrammar and Vocabulary': 18,
+                       'USEWriting': 20,
+                       'USESpeaking': 20,
+                       }
+
+        avg_dict = [round(100 * (int(r.points) / test_points[r.test_id.type + r.test_id.part])) for r in user_results]
+        avg_result = int(sum(avg_dict) / len(avg_dict)) if len(avg_dict) > 0 else 0
+        context['avg_result'] = avg_result
+        # counting assessments data
+        user_assessment_dates = Assessments.objects \
+            .filter(group=user.group).order_by('date').distinct('date')
+        assessment_dict = {x: Assessments.objects.filter(date=x.date) for x in user_assessment_dates}
+        content_dict = {x: [Results.objects.get(test_id=y.test, student_id=user)
+                            if Results.objects.filter(student_id=user, test_id=y.test).exists()
+                            else "no result" for y in assessment_dict[x]]
+                        for x in assessment_dict.keys()}
+
+        # counting %
+        avg_list = []
+        for results in content_dict.values():
+            cleared_list = [i for i in results if i != 'no result']
+            sum_of_points = sum([int(result.points) for result in cleared_list])
+            avg_list.append(round(sum_of_points / 0.82))
+        avg_assessment = int(sum(avg_list) / len(avg_list)) if len(avg_list) else 0
+
+        context['avg_assessment'] = avg_assessment
+
+        context['results'] = user_results
+        context['assessments'] = user_assessment_dates
+        context['title'] = user.first_name + user.last_name
+        return context
+
+
+class ShowUserResults(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    paginate_by = 10
+    model = CustomUser
+    template_name = "galaxy/show_results.html"
+    context_object_name = 'results'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.kwargs['user_pk']
+        user = CustomUser.objects.get(id=user_id)
+        user_results = Results.objects.filter(student_id=user.id, test_id__is_assessment=False)
+        context['student'] = user
+        context['dict'] = {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+                           for key in Tests.objects.all()}
+        context['pagination_number'] = self.paginate_by
+        context['title'] = user.first_name + user.last_name + 'results'
+        return context
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_pk']
+        user = CustomUser.objects.get(id=user_id)
+        return Results.objects.filter(student_id=user.id, test_id__is_assessment=False)
+
+
+class ShowUserAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = CustomUser
+    template_name = "galaxy/show_user_assessments.html"
+    context_object_name = 'assessments'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.kwargs['user_pk']
+        user = CustomUser.objects.get(id=user_id)
+        context['student'] = user
+        #user_results = Results.objects.filter(student_id=user.id)
+        #context['results'] = user_results
+        context['title'] = user.first_name + user.last_name
+        return context
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_pk']
+        return form_assessment_dict(user_id)
 
 
 @user_passes_test(teacher_check, login_url='home')
@@ -703,7 +812,7 @@ def julik(request):
     return render(request, 'galaxy/julik.html')
 
 
-class ShowTestsByPart(LoginRequiredMixin, TeacherUserMixin, ListView):
+class ShowTestsByPart(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = Tests
@@ -748,7 +857,6 @@ class ShowTestsByPart(LoginRequiredMixin, TeacherUserMixin, ListView):
 
 
 def filter_tests_by_part(request):
-    from django.db.models import Max, Case, When, Value, CharField, BooleanField, F, OuterRef, Subquery
     data = dict()
     # Get parameters from AJAX request
     type = request.GET.get('type')
@@ -1025,7 +1133,10 @@ class CheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
         for task in tasks_to_check:
             index = str(task.id)
             task.points = request.POST.get(index)
-            sum_points_for_test += int(request.POST.get(index))
+            try:
+                sum_points_for_test += int(request.POST.get(index))
+            except ValueError:
+                pass
             task.save()
         test_to_check.is_checked = True
         test_to_check.save()
@@ -1279,12 +1390,12 @@ class TestingPage(View):        # wtf is this
 #        return redirect('show_current_assessments')
 
 
-class ShowAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
+class ShowAssessmentsForTeacher(LoginRequiredMixin, TeacherUserMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = Assessments
     context_object_name = 'assessments'
-    template_name = "galaxy/show_assessments.html"
+    template_name = "galaxy/show_assessments_for_teacher.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1299,7 +1410,7 @@ class ShowAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
         return Assessments.objects.filter(is_passed=False).distinct('group', 'date')
 
 
-def filter_assessments(request):
+def filter_assessments_for_teacher(request):
     data = dict()
     # Get parameters from AJAX request
     value_dict = {'Current': False, 'Past': True}
@@ -1408,45 +1519,64 @@ class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
         ).order_by('custom_order')
         tests = [assessment.test for assessment in assessments]     # 5 appointed tests
 
-        print({user: [Results.objects.get(student_id=user, test_id=test)
-                      if Results.objects.filter(student_id=user, test_id=test).exists()
-                      else "no result" for test in tests] for user in users})
-        return {user: [Results.objects.filter(student_id=user, test_id=test) for test in tests] for user in users}
+        temp_dict = {user: [Results.objects.get(student_id=user, test_id=test)
+                            if Results.objects.filter(student_id=user, test_id=test).exists()
+                            else 'no result'
+                            for test in tests]
+                     for user in users}
+        # counting %
+        for user, results in temp_dict.items():
+            if assessment.test.type == 'USE':
+                max_points = 82
+            else:
+                max_points = 68
+            while len(results) < 5:
+                results.append('no result')
+            cleared_list = [i for i in results if i != 'no result']
+            sum_of_points = sum([int(result.points) for result in cleared_list])
+            results.append(str(sum_of_points) + '(' + str(max_points) + ')')
+            results.append(str(round(sum_of_points / (max_points / 100))) + '%')
+        return temp_dict
 
 
-class ShowStudentAssessments(LoginRequiredMixin, ListView):
+class ShowAssessmentsForStudent(LoginRequiredMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = Assessments
     context_object_name = 'assessments'
-    template_name = "galaxy/show_student_assessments.html"
+    template_name = "galaxy/show_assessments_for_student.html"
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Assessments'
+        context['current_category'] = 'Planned'
+        return context
 
     def get_queryset(self):
         user = self.request.user
         today = date.today()
-        print([int(id_) for id_ in user.assessments_passed.split(',') if id_])
+        print([int(id) for id in user.assessments_passed.split(',') if id])
         return Assessments.objects.filter(group=user.group, date=today)\
+            .exclude(test_id__in=[int(id_) for id_ in user.assessments_passed.split(',') if id_])   # надо ли исключать?
+
+
+def filter_assessments_for_student(request):
+    data = dict()
+    filter_flag = request.GET.get('filter_flag')
+    user = request.user
+    if filter_flag == 'Passed':
+        assessments_dict = form_assessment_dict(user.id)
+        context = {'assessments': assessments_dict}
+    else:
+        today = date.today()
+        assessments = Assessments.objects.filter(group=user.group, date=today)\
             .exclude(test_id__in=[int(id_) for id_ in user.assessments_passed.split(',') if id_])
+        context = {'assessments': assessments}
 
-
-class ShowStudentAssessmentResults(LoginRequiredMixin, ListView):
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    #model = Results
-    context_object_name = 'assessments'
-    template_name = "galaxy/show_student_assessment_results.html"
-
-    def get_queryset(self):
-        user = self.request.user
-        user_assessment_dates = [x.date for x in Assessments.objects.filter(group=user.group).distinct('date')]
-        assessments_dict = {key: [Results.objects.get(student_id=user, test_id=x.test)
-                                  if Results.objects.filter(student_id=user, test_id=x.test).exists()
-                                  else "no result"
-                                  for x in Assessments.objects.filter(group=user.group, date=key).order_by('test__part')]
-                                  for key in user_assessment_dates}
-
-        return assessments_dict
+    context['current_category'] = filter_flag
+    data['my_content'] = render_to_string('galaxy/render_assessments_for_student.html',
+                                          context, request=request)
+    return JsonResponse(data)
 
 
 class Debug(View):

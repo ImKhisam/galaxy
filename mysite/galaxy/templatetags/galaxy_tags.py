@@ -44,6 +44,11 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 
+@register.filter                        # used in show_color_result
+def is_list(variable):
+    return isinstance(variable, list)
+
+
 @register.filter(name='multiply')       # нумерация результатов исходя из страницы
 def multiply(value, arg):
     return value * arg

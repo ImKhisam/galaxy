@@ -3,11 +3,20 @@
 {% load static %}
 
 {% block custom_styles %}
-    <link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
 {% endblock custom_styles %}
 
 {% block content %}
-<h1>Group {{ group.name }}</h1>
+
+<div class="parent">
+    <div class="outer_table_head">
+        <div class="empty"></div>
+        <div class="table_head">
+            <h1>Group {{ group.name }}</h1>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
 
 <div class="parent">
   <div class="table">
@@ -18,6 +27,7 @@
               <th scope="col">Name</th>
               <th scope="col">Surname</th>
               <th scope="col">Username</th>
+              <th scope="col">Action</th>
           </tr>
       </thead>
       <tbody>
@@ -33,6 +43,7 @@
               <td> {{student.first_name}}</td>
               <td>{{student.last_name}}</td>
               <td>{{student.username}}</td>
+              <td><a class="btn btn5" href="{% url 'show_user_profile' student.id %}"><span>Profile</span></a></td>
           </tr>
       {% endfor %}
       </tbody>

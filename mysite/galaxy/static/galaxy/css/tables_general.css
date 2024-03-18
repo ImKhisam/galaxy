@@ -50,8 +50,9 @@ div.table {
   font-size: 20px;
 }
 
-
-
+.table a{
+  color: var(--white-transparent);
+}
 
 .btn5 span{
   margin: 3px;

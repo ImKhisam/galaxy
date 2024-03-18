@@ -1,5 +1,7 @@
 :root {
   --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
   --gray-hover: #54514f;
 }
 h1{
@@ -152,7 +154,7 @@ option{
     top: 20%;
     width: 100px;
     padding: 20px;
-    background-color: var(--dark-transparent);
+    background-color: var(--blue-transparent);
     border: 2px solid #FFFFFF;
 }
 .question_obj{

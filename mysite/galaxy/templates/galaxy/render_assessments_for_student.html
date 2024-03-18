@@ -1,0 +1,81 @@
+
+{% if current_category == 'Passed' %}
+    {% if assessments.count == 0 %}
+        <div class="table_string">
+            <div class="empty"></div>
+            <div class="empty_table_span">
+                <span>No assessments right now</span>
+            </div>
+            <div class="empty"></div>
+        </div>
+
+    {% else %}
+        <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Listening</th>
+                    <th scope="col">Reading</th>
+                    <th scope="col">Grammar</th>
+                    <th scope="col">Writing</th>
+                    <th scope="col">Speaking</th>
+                    <th scope="col">Result</th>
+                    <th scope="col">%</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for date_obj, results in assessments.items %}
+                <tr>
+                    <td scope="row">{{ forloop.counter }}</td>
+                    <td>{{ date_obj.date }}</td>
+                    {% for result in results %}
+                    {% if forloop.counter < 6 %}
+                        {% if result == 'no result' %}
+                            <td>No result</td>
+                        {% else %}
+                            <td><a href="{% url 'result_preview' result.id %}">{{ result.points }}</a></td>
+                        {% endif %}
+                    {% else %}
+                            <td>{{ result }}</td>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% else %}
+    {% if assessments.count == 0 %}
+        <div class="table_string">
+            <div class="empty"></div>
+            <div class="empty_table_span">
+                <span>No assessments right now</span>
+            </div>
+            <div class="empty"></div>
+        </div>
+    {% else %}
+        <div class="table">
+                <table>
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Test type</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for assessment in assessments %}
+                    <tr>
+                        <td scope="row">{{ forloop.counter }}</td>
+                        <td>{{ assessment.test.part }}</td>
+                        <td><a class="btn btn5" href="{% url 'test_details' assessment.test.pk %}"><span>Start test</span></a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+            </div>
+    {% endif %}
+{% endif %}

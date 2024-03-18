@@ -3,11 +3,7 @@
 {% load static %}
 
 {% block custom_styles %}
-
     <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
-    <link type="text/css" href="{% static 'galaxy/css/show_assessment_results.css' %}" rel="stylesheet"/>
-    <link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet"/>
-
 {% endblock custom_styles %}
 
 {% block content %}
@@ -16,7 +12,7 @@
     <div class="outer_table_head">
         <div class="empty"></div>
         <div class="table_head">
-            <h1>{{ assessment.group }} assessment on {{assessment.date}}</h1>
+            <h1>{{ student.last_name }} {{ student.first_name }} assessments</h1>
         </div>
         <div class="empty"></div>
     </div>
@@ -24,14 +20,11 @@
 
 <div class="parent">
     <div class="table">
-        {% if assessment_contestants.count == 0 %}
-        <h2>Nobody passed tests</h2>
-        {% else %}
-            <table class="table">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">Name</th>
+                    <th scope="col">Date</th>
                     <th scope="col">Listening</th>
                     <th scope="col">Reading</th>
                     <th scope="col">Grammar</th>
@@ -42,26 +35,25 @@
                 </tr>
             </thead>
             <tbody>
-            {% for contestant, results in assessment_contestants.items %}
+                {% for date_obj, results in assessments.items %}
                 <tr>
                     <td scope="row">{{ forloop.counter }}</td>
-                    <td> {{ contestant.last_name }} {{contestant.first_name}}</td>
+                    <td>{{ date_obj.date }}</td>
                     {% for result in results %}
-                        {% if forloop.counter < 6 %}
-                            {% if result == 'no result' %}
-                                <td>No result</td>
-                            {% else %}
-                                <td><a href="{% url 'result_preview' result.id %}">{{ result.points }}</a></td>
-                            {% endif %}
+                    {% if forloop.counter < 6 %}
+                        {% if result == 'no result' %}
+                            <td>No result</td>
                         {% else %}
-                                <td>{{ result }}</td>
+                            <td><a href="{% url 'result_preview' result.id %}">{{ result.points }}</a></td>
                         {% endif %}
+                    {% else %}
+                            <td>{{ result }}</td>
+                    {% endif %}
                     {% endfor %}
                 </tr>
-            {% endfor %}
+                {% endfor %}
             </tbody>
-            </table>
-        {% endif %}
+        </table>
     </div>
 </div>
 

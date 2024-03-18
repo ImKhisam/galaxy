@@ -1,8 +1,10 @@
 {% extends 'galaxy/base.html' %}
 {% load static %}
+{% load galaxy_tags %}
 
 {% block custom_styles %}
-    <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/checking_test.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 
@@ -11,32 +13,117 @@
     <div class="test">
         <form action="{% url 'checking_test' test_to_check.id %}" method="post" id="my_form">
         {% csrf_token %}
-            <h1>Checking test {{test_to_check.test_id}}</h1>
-            {% for task in tasks_to_check %}
-                <h2>Task {{ task.question_id.question_number }}. </h2>
-                <p class="question_writing_text">{{ task.question_id.question }}</p>
+            <div class="test_to_check_info">
+                <p>Student: {{test_to_check.student_id}}</p>
+                <p>Test: {{test_to_check.test_id}}</p>
+                <p>Date: {{test_to_check.date}}</p>
+            </div>
 
-                <h2>Student's answer:</h2>
-                {% if task.test_to_check_id.test_id.part == 'Writing' %}
-                    {% if task.media1 %}
-                        <p><img class="task_check_photo" src="{{task.media1.url}}"></p>
-                    {% else %}
-                        <p>Student forgot to load his answer</p>
-                    {% endif %}
-                    {% if task.media2 %}
-                        <p><img class="task_check_photo" src="{{task.media2.url}}"></p>
-                    {% endif %}
-                {% elif task.test_to_check_id.test_id.part == 'Speaking' %}
-                    {% if task.media1 %}
-                        <div style="display: flex;">
-                            <audio controls style="margin: auto;">
-                                <source src="{{task.media1.url}}">
-                            </audio>
+            {% for task in tasks_to_check %}
+                {% with question=task.question_id %}
+                {% with test=test_to_check.test_id %}
+                    {% if question.writing_fl == 'letter'%}     <!-- letter -->
+                        <div class="question">
+                            <p class="question-number">{{question.question_number}}</p>
+	                        <p class="question-text">{{question.question}}</p>
+                        </div>
+                        <div class="gse-writing">
+                            <div class="letter">
+                                <div class="letter_row"><p class="letter_data">{{question.writing_from}}</p></div>
+                                <div class="letter_row"><p class="letter_data">{{question.writing_to}}</p></div>
+                                <div class="letter_row"><p class="letter_data">{{question.writing_subject}}</p></div>
+                                <div class="letter_row"><p class="letter_text">{{question.writing_letter}}</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="question_writing_text">{{question.writing_after}}</p>
                         </div>
                     {% else %}
-                        <p>Student forgot to load his answer</p>
+                        {% if test.part == 'Speaking' %}    <!-- Speaking file adding question -->
+                            <div class="question">
+                                <p class="question-number">{{question.question_number}}</p>
+	                            <p class="question-text" style="white-space: break-spaces;">{{question.question}}</p>
+                            </div>
+                            {% if question.media %}
+                                <div class="audio">
+                                    <audio controls style="margin: auto;" id="audio{{ question.pk }}">
+                                        <source src="{{question.media.url}}">
+                                    </audio>
+                                </div>
+                            {% endif %}
+                            {% if question.picture %}
+                                <p style="text-align: center; font-weight: 600; font-size: 27px;">{{question.text_name}}</p>
+                                <div class="picture">
+                                    <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
+                                </div>
+                            {% endif %}
+                            {% if question.text %}
+                                    {% if question.question_number == 1 %}
+                                    <div class="speaking-gse-1-text">
+                                    <span class="chapter-text">{{ question.text }}</span>
+                                    </div>
+                                    {% else %}
+                                    <div style="margin-left: 60px;">
+                                    <span class="speaking-gse-3-text">{{ question.text }}</span>
+                                    </div>
+                                    {% endif %}
+                            {% endif %}
+                        {% else %}  <!-- essay -->
+                            <div class="question">
+                                {% if question.question_number > 1 %}
+                                <p class="question-number">2.{{question.question_number|adding:-1}}</p>
+                                {% else %}
+                                <p class="question-number">{{question.question_number}}</p>
+                                {% endif %}
+	                            <p class="question-text">{{question.question}}</p>
+                            </div>
+                            <div class="picture">
+                                <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
+                            </div>
+                            <p class="question_writing_text">{{question.writing_after}}</p>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
+                    {% if test.part == 'Writing' %}
+                        <div class="add-files">
+                            <div class="file">
+                                <label class="input-file">
+                                    <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
+                                    <span>Choose a file...</span>
+                                </label>
+                            </div>
+                            {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
+                            <div class="file">
+                                <label for="{{question.pk}}_media2">Additional:</label>
+                                <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                {% endwith %}
+
+                <h2>Student's answer:</h2>
+                    {% if task.test_to_check_id.test_id.part == 'Writing' %}
+                        {% if task.media1 %}
+                            <p><img class="task_check_photo" src="{{task.media1.url}}"></p>
+                        {% else %}
+                            <p>Student forgot to load his answer</p>
+                        {% endif %}
+                        {% if task.media2 %}
+                            <p><img class="task_check_photo" src="{{task.media2.url}}"></p>
+                        {% endif %}
+                    {% elif task.test_to_check_id.test_id.part == 'Speaking' %}
+                        {% if task.media1 %}
+                            <div style="display: flex;">
+                                <audio controls style="margin: auto;">
+                                    <source src="{{task.media1.url}}">
+                                </audio>
+                            </div>
+                        {% else %}
+                            <p>Student forgot to load his answer</p>
+                        {% endif %}
+                    {% endif %}
+
                 <h2>Max. points for this task: {{task.question_id.points}}</h2>
                 <div style="display: flex">
                     <div class="mark_input">

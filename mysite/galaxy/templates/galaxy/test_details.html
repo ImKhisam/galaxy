@@ -1,15 +1,14 @@
 {% extends "galaxy/base.html" %}
 {% load galaxy_tags %}
+{% load static %}
 
 {% block custom_styles %}
-<style>
-
-</style>
+<link type="text/css" href="{% static 'galaxy/css/test_details.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block content %}
 <div class="outer">
-    <div class="dark-frame">
+    <div class="frame">
         {% if unfinished_try == 0 %}
             <p>{{test.test_details}}</p>
             <p> Time limit for this test –

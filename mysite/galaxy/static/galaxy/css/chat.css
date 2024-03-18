@@ -1,6 +1,7 @@
 :root {
   --dark-transparent: #000000e3;
   --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
   --gray-hover: #54514f;
 }
 header {
@@ -73,6 +74,7 @@ nav ul ul li {
 nav ul ul a {
   padding: 10px;
   color: #ffffff;
+  width: 100%;
 }
 
 .menu_first_row li:hover > .menu_second_row {
@@ -147,7 +149,7 @@ nav .menu_second_row {
   margin: 20px;
 }
 .btn5:hover span{
-  color: #000000;
+  color: var(--blue-transparent);
   z-index: 10;
   font-weight: 500;
 }

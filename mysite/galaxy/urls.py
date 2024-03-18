@@ -35,6 +35,11 @@ urlpatterns = [
 
     path('groups/', ShowGroups.as_view(), name='show_groups'),
     path('show_group_participants/<int:group_id>/', ShowGroupParticipants.as_view(), name='show_group_participants'),
+
+    path('show_user_profile/<int:user_pk>/', ShowUserProfile.as_view(), name='show_user_profile'),
+    path('show_user_assessments/<int:user_pk>/', ShowUserAssessments.as_view(), name='show_user_assessments'),
+    path('show_user_results/<int:user_pk>/', ShowUserResults.as_view(), name='show_user_results'),
+
     path('add_group/', add_group, name='add_group'),
     path('update_group_name/', update_group_name, name='update_group_name'),
     path('delete_group/<int:group_id>/', delete_group, name='delete_group'),
@@ -48,7 +53,6 @@ urlpatterns = [
     path('filter_tests_to_check/', filter_tests_to_check, name='filter_tests_to_check'),
     path('checking_test/<int:test_to_check_id>/', CheckingTest.as_view(), name='checking_test'),
 
-
     path('test_details/<int:test_pk>/', TestDetails.as_view(), name='test_details'),
     path('pass_test/<int:test_pk>/', PassTest.as_view(), name='pass_test'),
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
@@ -56,23 +60,20 @@ urlpatterns = [
     path('result_preview/<int:result_id>/', ResultPreview.as_view(), name='result_preview'),
     path('show_colour_result/<int:result_pk>/', ShowColouredResult.as_view(), name='show_colour_result'),
 
-    #path('show_tests/<int:assessment_fl>', ShowTests.as_view(), name='show_tests'),
     path('show_tests_and_assessments/', ShowTestsAndAssessments.as_view(), name='show_tests_and_assessments'),
     path('filter_tests_and_assessments', filter_tests_and_assessments, name='filter_tests_and_assessments'),
     path('show_tests_by_part/<part>/', ShowTestsByPart.as_view(), name='show_tests_by_part'),
     path('filter_tests_by_part/', filter_tests_by_part, name='filter_tests_by_part'),
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
-    path('show_test/<int:test_pk>/', ShowTest.as_view(), name='show_test'),
     path('add_q_and_a/<int:chapter_id>/', AddQandAView.as_view(), name='add_q_and_a'),
-    #path('add_q_and_a/<int:chapter_id>', add_questions_to_chapter, name='add_q_and_a'),
+    path('show_test/<int:test_pk>/', ShowTest.as_view(), name='show_test'),
 
-    #path('make_an_assessment/', MakeAnAssessment.as_view(), name='make_an_assessment'),
-    path('show_assessments/', ShowAssessments.as_view(), name='show_assessments'),
-    path('filter_assessments/', filter_assessments, name='filter_assessments'),
+    path('show_assessments_for_teacher/', ShowAssessmentsForTeacher.as_view(), name='show_assessments_for_teacher'),
+    path('filter_assessments_for_teacher/', filter_assessments_for_teacher, name='filter_assessments_for_teacher'),
     path('save_an_assessment/', save_an_assessment, name='save_an_assessment'),
     path('close_assessment/', close_assessment, name='close_assessment'),
     path('show_assessment_results/<int:assessment_pk>/', ShowAssessmentResults.as_view(), name='show_assessment_results'),
-    path('show_student_assessments/', ShowStudentAssessments.as_view(), name='show_student_assessments'),
-    path('show_assessment_results/', ShowStudentAssessmentResults.as_view(), name='show_student_assessment_results'),
 
+    path('show_assessments_for_student/', ShowAssessmentsForStudent.as_view(), name='show_assessments_for_student'),
+    path('filter_assessments_for_student/', filter_assessments_for_student, name='filter_assessments_for_student'),
     ]

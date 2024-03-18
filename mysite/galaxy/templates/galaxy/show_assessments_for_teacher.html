@@ -4,7 +4,7 @@
 
 {% block custom_styles %}
     <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet" />
-    <link type="text/css" href="{% static 'galaxy/css/show_assessments.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/show_assessments.css' %}" rel="stylesheet"/>
 {% endblock custom_styles %}
 
 {% block content %}
@@ -16,7 +16,7 @@
                 <div class="type_choice_shell">
                     <div class="type_choice">
                         <input style="display: none;" type="radio" id="Current" name="cat" value="Current">
-                        <label for="Current"><span>Current assessments</span></label>
+                        <label for="Current"><span>Scheduled assessments</span></label>
                     </div>
                     <div class="empty"></div>
                 </div>
@@ -145,12 +145,12 @@
             // Changing categories
             $('input[name="cat"]').change(function() {
                 var filter_flag = $('input[name="cat"]:checked').val();
-                filterTestsAndAssessments(filter_flag);
+                filterAssessmentsForTeacher(filter_flag);
             });
 
-            function filterTestsAndAssessments(filter_flag) {
+            function filterAssessmentsForTeacher(filter_flag) {
                 $.ajax({
-                    url: "{% url 'filter_assessments' %}",
+                    url: "{% url 'filter_assessments_for_teacher' %}",
                     type: 'GET',
                     data: {
                         filter_flag: filter_flag

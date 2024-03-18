@@ -1,0 +1,118 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/show_student_assessments.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_type_choice">
+        <div class="empty"></div>
+        <div class="type_choices">
+            <div class="type_choice_shell">
+                <div class="type_choice">
+                    <input style="display: none;" type="radio" id="Planned" name="cat" value="Planned">
+                    <label for="Planned"><span>Scheduled assessments</span></label>
+                </div>
+                <div class="empty"></div>
+            </div>
+            <div class="type_choice_shell">
+                <div class="type_choice">
+                    <input style="display: none;" type="radio" id="Passed" name="cat" value="Passed">
+                    <label for="Passed"><span>Results</span></label>
+                </div>
+            </div>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="content_part" id="content_part">
+        {% if assessments.count == 0 %}
+            <div class="table_string">
+                <div class="empty"></div>
+                <div class="empty_table_span">
+                    <span>No assessments right now</span>
+                </div>
+                <div class="empty"></div>
+            </div>
+        {% else %}
+            <div class="table">
+                <table>
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Test type</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for assessment in assessments %}
+                    <tr>
+                        <td scope="row">{{ forloop.counter }}</td>
+                        <td>{{ assessment.test.part }}</td>
+                        <td><a class="btn btn5" href="{% url 'test_details' assessment.test.pk %}"><span>Start test</span></a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Pre-coloring chosen category
+    document.addEventListener('DOMContentLoaded', function() {
+    // Get the current category ID from the Django context
+    var currentCat = "{{current_category}}";
+
+    // Set the checked state of the type radio buttons
+    $('#' + currentCat).prop('checked', true);
+});
+</script>
+
+<script>
+    // Changing categories
+    $(document).ready(function() {
+    var currentCategory = {{current_category}}
+
+    // Listening for clicks on type radio buttons
+    $('input[name="cat"]').change(function() {
+        var filter_flag = $('input[name="cat"]:checked').val();
+        filterAssessmentsForStudent(filter_flag);
+    });
+
+    function filterAssessmentsForStudent(filter_flag) {
+        $.ajax({
+            url: "{% url 'filter_assessments_for_student' %}",
+            type: 'GET',
+            data: {
+                filter_flag: filter_flag
+            },
+            success: function(data) {
+                // Update the table with the filtered data
+                $('#content_part').html(data.my_content);
+                // Update the pagination links
+                $('.pagination').html(data.pagination_html);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+});
+</script>
+
+{% endblock javascript %}

@@ -1,0 +1,48 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_table_head">
+        <div class="empty"></div>
+        <div class="table_head">
+            <h1>{{ student.last_name }} {{ student.first_name }} profile</h1>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="table">
+        <table>
+            <tr>
+                <td>Last time online</td>
+                <td>{{ student.last_login }}</td>
+            </tr>
+            <tr>
+                <td>Free tests passed</td>
+                <td><a href="{% url 'show_user_results' student.id %}"> {{ results.count }} </a></td>
+            </tr>
+            <tr>
+                <td>Avg.</td>
+                <td>{{ avg_result }}%</td>
+            </tr>
+            <tr>
+                <td>Assessments passed</td>
+                <td><a href="{% url 'show_user_assessments' student.id %}"> {{ assessments.count }} </a></td>
+            </tr>
+            <tr>
+                <td>Avg.</td>
+                <td>{{ avg_assessment }}%</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+{% endblock content %}

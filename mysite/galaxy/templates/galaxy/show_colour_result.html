@@ -4,6 +4,7 @@
 
 {% block custom_styles %}
     <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/show_color_result.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block content %}
@@ -90,14 +91,34 @@
                         {% if test.type == 'USE' and test.part == 'Listening' and question.question_number == 2 %}
                             <div class="matches">       <!-- USE Listening 2nd question matches -->
                                 {% for answer, answer_list in answers.items %}
-                                    <div class="select-wrapper listening-select">
-                                        <label>{{answer.match}}</label>
-                                        <select class="special-select" name="{{answer.pk}}">
-                                            <option>Выберите ответ</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                        </select>
+                                    <div class="select-wrapper listening-select-element">
+                                        {% with right_dict=right_answers_dict|get_item:question.question_number %}
+                                        {% with student_dict=student_answers_dict|get_item:question.question_number %}
+                                        {% with right_answer=right_dict|get_item:answer.match %}
+                                        {% with student_answer=student_dict|get_item:answer.match %}
+                                            {% if right_answer != student_answer %}
+                                                        <div class="match_label_div wrong_match">
+                                                            <span class="match_label">{{answer.match}}</span>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="match_label_div  right_match">
+                                                            <span class="match_label">{{answer.match}}</span>
+                                                        </div>
+                                                    {% endif %}
+                                            <div>
+                                                <p class="match_right_answer">
+                                                    {{ right_dict|get_item:answer.match }}
+                                                </p>
+                                                    {% if right_answer != student_answer %}
+                                                        <p class="match_wrong_answer">
+                                                            {{ student_dict|get_item:answer.match }}
+                                                        </p>
+                                                    {% endif %}
+                                            </div>
+                                        {% endwith %}
+                                        {% endwith %}
+                                        {% endwith %}
+                                        {% endwith %}
                                     </div>
                                 {% endfor %}
                             </div>
@@ -112,12 +133,25 @@
                                         </div>
                                         <div class="outer-select">
                                             <div class="select-wrapper">
-                                                <select class="reading-select" name="{{answer.pk}}">
-                                                    <option>Выберите ответ</option>
-                                                    {% for item in answer_list %}
-                                                        <option value="{{item}}">{{ forloop.counter }}</option>
-                                                    {% endfor %}
-                                                </select>
+                                                {% with right_dict=right_answers_dict|get_item:question.question_number %}
+                                                {% with student_dict=student_answers_dict|get_item:question.question_number %}
+                                                {% with right_answer=right_dict|get_item:answer.match %}
+                                                {% with student_answer=student_dict|get_item:answer.match %}
+
+                                                    <div>
+                                                        <p class="match_right_answer">
+                                                            {{ right_dict|get_item:answer.match }}
+                                                        </p>
+                                                            {% if right_answer != student_answer %}
+                                                                <p class="match_wrong_answer">
+                                                                    {{ student_dict|get_item:answer.match }}
+                                                                </p>
+                                                            {% endif %}
+                                                    </div>
+                                                {% endwith %}
+                                                {% endwith %}
+                                                {% endwith %}
+                                                {% endwith %}
                                             </div>
                                         </div>
                                     </div>
@@ -126,13 +160,33 @@
                                         <div class="matches">
                                     {% endif %}
                                         <div class="select-wrapper listening-select-element">   <!-- Listening match -->
-                                            <label>{{answer.match}}</label>
-                                            <select class="listening-select" name="{{answer.pk}}">
-                                                <option>Выберите ответ</option>
-                                                {% for item in answer_list %}
-                                                    <option value="{{item}}">{{ forloop.counter }}</option>
-                                                {% endfor %}
-                                            </select>
+                                            {% with right_dict=right_answers_dict|get_item:question.question_number %}
+                                            {% with student_dict=student_answers_dict|get_item:question.question_number %}
+                                            {% with right_answer=right_dict|get_item:answer.match %}
+                                            {% with student_answer=student_dict|get_item:answer.match %}
+                                                    {% if right_answer != student_answer %}
+                                                        <div class="match_label_div wrong_match">
+                                                            <span class="match_label">{{answer.match}}</span>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="match_label_div  right_match">
+                                                            <span class="match_label">{{answer.match}}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                <div>
+                                                    <p class="match_right_answer">
+                                                        {{ right_dict|get_item:answer.match }}
+                                                    </p>
+                                                        {% if right_answer != student_answer %}
+                                                            <p class="match_wrong_answer">
+                                                                {{ student_dict|get_item:answer.match }}
+                                                            </p>
+                                                        {% endif %}
+                                                </div>
+                                            {% endwith %}
+                                            {% endwith %}
+                                            {% endwith %}
+                                            {% endwith %}
                                         </div>
                                     {% if forloop.last %}
                                         </div>
@@ -170,7 +224,20 @@
                                 <div class="input-addition"></div>
                             {% endif %}
                             <div class="input-type">
-                                <input type="text" class="input-answer" name="{{answers.pk}}">
+                                <div>
+                                    {% with current_answer=right_answers_dict|get_item:question.question_number%}
+                                        <p class="right_input_answer">{{ current_answer }}</p>
+                                        {% if current_answer|is_list %}
+                                            {% if student_answers_dict|get_item:question.question_number not in answers_list %}
+                                                <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if student_answers_dict|get_item:question.question_number != current_answer %}
+                                                <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
                             </div>
                             {% if question.addition_after %}
                                 <div class="input-addition">
@@ -191,8 +258,14 @@
                                 {% for answer in answers %}
                                     <div class="question-choice">
                                         <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
+                                            {% if answer.answer in right_answers_dict.values %}
+                                            <label class="right_answer" for="{{answer.pk}}">
+                                            {% elif answer.answer == student_answers_dict|get_item:question.question_number %}
+                                            <label class="student_wrong_answer" for="{{answer.pk}}">
+                                            {% else %}
                                             <label for="{{answer.pk}}">
-                                                <span class="center">{{ answer.answer }}</span>
+                                            {% endif %}
+                                            <span class="center">{{ answer.answer }}</span>
                                             </label>
                                     </div>
                                 {% endfor %}
@@ -209,7 +282,13 @@
                                     {% for answer in answers %}
                                         <div class="question-choice">
                                             <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
+                                                {% if answer.answer in right_answers_dict.values %}
+                                                <label class="right_answer" for="{{answer.pk}}">
+                                                {% elif answer.answer == student_answers_dict|get_item:question.question_number %}
+                                                <label class="student_wrong_answer" for="{{answer.pk}}">
+                                                {% else %}
                                                 <label for="{{answer.pk}}">
+                                                {% endif %}
                                                     <span class="center">{{ answer.answer }}</span>
                                                 </label>
                                         </div>
@@ -220,40 +299,62 @@
                         {% endif %}
                     {% elif question.question_type == 'true_false_type' %}  <!-- True/False type question -->
                         <div class="question_true_false">
-                            <div class="question">
-                            	<p class="question-number">{{question.question_number}}</p>
-                            	<p class="question-text">{{question.question}}</p>
-                            </div>
-                            <div class="left-margin-wrap">
-                                <div class="question-choices">
-                                    <div class="question-choice">
-                                        <input type="radio" id="True{{question.pk}}" name="{{question.pk}}" value="True">
-                                        <label for="True{{question.pk}}">
-                                            <span class="center">True</span>
-                                        </label>
+                            {% with student_answer=student_answers_dict|get_item:question.question_number %}
+                            {% with right_answer=right_answers_dict|get_item:question.question_number %}
+                                <div class="question">
+                                	<p class="question-number">{{question.question_number}}</p>
+                                	<p class="question-text">{{question.question}}</p>
+                                </div>
+                                <div class="left-margin-wrap">
+                                    <div class="question-choices">
+                                        <div class="question-choice">
+                                            <input type="radio" id="True{{question.pk}}" name="{{question.pk}}" value="True">
+                                                {% if right_answer == 'True' %}
+                                                <label class="right_answer" for="True{{question.pk}}">
+                                                {% elif student_answer == 'True' %}
+                                                <label class="student_wrong_answer" for="True{{question.pk}}">
+                                                {% else %}
+                                                <label for="True{{question.pk}}">
+                                                {% endif %}
+                                                    <span class="center">True</span>
+                                                </label>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="left-margin-wrap">
-                                <div class="question-choices">
-                                    <div class="question-choice">
-                                        <input type="radio" id="False{{question.pk}}" name="{{question.pk}}" value="False">
-                                        <label for="False{{question.pk}}">
-                                            <span class="center">False</span>
-                                        </label>
+                                <div class="left-margin-wrap">
+                                    <div class="question-choices">
+                                        <div class="question-choice">
+                                            <input type="radio" id="False{{question.pk}}" name="{{question.pk}}" value="False">
+                                            {% if right_answer == 'False' %}
+                                            <label class="right_answer" for="False{{question.pk}}">
+                                            {% elif student_answer == 'False' %}
+                                            <label class="student_wrong_answer" for="False{{question.pk}}">
+                                            {% else %}
+                                            <label for="False{{question.pk}}">
+                                            {% endif %}
+                                                <span class="center">False</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="left-margin-wrap">
-                                <div class="question-choices">
-                                    <div class="question-choice">
-                                        <input type="radio" id="Not stated{{question.pk}}" name="{{question.pk}}" value="Not stated">
-                                        <label for="Not stated{{question.pk}}">
-                                            <span class="center">Not stated</span>
-                                        </label>
+                                <div class="left-margin-wrap">
+                                    <div class="question-choices">
+                                        <div class="question-choice">
+                                            <input type="radio" id="Not stated{{question.pk}}" name="{{question.pk}}" value="Not stated">
+                                            {% if right_answer == 'Not stated' %}
+                                            <label class="right_answer" for="Not stated{{question.pk}}">
+                                            {% elif student_answer == 'Not stated' %}
+                                            <label class="student_wrong_answer" for="Not stated{{question.pk}}">
+                                            {% else %}
+                                            <label for="Not stated{{question.pk}}">
+                                            {% endif %}
+                                                <span class="center">Not stated</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            {% endwith %}
+                            {% endwith %}
                         </div>
                     {% else %}      <!-- File adding type question -->
                         {% if question.writing_fl == 'letter'%}     <!-- letter -->
@@ -343,7 +444,6 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            <a class="btn btn5" href="{% url 'add_q_and_a' chapter.id %}"><span>Add question to chapter</span></a>
         </div>
     {% endfor %}
     <br><br>
