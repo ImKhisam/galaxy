@@ -43,7 +43,7 @@
               <td> {{student.first_name}}</td>
               <td>{{student.last_name}}</td>
               <td>{{student.username}}</td>
-              <td><a class="btn btn5" href="{% url 'show_user_profile' student.id %}"><span>Profile</span></a></td>
+              <td><a class="btn btn5" href="{% url 'user_profile' student.id %}"><span>Profile</span></a></td>
           </tr>
       {% endfor %}
       </tbody>

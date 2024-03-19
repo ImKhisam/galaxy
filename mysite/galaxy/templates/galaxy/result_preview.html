@@ -1,23 +1,142 @@
 {% extends 'galaxy/base.html' %}
-{% load galaxy_tags %}
 {% load static %}
+{% load galaxy_tags %}
 
-{% block javascript %}
-    <link type="text/css" href="{% static 'galaxy/css/student_result_preview.css' %}" rel="stylesheet"/>
-{% endblock javascript %}
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/show_color_result.css' %}" rel="stylesheet"/>
+{% endblock %}
 
 {% block content %}
+<div class="test-parent">
+<div class="test">
+<h1>{{ test }}</h1>
 
-    <div class="parent">
-        <div class="sheet">
-            <h2>{{ result.test_id }}</h2>
-            <h2>Test summary:</h2>
-                <div class="answers">
-                    {% for string in commentary %}
-                        <p class="answer">{{ string }}</p>
-                    {% endfor %}
-                </div>
-        </div>
+<form id="my_form" enctype="multipart/form-data">
+{% csrf_token %}
+    <div class="form errors">
+        {{ form.non_field_errors }}
     </div>
+    {% for chapter, questions in content_dict.items %}
+        <div class="chapter">
+            {% if chapter.info %}
+                <div class="chapter-info">
+                    {{chapter.info}}
+                </div>
+            {% endif %}
+            {% if chapter.text_name %}
+                <div class="chapter-text-name">
+                    <h3>{{chapter.text_name}}</h3>
+                </div>
+            {% endif %}
+            {% if chapter.text %}
+                <div class="chapter-text">
+                    <p>{{chapter.text}}</p>
+                </div>
+            {% endif %}
+            {% if chapter.media %}
+                <br><br>
+                <div class="question_obj">
+                    <audio controls src="{{chapter.media.url}} "></audio>
+                </div>
+            {% endif %}
 
-{% endblock content %}
+            {% for question in questions %}
+                <div class="question_obj">
+                    <!-- File adding type question -->
+                    {% if question.writing_fl == 'letter'%}     <!-- letter -->
+                        <div class="question">
+                            <p class="question-number">{{question.question_number}}</p>
+	                        <p class="question-text">{{question.question}}</p>
+                        </div>
+                        <div class="gse-writing">
+                            <div class="letter">
+                                <div class="letter_row"><p class="letter_data">{{question.writing_from}}</p></div>
+                                <div class="letter_row"><p class="letter_data">{{question.writing_to}}</p></div>
+                                <div class="letter_row"><p class="letter_data">{{question.writing_subject}}</p></div>
+                                <div class="letter_row"><p class="letter_text">{{question.writing_letter}}</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="question_writing_text">{{question.writing_after}}</p>
+                        </div>
+                    {% else %}
+                        {% if test.part == 'Speaking' %}    <!-- Speaking file adding question -->
+                            <div class="question">
+                                <p class="question-number">{{question.question_number}}</p>
+	                            <p class="question-text" style="white-space: break-spaces;">{{question.question}}</p>
+                            </div>
+                            {% if question.media %}
+                                <div class="audio">
+                                    <audio controls style="margin: auto;" id="audio{{ question.pk }}">
+                                        <source src="{{question.media.url}}">
+                                    </audio>
+                                </div>
+                            {% endif %}
+                            {% if question.picture %}
+                                <p style="text-align: center; font-weight: 600; font-size: 27px;">{{question.text_name}}</p>
+                                <div class="picture">
+                                    <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
+                                </div>
+                            {% endif %}
+                            {% if question.text %}
+                                    {% if question.question_number == 1 %}
+                                    <div class="speaking-gse-1-text">
+                                    <span class="chapter-text">{{ question.text }}</span>
+                                    </div>
+                                    {% else %}
+                                    <div style="margin-left: 60px;">
+                                    <span class="speaking-gse-3-text">{{ question.text }}</span>
+                                    </div>
+                                    {% endif %}
+                            {% endif %}
+                        {% else %}  <!-- essay -->
+                            <div class="question">
+                                {% if question.question_number > 1 %}
+                                <p class="question-number">2.{{question.question_number|adding:-1}}</p>
+                                {% else %}
+                                <p class="question-number">{{question.question_number}}</p>
+                                {% endif %}
+	                            <p class="question-text">{{question.question}}</p>
+                            </div>
+                            <div class="picture">
+                                <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
+                            </div>
+                            <p class="question_writing_text">{{question.writing_after}}</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div>
+                    <h2>Your answer:</h2>
+                    {% with current_task=tasks_to_check|get_item:question %}
+                        {% if current_task.test_to_check_id.test_id.part == 'Writing' %}
+                            {% if current_task.media1 %}
+                                <p><img class="task_check_photo" src="{{current_task.media1.url}}"></p>
+                            {% else %}
+                                <p>Student forgot to load his answer</p>
+                            {% endif %}
+                            {% if current_task.media2 %}
+                                <p><img class="task_check_photo" src="{{current_task.media2.url}}"></p>
+                            {% endif %}
+                        {% elif current_task.test_to_check_id.test_id.part == 'Speaking' %}
+                            {% if current_task.media1 %}
+                                <div style="display: flex;">
+                                    <audio controls style="margin: auto;">
+                                        <source src="{{current_task.media1.url}}">
+                                    </audio>
+                                </div>
+                            {% else %}
+                                <p>Student forgot to load his answer</p>
+                            {% endif %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    <br><br>
+</form>
+</div>
+</div>
+
+{% endblock %}

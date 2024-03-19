@@ -45,7 +45,7 @@
             {% for contestant, results in assessment_contestants.items %}
                 <tr>
                     <td scope="row">{{ forloop.counter }}</td>
-                    <td> {{ contestant.last_name }} {{contestant.first_name}}</td>
+                    <td><a href="{% url 'user_profile' contestant.id %}">{{ contestant.last_name }} {{contestant.first_name}}</a></td>
                     {% for result in results %}
                         {% if forloop.counter < 6 %}
                             {% if result == 'no result' %}

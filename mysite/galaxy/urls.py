@@ -36,7 +36,7 @@ urlpatterns = [
     path('groups/', ShowGroups.as_view(), name='show_groups'),
     path('show_group_participants/<int:group_id>/', ShowGroupParticipants.as_view(), name='show_group_participants'),
 
-    path('show_user_profile/<int:user_pk>/', ShowUserProfile.as_view(), name='show_user_profile'),
+    path('user_profile/<int:user_pk>/', UserProfile.as_view(), name='user_profile'),
     path('show_user_assessments/<int:user_pk>/', ShowUserAssessments.as_view(), name='show_user_assessments'),
     path('show_user_results/<int:user_pk>/', ShowUserResults.as_view(), name='show_user_results'),
 
@@ -57,6 +57,7 @@ urlpatterns = [
     path('pass_test/<int:test_pk>/', PassTest.as_view(), name='pass_test'),
     path('test_result_with_points/<int:res_pk>/', TestResultWithPoints.as_view(), name='test_result_with_points'),
     path('test_result_wo_points/', TestResultWOPoints.as_view(), name='test_result_wo_points'),
+    path('result_summary/<int:result_id>/', ResultSummary.as_view(), name='result_summary'),
     path('result_preview/<int:result_id>/', ResultPreview.as_view(), name='result_preview'),
     path('show_colour_result/<int:result_pk>/', ShowColouredResult.as_view(), name='show_colour_result'),
 

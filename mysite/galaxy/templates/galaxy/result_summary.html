@@ -1,0 +1,23 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block javascript %}
+    <link type="text/css" href="{% static 'galaxy/css/student_result_preview.css' %}" rel="stylesheet"/>
+{% endblock javascript %}
+
+{% block content %}
+
+    <div class="parent">
+        <div class="sheet">
+            <h2>{{ result.test_id }}</h2>
+            <h2>Test summary:</h2>
+                <div class="answers">
+                    {% for string in commentary %}
+                        <p class="answer">{{ string }}</p>
+                    {% endfor %}
+                </div>
+        </div>
+    </div>
+
+{% endblock content %}

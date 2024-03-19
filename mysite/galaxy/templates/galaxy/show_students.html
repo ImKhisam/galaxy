@@ -175,21 +175,19 @@
 
 <script>
 // script for adding student to group
-$(document).ready(function() {
-    $('select[id^="group-select-"]').on('change', function() {
-        var student = $(this).attr('name');
-        var group = $(this).val();
-        $.ajax({
-            type: 'GET',
-            url: '{% url "update_student_group" %}',
-            data: {'student': student, 'group': group},
-            success: function(response) {
-                // Handle success response from server
-            },
-            error: function(xhr) {
-                // Handle error response from server
-            }
-        });
+$(document).on('change', 'select[id^="group-select-"]', function() {
+    var student = $(this).attr('name');
+    var group = $(this).val();
+    $.ajax({
+        type: 'GET',
+        url: '{% url "update_student_group" %}',
+        data: {'student': student, 'group': group},
+        success: function(response) {
+            // Handle success response from server
+        },
+        error: function(xhr) {
+            // Handle error response from server
+        }
     });
 });
 </script>

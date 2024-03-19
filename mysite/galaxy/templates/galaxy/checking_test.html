@@ -83,22 +83,6 @@
                             <p class="question_writing_text">{{question.writing_after}}</p>
                         {% endif %}
                     {% endif %}
-                    {% if test.part == 'Writing' %}
-                        <div class="add-files">
-                            <div class="file">
-                                <label class="input-file">
-                                    <input type="file" name="{{question.pk}}_media1" id="{{question.pk}}_media1">
-                                    <span>Choose a file...</span>
-                                </label>
-                            </div>
-                            {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
-                            <div class="file">
-                                <label for="{{question.pk}}_media2">Additional:</label>
-                                <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
-                            </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
                 {% endwith %}
                 {% endwith %}
 

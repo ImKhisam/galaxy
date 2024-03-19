@@ -188,7 +188,6 @@ def delete_account(request, user_id):
     return redirect('home')
 
 
-
 class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
@@ -201,19 +200,21 @@ class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'My results'
         context['pagination_number'] = self.paginate_by
-        context['dict'] = {key: Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
-                           for key in Tests.objects.all()}
+        tests = [x.test_id for x in Results.objects.filter(student_id=self.request.user).distinct('test_id')]
+        context['dict'] = {key: 20 if key.type == 'USE' and key.part == 'Writing'
+                                   else Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+                           for key in tests}
         return context
 
     def get_queryset(self):
         return Results.objects.filter(student_id=self.request.user, test_id__is_assessment=False)
 
 
-class ResultPreview(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
+class ResultSummary(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = Results
-    template_name = 'galaxy/result_preview.html'
+    template_name = 'galaxy/result_summary.html'
     pk_url_kwarg = 'result_id'
     context_object_name = 'result'
 
@@ -227,7 +228,37 @@ class ResultPreview(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
         return context
 
 
-class ShowColouredResult(LoginRequiredMixin, View):                    # exact copy of ShowTest (inherit it?)
+class ResultPreview(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = Results
+    template_name = 'galaxy/result_preview.html'
+    pk_url_kwarg = 'result_id'
+    context_object_name = 'result'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Result preview'
+        result_id = self.kwargs['result_id']
+        result_obj = Results.objects.get(id=result_id)
+        test = get_object_or_404(Tests, id=result_obj.test_id.id)
+        tasks_to_check = {quest_obj: TasksToCheck.objects.get
+                          (test_to_check_id=result_obj.test_to_check, question_id=quest_obj)
+                          for quest_obj in
+                          [x.question_id for x in TasksToCheck.objects.filter(test_to_check_id=result_obj.test_to_check)]}
+
+        context['tasks_to_check'] = tasks_to_check
+        context['test'] = test
+        chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
+        content_dict = {}
+        for chapter in chapters_for_test:
+            questions = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+            content_dict[chapter] = questions
+        context['content_dict'] = content_dict
+        return context
+
+
+class ShowColouredResult(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'login'
 
@@ -344,11 +375,11 @@ class ShowGroupParticipants(LoginRequiredMixin, TeacherUserMixin, ListView):
         return context
 
 
-class ShowUserProfile(LoginRequiredMixin, TeacherUserMixin, DetailView):
+class UserProfile(LoginRequiredMixin, TeacherUserMixin, DetailView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = CustomUser
-    template_name = "galaxy/show_user_profile.html"
+    template_name = "galaxy/user_profile.html"
     pk_url_kwarg = 'user_pk'
     context_object_name = 'student'
 
@@ -461,6 +492,7 @@ def delete_group(request, group_id):
 
 @user_passes_test(teacher_check, login_url='home')
 def update_student_group(request):
+    print('!!!!!!!!!!!!!!!!!!!')
     user = CustomUser.objects.get(id=request.GET.get('student'))
     user.group = Groups.objects.get(id=request.GET.get('group'))
     user.save()
@@ -606,12 +638,16 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
             return HttpResponseRedirect('/test_result_wo_points/')
             #return JsonResponse({'empty_flag': 1})
 
-        '''Создаем объект теста для проверки'''
+        '''Creating test_to_check object and result object for it'''
         if test.part in ['Writing', 'Speaking']:
             test_to_check = TestsToCheck()
             test_to_check.test_id = test
             test_to_check.student_id = user
             test_to_check.save()
+            result_obj = Results()
+            result_obj.test_to_check = test_to_check
+            result_obj.time = str(timedelta(seconds=test_time))
+            result_obj.save()
 
         if test.is_assessment:
             if len(user.assessments_passed) > 0:
@@ -678,7 +714,7 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                         record_to_add = 'No answer'                         # добавление ответа в запись
                 record_test_answers += (str(question.question_number) + ') ' + record_to_add + '; ')
             else:  # Writing and Speaking
-                '''Создаем объект задания для проверки'''
+                '''Creating task_to_check objects'''
                 task_to_check = TasksToCheck()
                 try:
                     media1_index = str(question.id) + '_media1'
@@ -697,15 +733,6 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                 task_to_check.test_to_check_id = test_to_check
                 task_to_check.question_id = question
                 task_to_check.save()
-
-                #print(task_to_check.media1.path)
-                ## convert file here
-                #wav_path = task_to_check.media1.path
-                #mp3_path = task_to_check.media1.path.replace('.wav', '.mp3')
-                #self.convert_wav_to_mp3(wav_path, mp3_path)
-                ## You can use the mp3_path variable to do further operations if needed
-                #print(f"Converted {wav_path} to {mp3_path}")
-
 
         '''Уведомляем учителя о том, что студент выполнил тест, который нуждается в проверке'''
         if test.part in ['Writing', 'Speaking']:
@@ -1142,11 +1169,12 @@ class CheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
         test_to_check.save()
 
         '''Создание результата для отображения у ученика'''
-        result = Results()
+        result = Results.objects.get(test_to_check=test_to_check)
         result.student_id = test_to_check.student_id
         result.test_id = test_to_check.test_id
         result.points = sum_points_for_test
         result.commentary = request.POST.get('commentary')
+        result.test_to_check = test_to_check
         result.save()
 
         return redirect('show_tests_to_check')

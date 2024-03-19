@@ -62,13 +62,13 @@
                 {% if request.user.role == 'Teacher' or request.user.is_staff %}
                     <td>
                         <div class="button_shell">
-                            <a class="btn btn5" href="{% url 'show_colour_result' result.id %}"><span>Summary</span></a>
+                            <a class="btn btn5" href="{% url 'show_colour_result' result.id %}"><span>Open</span></a>
                         </div>
                     </td>
                 {% else %}
                     <td>
                         <div class="button_shell">
-                            <a class="btn btn5" href="{% url 'result_preview' result.id %}"><span>Summary</span></a>
+                            <a class="btn btn5" href="{% url 'result_summary' result.id %}"><span>Open</span></a>
                         </div>
                     </td>
                 {% endif %}

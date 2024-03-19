@@ -204,17 +204,6 @@ class Answers(models.Model):
     match = models.CharField(max_length=50, blank=True)
 
 
-class Results(models.Model):
-    student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now=True)
-    points = models.CharField(max_length=20)
-    detailed_points = models.CharField(max_length=200, blank=True)
-    record_answers = models.TextField(max_length=600, blank=True)
-    time = models.CharField(max_length=50, blank=True)
-    commentary = models.TextField(max_length=600, blank=True)
-
-
 class TestsToCheck(models.Model):
     test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
     student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -237,3 +226,16 @@ class TasksToCheck(models.Model):
     media1 = models.FileField(upload_to=content_file_name_check, blank=True, max_length=250)
     media2 = models.FileField(upload_to=content_file_name_check, blank=True, max_length=250)
     points = models.CharField(max_length=20, default=0)
+
+
+class Results(models.Model):
+    student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE, blank=True, null=True)
+    date = models.DateTimeField(auto_now=True)
+    points = models.CharField(max_length=20)
+    detailed_points = models.CharField(max_length=200, blank=True)
+    record_answers = models.TextField(max_length=600, blank=True)
+    time = models.CharField(max_length=50, blank=True)
+    commentary = models.TextField(max_length=600, blank=True)
+    test_to_check = models.ForeignKey(TestsToCheck, on_delete=models.CASCADE, blank=True, null=True)
+
