@@ -475,6 +475,7 @@ h2{
 .gse-writing{
     display: flex; 
     justify-content: center;
+    padding-left: 55px;
     
 }
 .left-margin-wrap{

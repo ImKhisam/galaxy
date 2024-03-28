@@ -29,7 +29,6 @@ class CustomUser(AbstractUser):
     is_confirmed = models.BooleanField()
     slug = AutoSlugField(populate_from='username')
     group = models.ForeignKey(Groups, null=True, on_delete=models.SET_NULL)
-    assessments_passed = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name            # self.username
@@ -95,12 +94,22 @@ class Tests(models.Model):
     test_num = models.PositiveIntegerField()
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
+    order = models.PositiveIntegerField()
     test_details = models.TextField(default="Текст, который выводится перед началом теста")
     time_limit = models.PositiveIntegerField(null=True)
     media = models.FileField(upload_to=content_file_name_test, blank=True)
     is_assessment = models.BooleanField(default=False)           # Разделение тестов на проверочные работы и свободную практику
     groups = models.ManyToManyField(Groups, through="Assessments")
-    used_in_groups = models.TextField()        # Группы, которым уже назначался тест
+
+    def save(self, *args, **kwargs):
+        order_dict = {'Listening': 1,
+                      'Reading': 2,
+                      'Grammar and Vocabulary': 3,
+                      'Writing': 4,
+                      'Speaking': 5}
+        self.order = order_dict[self.part]
+
+        super(Tests, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.type}, {self.part}, Test №{self.test_num}"
@@ -143,7 +152,10 @@ class Chapters(models.Model):
 
 
 def content_file_name_question(instance, filename):
-    return '/'.join(['test', instance.test_id.type,
+    assessment_fl = 'Assessments' if instance.test_id.is_assessment is True else 'Free tests'
+    return '/'.join(['test',
+                     assessment_fl,
+                     instance.test_id.type,
                      instance.test_id.part,
                      str(instance.test_id.test_num),
                      "Chapter" + str(instance.chapter_id.chapter_number),
@@ -239,3 +251,12 @@ class Results(models.Model):
     commentary = models.TextField(max_length=600, blank=True)
     test_to_check = models.ForeignKey(TestsToCheck, on_delete=models.CASCADE, blank=True, null=True)
 
+
+class UserToAssessment(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    assessment = models.ForeignKey(Assessments, on_delete=models.CASCADE)
+
+
+class UsedTestsToGroups(models.Model):
+    group = models.ForeignKey(Groups, on_delete=models.CASCADE)
+    test = models.ForeignKey(Tests, on_delete=models.CASCADE)

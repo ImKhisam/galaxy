@@ -4,7 +4,8 @@
 
 {% block custom_styles %}
 
-<link type="text/css" href="{% static 'galaxy/css/tests_and_assessments.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'galaxy/css/tests_and_assessments.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet"/>
 
 {% endblock custom_styles %}
 
@@ -32,16 +33,82 @@
         </div>
 </div>
 
-<!-- Input text element for filtering -->
 <div class="parent">
-    <div class="outer_filter_input">
+    <div class="outer_show_all">
             <div class="empty"></div>
-                <div class="filter">
-                    <input class="filter_input" type="text" id="filterInput" placeholder="Search">
+                <div class="show_all">
+                    <input style="display: none;" type="checkbox" id="ALL"  value="ALL">
+                    <label for="ALL"><span>Show all</span></label>
                 </div>
             <div class="empty"></div>
     </div>
 </div>
+
+<div class="parent">
+    <div class="outer_type_choice">
+        <div class="empty"></div>
+        <div class="type_choices">
+            <div class="type_choice_shell">
+                <div class="type_choice">
+                    <input style="display: none;" type="checkbox" id="GSE"  value="GSE">
+                    <label for="GSE"><span>GSE</span></label>
+                </div>
+                <div class="empty"></div>
+            </div>
+            <div class="type_choice_shell">
+                <div class="type_choice">
+                    <input style="display: none;" type="checkbox" id="USE"  value="USE">
+                    <label for="USE"><span>USE</span></label>
+                </div>
+            </div>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="outer_part_choice">
+        <div class="empty"></div>
+        <div class="part_choices">
+            <div class="part_choice_shell">
+                <div class="part_choice">
+                    <input style="display: none;" type="checkbox" id="Listening" value="Listening">
+                    <label for="Listening"><span>Listening</span></label>
+                </div>
+                <div class="empty"></div>
+            </div>
+            <div class="part_choice_shell">
+                <div class="part_choice">
+                    <input style="display: none;" type="checkbox" id="Reading" value="Reading">
+                    <label for="Reading"><span>Reading</span></label>
+                </div>
+                <div class="empty"></div>
+            </div>
+            <div class="part_choice_shell">
+                <div class="part_choice">
+                    <input style="display: none;" type="checkbox" id="Grammar" value="Grammar and Vocabulary">
+                    <label for="Grammar"><span>Grammar</span></label>
+                </div>
+                <div class="empty"></div>
+            </div>
+            <div class="part_choice_shell">
+                <div class="part_choice">
+                    <input style="display: none;" type="checkbox" id="Writing" value="Writing">
+                    <label for="Writing"><span>Writing</span></label>
+                </div>
+                <div class="empty"></div>
+            </div>
+            <div class="part_choice_shell">
+                <div class="part_choice">
+                    <input style="display: none;" type="checkbox" id="Speaking" value="Speaking">
+                    <label for="Speaking"><span>Speaking</span></label>
+                </div>
+            </div>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
 
 <div class="parent">
     <div class="table">
@@ -87,31 +154,7 @@
     </div>
 </div>
 
-{% if page_obj.has_other_pages %}
-<div class="pagination">
-    {% if page_obj.has_previous %}
-        <a class="pagination-number" href="?cat={{ current_category }}&filter_value={{ filter_value }}&page=1"><</a>
-    {% else %}
-        <span class="pagination-number pagination-current"><</span>
-    {% endif %}
-
-    {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-            <span class="pagination-number pagination-current">{{ num }}</span>
-        {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %}
-            <a class="pagination-number" href="?cat={{ current_category }}&filter_value={{ filter_value }}&page={{ num }}">{{ num }}</a>
-        {% endif %}
-    {% endfor %}
-
-    {% if page_obj.has_next %}
-        <a class="pagination-number" href="?cat={{ current_category }}&filter_value={{ filter_value }}&page={{ page_obj.paginator.num_pages }}">></a>
-    {% else %}
-        <span class="pagination-number pagination-current">></span>
-    {% endif %}
-</div>
-{% else %}
-    <!-- only 1 page -->
-{% endif %}
+{% include "galaxy/pagination.html" %}
 
 {% endblock %}
 
@@ -133,43 +176,72 @@
 <script>
     // Changing categories
     $(document).ready(function() {
-    var currentCategory = {{current_category}}
+        var currentCategory = "{{ current_category }}";
+        var checkedCheckboxes = []; // Array to store checked checkboxes
 
-    // Listening for clicks on type radio buttons
-    $('input[name="cat"]').change(function() {
-        //var filter_flag = $(this).val(); // Get the ID of the selected radio button
-        var filter_flag = $('input[name="cat"]:checked').val();
-        var filterValue = $('#filterInput').val().toLowerCase();
-        currentCategory = filter_flag
-        filterTestsAndAssessments(filter_flag, filterValue);
-    });
+        // By default, check the "Show all" checkbox
+        $('#ALL').prop('checked', true);
 
-    // Function to filter tests based on input text
-    $('#filterInput').on('input', function() {
-        var filterValue = $(this).val().toLowerCase();
-        filterTestsAndAssessments(currentCategory, filterValue);
-    });
-
-    function filterTestsAndAssessments(filter_flag, filterValue='') {
-        $.ajax({
-            url: "{% url 'filter_tests_and_assessments' %}", // URL to your Django view for filtering
-            type: 'GET',
-            data: {
-                filter_flag: filter_flag,
-                filter_value: filterValue
-            },
-            success: function(data) {
-                // Update the table with the filtered data
-                $('.table tbody').html(data.my_content);
-                // Update the pagination links
-                $('.pagination').html(data.pagination_html);
-            },
-            error: function(xhr, status, error) {
-                console.error(error);
-            }
+        // Listening for clicks on type radio buttons
+        $('input[name="cat"]').change(function() {
+            var filter_flag = $('input[name="cat"]:checked').val();
+            updateFilters(filter_flag);
         });
-    }
-});
+
+        // Listening for clicks on type checkboxes
+        $('input[type="checkbox"]').change(function() {
+            // If "Show all" checkbox is clicked, uncheck all other checkboxes
+            if ($(this).attr('id') === 'ALL') {
+                $('input[type="checkbox"]').not(this).prop('checked', false);
+            } else {
+                // If any other checkbox is clicked, uncheck the "Show all" checkbox
+                $('#ALL').prop('checked', false);
+            }
+            var filter_flag = $('input[name="cat"]:checked').val();
+            updateFilters(filter_flag);
+        });
+
+        // Function to update filters and trigger filtering
+        function updateFilters(filter_flag) {
+            // Clear the array holding checked checkboxes
+            checkedCheckboxes = [];
+
+            // If "Show all" checkbox is checked, add its value to the array
+            if ($('#ALL').is(':checked')) {
+                checkedCheckboxes.push($('#ALL').val());
+            } else {
+                // Loop through each checked checkbox and add its value to the array
+                $('input[type="checkbox"]:checked').not('#ALL').each(function() {
+                    checkedCheckboxes.push($(this).val());
+                });
+            }
+
+            // Call the function to filter tests and assessments
+            filterTestsAndAssessments(filter_flag, checkedCheckboxes);
+        }
+
+        // Function to filter tests based on input text and selected checkboxes
+        function filterTestsAndAssessments(filter_flag, checkboxes) {
+            $.ajax({
+                url: "{% url 'filter_tests_and_assessments' %}",
+                type: 'GET',
+                data: {
+                    filter_flag: filter_flag,
+                    checkboxes: checkboxes.join()
+                },
+                success: function(data) {
+                    // Update the table with the filtered data
+                    $('.table tbody').html(data.my_content);
+
+                    // Update the pagination links
+                    $('.pagination').html(data.pagination_html);
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }
+    });
 </script>
 
 {% endblock javascript %}
