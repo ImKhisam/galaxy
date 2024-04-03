@@ -69,7 +69,18 @@ h2{
     font-size: 22px;
     text-align: left;
     text-indent: 25px;
+    display: flex;
 }
+
+.reading-addition-match{
+    font-weight: bold;
+}
+
+.reading-addition-addition{
+    text-indent: 0;
+    padding-left: 10px;
+}
+
 p{
     margin-top: 0;
 }
@@ -485,4 +496,10 @@ h2{
     border: 2px solid black;
     font-style: italic;
     padding:10px;
+}
+
+.question_controls{
+    display: flex;
+    justify-content: space-evenly;
+    padding: 10px;
 }

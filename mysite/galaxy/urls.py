@@ -67,6 +67,7 @@ urlpatterns = [
     path('filter_tests_by_part/', filter_tests_by_part, name='filter_tests_by_part'),
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
     path('add_q_and_a/<int:chapter_id>/', AddQandAView.as_view(), name='add_q_and_a'),
+    path('edit_q_and_a/<int:question_id>/', EditQandAView.as_view(), name='edit_q_and_a'),
     path('show_test/<int:test_pk>/', ShowTest.as_view(), name='show_test'),
 
     path('show_assessments_for_teacher/', ShowAssessmentsForTeacher.as_view(), name='show_assessments_for_teacher'),

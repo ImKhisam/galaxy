@@ -69,7 +69,13 @@ class OlympWay(models.Model):
 
 
 def content_file_name_test(instance, filename):
-    return '/'.join(['test', instance.type, instance.part, str(instance.test_num), filename])
+    assessment_fl = 'Assessments' if instance.is_assessment is True else 'Free tests'
+    return '/'.join(['test',
+                     assessment_fl,
+                     instance.type,
+                     instance.part,
+                     str(instance.test_num),
+                     filename])
 
 
 class Tests(models.Model):
@@ -145,7 +151,6 @@ class Chapters(models.Model):
     info = models.TextField(blank=True)
     text_name = models.CharField(max_length=50, blank=True)
     text = models.TextField(blank=True)
-    media = models.FileField(upload_to=content_file_name_chapter, blank=True)
 
     def __str__(self):
         return f"{self.test_id}, Chapter #{self.chapter_number}"
@@ -224,7 +229,7 @@ class TestsToCheck(models.Model):
 
 
 def content_file_name_check(instance, filename):
-    return '/'.join(['test', 'TestsToCheck',
+    return '/'.join(['Tests To Check',
                      str(instance.test_to_check_id.student_id),
                      str(instance.test_to_check_id.date)[:10],
                      str(instance.test_to_check_id.id),

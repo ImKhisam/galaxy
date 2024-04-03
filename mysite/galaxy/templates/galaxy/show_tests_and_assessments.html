@@ -86,7 +86,7 @@
             </div>
             <div class="part_choice_shell">
                 <div class="part_choice">
-                    <input style="display: none;" type="checkbox" id="Grammar" value="Grammar and Vocabulary">
+                    <input style="display: none;" type="checkbox" id="Grammar" value="Grammar">
                     <label for="Grammar"><span>Grammar</span></label>
                 </div>
                 <div class="empty"></div>
@@ -159,89 +159,106 @@
 {% endblock %}
 
 {% block javascript %}
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+$(document).ready(function() {
     // Pre-coloring chosen category
-    document.addEventListener('DOMContentLoaded', function() {
-    // Get the current category ID from the Django context
     var currentCat = "{{current_category}}";
-
-    // Set the checked state of the type radio buttons
     $('#' + currentCat).prop('checked', true);
-});
-</script>
 
-<script>
-    // Changing categories
-    $(document).ready(function() {
-        var currentCategory = "{{ current_category }}";
-        var checkedCheckboxes = []; // Array to store checked checkboxes
+    // Listening for clicks on type radio buttons
+    $('input[name="cat"]').change(function() {
+        var filter_flag = $('input[name="cat"]:checked').val();
+        updateFilters(filter_flag);
+    });
 
-        // By default, check the "Show all" checkbox
-        $('#ALL').prop('checked', true);
-
-        // Listening for clicks on type radio buttons
-        $('input[name="cat"]').change(function() {
-            var filter_flag = $('input[name="cat"]:checked').val();
-            updateFilters(filter_flag);
-        });
-
-        // Listening for clicks on type checkboxes
-        $('input[type="checkbox"]').change(function() {
-            // If "Show all" checkbox is clicked, uncheck all other checkboxes
-            if ($(this).attr('id') === 'ALL') {
-                $('input[type="checkbox"]').not(this).prop('checked', false);
-            } else {
-                // If any other checkbox is clicked, uncheck the "Show all" checkbox
-                $('#ALL').prop('checked', false);
-            }
-            var filter_flag = $('input[name="cat"]:checked').val();
-            updateFilters(filter_flag);
-        });
-
-        // Function to update filters and trigger filtering
-        function updateFilters(filter_flag) {
-            // Clear the array holding checked checkboxes
-            checkedCheckboxes = [];
-
-            // If "Show all" checkbox is checked, add its value to the array
-            if ($('#ALL').is(':checked')) {
-                checkedCheckboxes.push($('#ALL').val());
-            } else {
-                // Loop through each checked checkbox and add its value to the array
-                $('input[type="checkbox"]:checked').not('#ALL').each(function() {
-                    checkedCheckboxes.push($(this).val());
-                });
-            }
-
-            // Call the function to filter tests and assessments
-            filterTestsAndAssessments(filter_flag, checkedCheckboxes);
+    // Listening for clicks on type checkboxes
+    $('input[type="checkbox"]').change(function() {
+        // If "Show all" checkbox is clicked, uncheck all other checkboxes
+        if ($(this).attr('id') === 'ALL') {
+            $('input[type="checkbox"]').not(this).prop('checked', false);
+        } else {
+            // If any other checkbox is clicked, uncheck the "Show all" checkbox
+            $('#ALL').prop('checked', false);
         }
+        var filter_flag = $('input[name="cat"]:checked').val();
+        updateFilters(filter_flag);
+    });
 
-        // Function to filter tests based on input text and selected checkboxes
-        function filterTestsAndAssessments(filter_flag, checkboxes) {
-            $.ajax({
-                url: "{% url 'filter_tests_and_assessments' %}",
-                type: 'GET',
-                data: {
-                    filter_flag: filter_flag,
-                    checkboxes: checkboxes.join()
-                },
-                success: function(data) {
-                    // Update the table with the filtered data
-                    $('.table tbody').html(data.my_content);
+    // Function to update filters and trigger filtering
+    function updateFilters(filter_flag) {
+        var checkedCheckboxes = getCheckedCheckboxes();
+        storeStateInSessionStorage(filter_flag, checkedCheckboxes);
+        filterTestsAndAssessments(filter_flag, checkedCheckboxes);
+    }
 
-                    // Update the pagination links
-                    $('.pagination').html(data.pagination_html);
-                },
-                error: function(xhr, status, error) {
-                    console.error(error);
-                }
+    // Function to get checked checkboxes
+    function getCheckedCheckboxes() {
+        var checkedCheckboxes = [];
+        // If "Show all" checkbox is checked, add its value to the array
+        if ($('#ALL').is(':checked')) {
+            checkedCheckboxes.push($('#ALL').val());
+        } else {
+            // Loop through each checked checkbox and add its value to the array
+            $('input[type="checkbox"]:checked').not('#ALL').each(function() {
+                checkedCheckboxes.push($(this).val());
             });
         }
-    });
-</script>
+        return checkedCheckboxes;
+    }
 
-{% endblock javascript %}
+    // Function to store state in session storage
+    function storeStateInSessionStorage(filter_flag, checkedCheckboxes) {
+        var state = {
+            filter_flag: filter_flag,
+            checkedCheckboxes: checkedCheckboxes
+        };
+        sessionStorage.setItem('TestsAndAssessments', JSON.stringify(state));
+    }
+
+    // Function to retrieve stored state from session storage
+    function retrieveStateFromSessionStorage() {
+        var stateJSON = sessionStorage.getItem('TestsAndAssessments');
+        return stateJSON ? JSON.parse(stateJSON) : null;
+    }
+
+    // Function to apply stored state to the page
+    function applyStoredState(state) {
+        if (state) {
+            $('input[name="cat"][value="' + state.filter_flag + '"]').prop('checked', true);
+            state.checkedCheckboxes.forEach(function(checkbox) {
+                $('#' + checkbox).prop('checked', true);
+            });
+
+            filterTestsAndAssessments(state.filter_flag, state.checkedCheckboxes);
+        } else{
+            // By default, check the "Show all" checkbox
+            $('#ALL').prop('checked', true);
+        }
+    }
+
+    // Function to filter tests and assessments via AJAX
+    function filterTestsAndAssessments(filter_flag, checkboxes) {
+        $.ajax({
+            url: "{% url 'filter_tests_and_assessments' %}",
+            type: 'GET',
+            data: {
+                filter_flag: filter_flag,
+                checkboxes: checkboxes.join()
+            },
+            success: function(data) {
+                $('.table tbody').html(data.my_content);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+
+    // Apply stored state when page is loaded or navigated back to
+    var storedState = retrieveStateFromSessionStorage();
+    applyStoredState(storedState);
+});
+</script>
+{% endblock %}

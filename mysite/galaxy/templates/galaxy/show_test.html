@@ -49,6 +49,10 @@
             {% endif %}
 
             {% for question, answers in qa.items %}
+                <div class="question_controls">
+                    <a href="{% url 'edit_q_and_a' question.id %}">EDIT</a>
+                    <a href="#">DELETE</a>
+                </div>
                 <div class="question_obj">
                     {% if question.question_type == 'match_type' %}     <!-- Match type of question-->
                         <div class="question">
@@ -115,7 +119,8 @@
                                     <div class="reading-match-element">
                                         <div class="outer-addition">
                                             <div class="reading-addition left-align">
-                                                <p>{{answer.match}}. {{answer.addition}}</p>
+                                                <span class="reading-addition-match">{{answer.match}}.</span>
+                                                <span class="reading-addition-addition">{{answer.addition}}</span>
                                             </div>
                                         </div>
                                         <div class="outer-select">

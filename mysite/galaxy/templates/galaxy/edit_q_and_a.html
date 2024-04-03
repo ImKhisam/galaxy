@@ -1,0 +1,51 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+<link type="text/css" href="{% static 'galaxy/css/forms.css' %}" rel="stylesheet">
+<style>
+h1{
+    text-align: center;
+}
+.question{
+    padding: 60px;
+    color: black;
+    background-color: #ffffff;
+    width: 60%;
+    margin: auto;
+    text-align: left;
+}
+
+.hidden{
+  display: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="question">
+    <h1>Adding question</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ question_form.as_p }}
+        <h3>Answers:</h3>
+        {{ answer_formset.management_form }}
+        <div id="answers">
+            {% for answer_form in answer_formset %}
+                  <div class="answer">
+                      {{ answer_form.as_p }}
+                  </div>
+            {% endfor %}
+        </div>
+        <div id="empty-form" class="hidden">{{ answer_formset.empty_form.as_p }}</div>
+        <button type="submit">Save</button>
+
+        <a href="{% url 'show_test' test_id %}">Cancel</a>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block javascript %}
+
+{% endblock javascript %}

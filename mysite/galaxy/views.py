@@ -981,6 +981,9 @@ def filter_tests_and_assessments(request):
 
     checkboxes = request.GET.get('checkboxes')
     checkbox_values = checkboxes.split(',')
+    if 'Grammar' in checkbox_values:
+        checkbox_values.remove('Grammar')
+        checkbox_values.append('Grammar and Vocabulary')
     if checkbox_values == ['ALL']:
         tests = Tests.objects.filter(is_assessment=flag_value).order_by('type', 'order', 'test_num')
     else:
@@ -1270,7 +1273,6 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
         sum_of_questions = Questions.objects.filter(test_id=chapter_obj.test_id).count()
         self.used_form = self.choose_form(chapter_obj)
         question_form = self.used_form(request.POST, request.FILES)
-        print(self.used_form)
         answer_formset = formset_factory(AnswerAddForm, extra=0)(request.POST, request.FILES)
         if question_form.is_valid() and answer_formset.is_valid():
             question_obj = question_form.save(commit=False)
@@ -1304,6 +1306,69 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
                     answer_obj.save()
 
             return redirect('add_q_and_a', chapter_id)
+
+
+class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, AddQuestionConstValues, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    used_form = QuestionAddForm
+
+    def get(self, request, *args, **kwargs):
+        from django.forms import modelformset_factory
+
+        question_id = self.kwargs.get('question_id')
+        question_obj = Questions.objects.get(id=question_id)
+        question_form = self.choose_form(Chapters.objects.get(id=question_obj.chapter_id.id))
+        self.used_form = question_form
+        question_form = question_form(instance=question_obj)
+
+        answer_objects = Answers.objects.filter(question_id=question_obj)
+        answer_formset = modelformset_factory(Answers, AnswerAddForm, extra=0)
+        formset = answer_formset(queryset=answer_objects)
+        #for form in answer_formset:
+
+        #answer_objects = Answers.objects.filter(question_id=question_obj)
+        #answers = []
+        #for ans_obj in answer_objects:
+        #    answers.append(AnswerAddForm(instance=ans_obj))
+
+        context = {
+            'question_form': question_form,
+            'answer_formset': formset,
+            'test_id': question_obj.test_id.id,
+        }
+
+        return render(request, 'galaxy/edit_q_and_a.html', context)
+
+    def post(self, request, *args, **kwargs):
+        question_id = self.kwargs.get('question_id')
+        question_obj = Questions.objects.get(id=question_id)
+        question_form = self.choose_form(Chapters.objects.get(id=question_obj.chapter_id.id))
+        self.used_form = question_form
+        question_form = question_form(request.POST, request.FILES, instance=question_obj)
+
+        answer_objects = Answers.objects.filter(question_id=question_obj)
+        answer_formset = modelformset_factory(Answers, AnswerAddForm)
+        formset = answer_formset(request.POST, request.FILES, queryset=answer_objects)
+
+        answer_formset = formset_factory(AnswerAddForm, extra=0)(request.POST, request.FILES)
+        if question_form.is_valid() and formset.is_valid():
+            question_obj = question_form.save(commit=False)
+            question_obj.save()
+
+            # Update answers
+            for answer_form in formset.forms:
+                if answer_form.has_changed():
+                    answer_obj = answer_form.save(commit=False)
+                    if question_obj.question_type == 'input_type':
+                        answer_obj.answer = answer_obj.answer.upper()
+
+                    answer_obj.question_id = question_obj
+                    answer_obj.save()
+
+            return redirect('show_test', question_obj.test_id.id)
+
+        return redirect('edit_q_and_a', question_id)
 
 
 class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
