@@ -1325,12 +1325,6 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
         answer_objects = Answers.objects.filter(question_id=question_obj)
         answer_formset = modelformset_factory(Answers, AnswerAddForm, extra=0)
         formset = answer_formset(queryset=answer_objects)
-        #for form in answer_formset:
-
-        #answer_objects = Answers.objects.filter(question_id=question_obj)
-        #answers = []
-        #for ans_obj in answer_objects:
-        #    answers.append(AnswerAddForm(instance=ans_obj))
 
         context = {
             'question_form': question_form,
@@ -1347,16 +1341,22 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
         self.used_form = question_form
         question_form = question_form(request.POST, request.FILES, instance=question_obj)
 
-        answer_objects = Answers.objects.filter(question_id=question_obj)
         answer_formset = modelformset_factory(Answers, AnswerAddForm)
-        formset = answer_formset(request.POST, request.FILES, queryset=answer_objects)
+        formset = answer_formset(request.POST, request.FILES)
 
-        answer_formset = formset_factory(AnswerAddForm, extra=0)(request.POST, request.FILES)
+        # deleting answers
+        deleted_answer_ids = request.POST.get('deleted_answer_ids', '').split(',')
+        for answer_id in deleted_answer_ids:
+            try:
+                answer = Answers.objects.get(pk=answer_id)
+                answer.delete()
+            except Answers.DoesNotExist:
+                pass
+
         if question_form.is_valid() and formset.is_valid():
             question_obj = question_form.save(commit=False)
             question_obj.save()
 
-            # Update answers
             for answer_form in formset.forms:
                 if answer_form.has_changed():
                     answer_obj = answer_form.save(commit=False)

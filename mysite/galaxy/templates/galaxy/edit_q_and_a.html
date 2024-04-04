@@ -24,20 +24,26 @@ h1{
 
 {% block content %}
 <div class="question">
-    <h1>Adding question</h1>
+    <h1>Editing question</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ question_form.as_p }}
+        <input type="hidden" id="deletedAnswerIds" name="deleted_answer_ids" value="">
         <h3>Answers:</h3>
         {{ answer_formset.management_form }}
         <div id="answers">
             {% for answer_form in answer_formset %}
                   <div class="answer">
                       {{ answer_form.as_p }}
+                      <input type="hidden" name="answer_id" value="{{ answer_form.instance.id }}">
+                      <button type="button" class="delete-answer">Delete Answer</button>
                   </div>
             {% endfor %}
         </div>
         <div id="empty-form" class="hidden">{{ answer_formset.empty_form.as_p }}</div>
+
+        <button id="add-answer" type="button">Add answer</button>
+
         <button type="submit">Save</button>
 
         <a href="{% url 'show_test' test_id %}">Cancel</a>
@@ -47,5 +53,104 @@ h1{
 
 
 {% block javascript %}
+
+
+<script>
+    const addAnswerButton = document.getElementById('add-answer');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+    // Define a list to store answer IDs
+    const deletedAnswerIds = [];
+
+    addAnswerButton.addEventListener('click', add_new_answer)
+
+    function add_new_answer(event) {
+        if (event) {
+            event.preventDefault()
+        }
+        const currentAnswerForms = document.getElementsByClassName('answer');
+        const currentAnswerCount = currentAnswerForms.length // + 1
+        const formAnswers = document.getElementById('answers')
+        const copyEmptyFormEl = document.getElementById('empty-form').cloneNode(true)
+        copyEmptyFormEl.setAttribute('class', 'answer')
+        copyEmptyFormEl.setAttribute('id', `form-${currentAnswerCount}`)
+        const regex = new RegExp('__prefix__', 'g')
+        copyEmptyFormEl.innerHTML = copyEmptyFormEl.innerHTML.replace(regex, currentAnswerCount)
+
+        // Autofill answer_number field
+        const answerNumberField = copyEmptyFormEl.querySelector('#id_form-' + currentAnswerCount + '-answer_number');
+        if (answerNumberField) {
+            answerNumberField.value = currentAnswerCount + 1;
+    }
+
+
+
+        // Create and append the "Delete answer" button
+        const deleteAnswerButton = document.createElement('button')
+        deleteAnswerButton.type = 'button'
+        deleteAnswerButton.innerText = 'Delete Answer'
+        deleteAnswerButton.addEventListener('click', () => {
+            copyEmptyFormEl.remove()
+            totalForms.setAttribute('value', currentAnswerForms.length - 1)
+        })
+        copyEmptyFormEl.append(deleteAnswerButton)
+
+        totalForms.setAttribute('value', currentAnswerCount + 1)
+        formAnswers.append(copyEmptyFormEl)
+    }
+
+    // Add event listeners for existing delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-answer');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const answerForm = button.closest('.answer');
+
+            const answerId = answerForm.querySelector('input[name="answer_id"]').value;
+            deletedAnswerIds.push(answerId);
+
+            answerForm.remove();
+            updateFormsetManagementForm();
+            updateFormsetIndexes();
+        });
+    });
+
+    // Function to update formset's management form after answer deletion
+    function updateFormsetManagementForm() {
+        const currentAnswerForms = document.getElementsByClassName('answer');
+        const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+        totalForms.setAttribute('value', currentAnswerForms.length);
+    }
+
+    // Function to update formset indexes after answer deletion
+    function updateFormsetIndexes() {
+        const answerForms = document.querySelectorAll('.answer');
+        answerForms.forEach((form, index) => {
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                const oldName = input.getAttribute('name');
+                const newName = oldName.replace(/form-\d+-/g, `form-${index}-`);
+                input.setAttribute('name', newName);
+                const oldId = input.getAttribute('id');
+                if (oldId) {
+                    const newId = oldId.replace(/id_form-\d+-/g, `id_form-${index}-`);
+                    input.setAttribute('id', newId);
+                }
+            });
+        });
+    }
+
+    // Pass the list of deleted answer IDs along with other form data when the form is submitted
+    const form = document.querySelector('form');
+    form.addEventListener('submit', () => {
+        // Add a hidden input field to the form to hold the deleted answer IDs
+        const deletedAnswerIdsInput = document.createElement('input');
+        deletedAnswerIdsInput.type = 'hidden';
+        deletedAnswerIdsInput.name = 'deleted_answer_ids';
+        deletedAnswerIdsInput.value = deletedAnswerIds.join(',');
+        form.appendChild(deletedAnswerIdsInput);
+    });
+
+
+</script>
 
 {% endblock javascript %}
