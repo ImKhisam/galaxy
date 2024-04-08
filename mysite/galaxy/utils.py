@@ -278,18 +278,25 @@ class AddQuestionConstValues:
 class ChooseAddQuestForm:
     def choose_form(self, type, chapter_object):
         key = type + ' ' + chapter_object.test_id.part
-        dict = {'add Writing': WritingQandAAddForm,
-                'add Speaking': SpeakingQandAAddForm,
-                'add Listening': QuestionAddForm,
-                'add Grammar and Vocabulary': QuestionAddForm,
-                'add Reading': QuestionAddForm,
-                'edit ': QuestionAddForm}
-        if chapter_object.test_id.part == 'Writing':
-            return WritingQandAAddForm
-        elif chapter_object.test_id.part == 'Speaking':
-            return SpeakingQandAAddForm
-        else:
-            return QuestionAddForm
+        dict = {'add Writing': AddWritingQandAForm,
+                'add Speaking': AddSpeakingQandAForm,
+                'add Listening': AddQuestionForm,
+                'add Grammar and Vocabulary': AddQuestionForm,
+                'add Reading': AddQuestionForm,
+                'edit Writing': EditWritingQandAForm,
+                'edit Speaking': EditSpeakingQandAForm,
+                'edit Listening': EditQuestionForm,
+                'edit Grammar and Vocabulary': EditQuestionForm,
+                'edit Reading': EditQuestionForm,
+                }
+        #if chapter_object.test_id.part == 'Writing':
+        #    return WritingQandAAddForm
+        #elif chapter_object.test_id.part == 'Speaking':
+        #    return SpeakingQandAAddForm
+        #else:
+        #    return QuestionAddForm
+
+        return dict[key]
 
 
 def teacher_check(user):

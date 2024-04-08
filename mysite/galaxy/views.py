@@ -1253,12 +1253,10 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
 class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, AddQuestionConstValues, View):
     login_url = '/login/'
     redirect_field_name = 'login'
-    used_form = QuestionAddForm
 
     def get(self, request, *args, **kwargs):
         chapter_id = self.kwargs.get('chapter_id')
         question_form = self.choose_form('add', Chapters.objects.get(id=chapter_id))
-        self.used_form = question_form
         answer_formset = formset_factory(AnswerAddForm, extra=0)
         context = {
             'question_form': question_form,
@@ -1271,8 +1269,8 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
         chapter_id = self.kwargs.get('chapter_id')
         chapter_obj = Chapters.objects.get(id=chapter_id)
         sum_of_questions = Questions.objects.filter(test_id=chapter_obj.test_id).count()
-        self.used_form = self.choose_form(chapter_obj)
-        question_form = self.used_form(request.POST, request.FILES)
+        used_form = self.choose_form('add', chapter_obj)
+        question_form = used_form(request.POST, request.FILES)
         answer_formset = formset_factory(AnswerAddForm, extra=0)(request.POST, request.FILES)
         if question_form.is_valid() and answer_formset.is_valid():
             question_obj = question_form.save(commit=False)
@@ -1311,7 +1309,6 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
 class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, AddQuestionConstValues, View):
     login_url = '/login/'
     redirect_field_name = 'login'
-    used_form = QuestionAddForm
 
     def get(self, request, *args, **kwargs):
         from django.forms import modelformset_factory
@@ -1319,7 +1316,6 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
         question_id = self.kwargs.get('question_id')
         question_obj = Questions.objects.get(id=question_id)
         question_form = self.choose_form('edit', Chapters.objects.get(id=question_obj.chapter_id.id))
-        self.used_form = question_form
         question_form = question_form(instance=question_obj)
 
         answer_objects = Answers.objects.filter(question_id=question_obj)
@@ -1337,8 +1333,7 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
     def post(self, request, *args, **kwargs):
         question_id = self.kwargs.get('question_id')
         question_obj = Questions.objects.get(id=question_id)
-        question_form = self.choose_form(Chapters.objects.get(id=question_obj.chapter_id.id))
-        self.used_form = question_form
+        question_form = self.choose_form('edit', Chapters.objects.get(id=question_obj.chapter_id.id))
         question_form = question_form(request.POST, request.FILES, instance=question_obj)
 
         answer_formset = modelformset_factory(Answers, AnswerAddForm)

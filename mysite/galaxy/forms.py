@@ -111,7 +111,7 @@ class TaskCheckForm(forms.ModelForm):       # выставление балло�
 #            raise forms.ValidationError("Enter a valid number.")
 
 
-class QuestionAddForm(forms.ModelForm):
+class AddQuestionForm(forms.ModelForm):
     #preparation_time = MinuteSecondField(label='Preparation Time(in minutes)', required=False)
     #time_limit = MinuteSecondField(label='Time limit(in minutes)', required=False)
 
@@ -130,7 +130,7 @@ class EditQuestionForm(forms.ModelForm):
 
     class Meta:
         model = Questions
-        fields = ['question_type', 'question', 'media', 'picture', 'text_name',
+        fields = ['question_type', 'question_number', 'question', 'media', 'picture', 'text_name',
                   'text', 'addition_before', 'addition_after']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question_add'}),
@@ -139,7 +139,7 @@ class EditQuestionForm(forms.ModelForm):
         }
 
 
-class WritingQandAAddForm(forms.ModelForm):
+class AddWritingQandAForm(forms.ModelForm):
     class Meta:
         model = Questions
         fields = ['question', 'picture', 'writing_fl', 'writing_from', 'writing_to',
@@ -154,10 +154,10 @@ class WritingQandAAddForm(forms.ModelForm):
         }
 
 
-class WritingQandAEditForm(forms.ModelForm):
+class EditWritingQandAForm(forms.ModelForm):
     class Meta:
         model = Questions
-        fields = ['question', 'picture', 'writing_fl', 'writing_from', 'writing_to',
+        fields = ['question_number', 'question', 'picture', 'writing_fl', 'writing_from', 'writing_to',
                   'writing_subject', 'writing_letter', 'writing_after']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question_add'}),
@@ -169,7 +169,7 @@ class WritingQandAEditForm(forms.ModelForm):
         }
 
 
-class SpeakingQandAAddForm(forms.ModelForm):
+class AddSpeakingQandAForm(forms.ModelForm):
     class Meta:
         model = Questions
         fields = ['question', 'media', 'picture', 'text_name', 'text']
@@ -179,10 +179,10 @@ class SpeakingQandAAddForm(forms.ModelForm):
         }
 
 
-class SpeakingQandAEditForm(forms.ModelForm):
+class EditSpeakingQandAForm(forms.ModelForm):
     class Meta:
         model = Questions
-        fields = ['question', 'media', 'picture', 'text_name', 'text']
+        fields = ['question_number', 'question', 'media', 'picture', 'text_name', 'text']
         widgets = {
             'question': forms.Textarea(attrs={'class': 'question_add'}),
             'text': forms.Textarea(attrs={'class': 'question_add'})
