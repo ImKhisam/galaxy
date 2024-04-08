@@ -1257,7 +1257,7 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
 
     def get(self, request, *args, **kwargs):
         chapter_id = self.kwargs.get('chapter_id')
-        question_form = self.choose_form(Chapters.objects.get(id=chapter_id))
+        question_form = self.choose_form('add', Chapters.objects.get(id=chapter_id))
         self.used_form = question_form
         answer_formset = formset_factory(AnswerAddForm, extra=0)
         context = {
@@ -1318,7 +1318,7 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
 
         question_id = self.kwargs.get('question_id')
         question_obj = Questions.objects.get(id=question_id)
-        question_form = self.choose_form(Chapters.objects.get(id=question_obj.chapter_id.id))
+        question_form = self.choose_form('edit', Chapters.objects.get(id=question_obj.chapter_id.id))
         self.used_form = question_form
         question_form = question_form(instance=question_obj)
 
@@ -1329,7 +1329,7 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
         context = {
             'question_form': question_form,
             'answer_formset': formset,
-            'test_id': question_obj.test_id.id,
+            'test': question_obj.test_id,
         }
 
         return render(request, 'galaxy/edit_q_and_a.html', context)
@@ -1345,13 +1345,15 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
         formset = answer_formset(request.POST, request.FILES)
 
         # deleting answers
-        deleted_answer_ids = request.POST.get('deleted_answer_ids', '').split(',')
-        for answer_id in deleted_answer_ids:
-            try:
-                answer = Answers.objects.get(pk=answer_id)
-                answer.delete()
-            except Answers.DoesNotExist:
-                pass
+        if request.POST.get('deleted_answer_ids', '') != '':
+            deleted_answer_ids = request.POST.get('deleted_answer_ids', '').split(',')
+
+            for answer_id in deleted_answer_ids:
+                try:
+                    answer = Answers.objects.get(pk=answer_id)
+                    answer.delete()
+                except Answers.DoesNotExist:
+                    pass
 
         if question_form.is_valid() and formset.is_valid():
             question_obj = question_form.save(commit=False)
@@ -1369,6 +1371,19 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
             return redirect('show_test', question_obj.test_id.id)
 
         return redirect('edit_q_and_a', question_id)
+
+
+def delete_question(request, question_id):
+    question_obj = Questions.objects.get(id=question_id)
+    test_obj = question_obj.test_id
+    questions = Questions.objects.filter(test_id=test_obj, question_number__gt=question_obj.question_number)
+    for question in questions:
+        question.question_number -= 1
+        question.save()
+
+    question_obj.delete()
+
+    return redirect('show_test', test_obj.id)
 
 
 class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
@@ -1396,12 +1411,13 @@ class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
                                 order_by('match')}
                     else:
                         qa[question] = {
-                            key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                            key: Answers.objects.filter(question_id__id=question.id).order_by('id').values_list(    #  # changed order_by('answer')
                                 'answer',
                                 flat=True)
                             for key in
                             Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').
                                 order_by('match')}
+                        print(qa[question])
                 elif question.question_type == 'input_type':
                     qa[question] = Answers.objects.get(question_id__id=question.id)  # незачем запрашивать?
                 else:  #

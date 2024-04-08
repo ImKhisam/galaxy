@@ -124,7 +124,7 @@ div.table {
 }
 
 .single_btn{
-  color: #ffffff;
+  color: var(--white-transparent);
   background-color: transparent;
   width: fit-content;
   display: flex;
@@ -132,7 +132,7 @@ div.table {
   align-items: center;
   transition: all 0.8s ease;
   position: relative;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--white-transparent);
   margin: auto;
   font-family: auto;
   padding: 0px;

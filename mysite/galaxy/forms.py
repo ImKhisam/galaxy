@@ -120,9 +120,22 @@ class QuestionAddForm(forms.ModelForm):
         fields = ['question_type', 'question', 'media', 'picture', 'text_name',
                   'text', 'addition_before', 'addition_after']
         widgets = {
-            'question': forms.Textarea(attrs={'class': 'question-add'}),
+            'question': forms.Textarea(attrs={'class': 'question_add'}),
             'addition_before': forms.TextInput(attrs={'class': 'additions'}),
-            'text': forms.Textarea(attrs={'class': 'question-add'})
+            'text': forms.Textarea(attrs={'class': 'question_add'})
+        }
+
+
+class EditQuestionForm(forms.ModelForm):
+
+    class Meta:
+        model = Questions
+        fields = ['question_type', 'question', 'media', 'picture', 'text_name',
+                  'text', 'addition_before', 'addition_after']
+        widgets = {
+            'question': forms.Textarea(attrs={'class': 'question_add'}),
+            'addition_before': forms.TextInput(attrs={'class': 'additions'}),
+            'text': forms.Textarea(attrs={'class': 'question_add'})
         }
 
 
@@ -132,8 +145,27 @@ class WritingQandAAddForm(forms.ModelForm):
         fields = ['question', 'picture', 'writing_fl', 'writing_from', 'writing_to',
                   'writing_subject', 'writing_letter', 'writing_after']
         widgets = {
-            'question': forms.Textarea(attrs={'class': 'question-add'}),
-            'addition_before': forms.TextInput(attrs={'class': 'additions'})
+            'question': forms.Textarea(attrs={'class': 'question_add'}),
+            'writing_from': forms.TextInput(attrs={'class': 'adding_text_input'}),
+            'writing_to': forms.TextInput(attrs={'class': 'adding_text_input'}),
+            'writing_subject': forms.TextInput(attrs={'class': 'adding_text_input'}),
+            'writing_letter': forms.Textarea(attrs={'class': 'question_add'}),
+            'writing_after': forms.Textarea(attrs={'class': 'question_add'}),
+        }
+
+
+class WritingQandAEditForm(forms.ModelForm):
+    class Meta:
+        model = Questions
+        fields = ['question', 'picture', 'writing_fl', 'writing_from', 'writing_to',
+                  'writing_subject', 'writing_letter', 'writing_after']
+        widgets = {
+            'question': forms.Textarea(attrs={'class': 'question_add'}),
+            'writing_from': forms.TextInput(attrs={'class': 'adding_text_input'}),
+            'writing_to': forms.TextInput(attrs={'class': 'adding_text_input'}),
+            'writing_subject': forms.TextInput(attrs={'class': 'adding_text_input'}),
+            'writing_letter': forms.Textarea(attrs={'class': 'question_add'}),
+            'writing_after': forms.Textarea(attrs={'class': 'question_add'}),
         }
 
 
@@ -142,8 +174,18 @@ class SpeakingQandAAddForm(forms.ModelForm):
         model = Questions
         fields = ['question', 'media', 'picture', 'text_name', 'text']
         widgets = {
-            'question': forms.Textarea(attrs={'class': 'question-add'}),
-            'text': forms.Textarea(attrs={'class': 'question-add'})
+            'question': forms.Textarea(attrs={'class': 'question_add'}),
+            'text': forms.Textarea(attrs={'class': 'question_add'})
+        }
+
+
+class SpeakingQandAEditForm(forms.ModelForm):
+    class Meta:
+        model = Questions
+        fields = ['question', 'media', 'picture', 'text_name', 'text']
+        widgets = {
+            'question': forms.Textarea(attrs={'class': 'question_add'}),
+            'text': forms.Textarea(attrs={'class': 'question_add'})
         }
 
 
@@ -152,8 +194,8 @@ class AnswerAddForm(forms.ModelForm):
         model = Answers
         fields = ['answer', 'is_true', 'addition', 'match']
         widgets = {
-            'answer': forms.Textarea(attrs={'class': 'question-add'}),
-            'addition': forms.Textarea(attrs={'class': 'question-add'})
+            'answer': forms.Textarea(attrs={'class': 'question_add'}),
+            'addition': forms.Textarea(attrs={'class': 'question_add'})
         }
 
 

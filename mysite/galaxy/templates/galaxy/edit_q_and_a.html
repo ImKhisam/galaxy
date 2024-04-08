@@ -3,6 +3,7 @@
 
 {% block custom_styles %}
 <link type="text/css" href="{% static 'galaxy/css/forms.css' %}" rel="stylesheet">
+<link type="text/css" href="{% static 'galaxy/css/edit_questions.css' %}" rel="stylesheet">
 <style>
 h1{
     text-align: center;
@@ -28,27 +29,38 @@ h1{
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ question_form.as_p }}
-        <input type="hidden" id="deletedAnswerIds" name="deleted_answer_ids" value="">
-        <h3>Answers:</h3>
-        {{ answer_formset.management_form }}
-        <div id="answers">
-            {% for answer_form in answer_formset %}
-                  <div class="answer">
-                      {{ answer_form.as_p }}
-                      <input type="hidden" name="answer_id" value="{{ answer_form.instance.id }}">
-                      <button type="button" class="delete-answer">Delete Answer</button>
-                  </div>
-            {% endfor %}
+
+        {% if test.part != 'Speaking' and test.part != 'Writing' %}
+            <input type="hidden" id="deletedAnswerIds" name="deleted_answer_ids" value="">
+            <h3>Answers:</h3>
+            {{ answer_formset.management_form }}
+            <div id="answers">
+                {% for answer_form in answer_formset %}
+                      <div class="answer">
+                          {{ answer_form.as_p }}
+                          <input type="hidden" name="answer_id" value="{{ answer_form.instance.id }}">
+                          <button type="button" class="delete-answer">Delete Answer</button>
+                      </div>
+                {% endfor %}
+            </div>
+            <div id="empty-form" class="hidden">{{ answer_formset.empty_form.as_p }}</div>
+
+            <button id="add-answer" type="button">Add answer</button>
+        {% endif %}
+
+        <div style="display: flex; justify-content: center;">
+            <div style="width: 20%; display: inline-flex;">
+                <button class="single_btn" type="submit">
+                    <span>Save</span>
+                </button>
+                <a class="single_btn" href="{% url 'show_test' test.id %}">
+                    <span>Cancel</span>
+                </a>
+            </div>
         </div>
-        <div id="empty-form" class="hidden">{{ answer_formset.empty_form.as_p }}</div>
-
-        <button id="add-answer" type="button">Add answer</button>
-
-        <button type="submit">Save</button>
-
-        <a href="{% url 'show_test' test_id %}">Cancel</a>
     </form>
 </div>
+<div class="margin_bot"></div>
 {% endblock %}
 
 

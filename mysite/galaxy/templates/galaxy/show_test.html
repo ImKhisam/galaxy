@@ -49,9 +49,15 @@
             {% endif %}
 
             {% for question, answers in qa.items %}
-                <div class="question_controls">
-                    <a href="{% url 'edit_q_and_a' question.id %}">EDIT</a>
-                    <a href="#">DELETE</a>
+                <div class="buttons_shell">
+                    <div class="question_controls">
+                        <a class="single_btn" href="{% url 'edit_q_and_a' question.id %}">
+                            <span>EDIT</span>
+                        </a>
+                        <a class="single_btn" href="{% url 'delete_question' question.id %}">
+                            <span>DELETE</span>
+                        </a>
+                    </div>
                 </div>
                 <div class="question_obj">
                     {% if question.question_type == 'match_type' %}     <!-- Match type of question-->
@@ -356,7 +362,7 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            <a class="btn btn5" href="{% url 'add_q_and_a' chapter.id %}"><span>Add question to chapter</span></a>
+            <a class="single_btn" href="{% url 'add_q_and_a' chapter.id %}"><span>+Add question to chapter</span></a>
         </div>
     {% endfor %}
     <br><br>

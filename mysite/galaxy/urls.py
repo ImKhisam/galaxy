@@ -68,12 +68,13 @@ urlpatterns = [
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
     path('add_q_and_a/<int:chapter_id>/', AddQandAView.as_view(), name='add_q_and_a'),
     path('edit_q_and_a/<int:question_id>/', EditQandAView.as_view(), name='edit_q_and_a'),
+    path('delete_question/<int:question_id>/', delete_question, name='delete_question'),
     path('show_test/<int:test_pk>/', ShowTest.as_view(), name='show_test'),
 
     path('show_assessments_for_teacher/', ShowAssessmentsForTeacher.as_view(), name='show_assessments_for_teacher'),
     path('filter_assessments_for_teacher/', filter_assessments_for_teacher, name='filter_assessments_for_teacher'),
     path('save_an_assessment/', save_an_assessment, name='save_an_assessment'),
-    path('close_assessment/', close_assessment, name='close_assessment'),
+    path('close_assessment/', close_assessment, name='close_assessment'),   # ajax func?
     path('show_assessment_results/<int:assessment_pk>/', ShowAssessmentResults.as_view(), name='show_assessment_results'),
 
     path('show_assessments_for_student/', ShowAssessmentsForStudent.as_view(), name='show_assessments_for_student'),

@@ -1,7 +1,4 @@
-.question-add{
-    width: 90%;
-    height: 150px;
-}
+
 .chapter-info-add{
     width: 90%;
     height: 150px;
@@ -21,11 +18,23 @@
 .chapter-text-name-add{
     min-width: 30%;
 }
+
+.question_add{
+    width: 90%;
+    height: 200px;
+}
+
+.adding_text_input{
+    width: 90%;
+    height: 30px;
+}
+
 p{
     display: flex;
 }
 label{
     padding-right: 10px;
+    width: 10%;
 }
 .test-form{
     font-size: 25px;
@@ -38,6 +47,9 @@ h3{
 }
 input{
     font-size: 20px;
+}
+select{
+    font-size: 16px;
 }
 textarea{
     font-size: 18px;

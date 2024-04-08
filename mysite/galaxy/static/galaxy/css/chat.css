@@ -181,3 +181,7 @@ nav .menu_second_row {
 a{
   text-decoration: none;
 }
+
+.margin_bot{
+  height: 100px;
+}

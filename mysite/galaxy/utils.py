@@ -276,7 +276,14 @@ class AddQuestionConstValues:
 
 
 class ChooseAddQuestForm:
-    def choose_form(self, chapter_object):
+    def choose_form(self, type, chapter_object):
+        key = type + ' ' + chapter_object.test_id.part
+        dict = {'add Writing': WritingQandAAddForm,
+                'add Speaking': SpeakingQandAAddForm,
+                'add Listening': QuestionAddForm,
+                'add Grammar and Vocabulary': QuestionAddForm,
+                'add Reading': QuestionAddForm,
+                'edit ': QuestionAddForm}
         if chapter_object.test_id.part == 'Writing':
             return WritingQandAAddForm
         elif chapter_object.test_id.part == 'Speaking':
