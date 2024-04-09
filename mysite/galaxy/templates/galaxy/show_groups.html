@@ -48,7 +48,7 @@
               <td>
                   <div style="display: inline-flex; width: 80%;">
                       <a class="btn btn5" href="{% url 'show_group_participants' group.id %}"><span>Show participants</span></a>
-                      <a class="btn btn5" href="{% url 'delete_group' group.id %}"><span>Delete</span></a>
+                      <a class="btn btn5 delete" href="#" data-group-id="{{ group.id }}"><span>Delete</span></a>
                   </div>
               </td>
           </tr>
@@ -79,6 +79,18 @@
       </tbody>
       </table>
   </div>
+</div>
+
+<div class="confirmation-dialog" style="display: none;">
+    <h2>Do you really want to delete this group?</h2>
+    <div class="modal-buttons">
+        <button class="multiple_btn_color btn-yes">
+            <span>Yes</span>
+        </button>
+        <button class="multiple_btn_color btn-no">
+            <span>No</span>
+        </button>
+    </div>
 </div>
 
 {% endblock content %}
@@ -165,5 +177,49 @@
             });
         });
     });
+</script>
+
+<script>
+$(document).ready(function() {
+
+    // Event delegation for handling click on delete buttons
+    $(document).on('click', '.delete', function(e) {
+        e.preventDefault();
+        var groupId = $(this).data('group-id');
+        // Show confirmation dialog
+        $('.confirmation-dialog').show();
+
+        // Event listener for Yes button
+        $('.btn-yes').click(function() {
+            deleteGroup(groupId); // Pass filter_flag to deleteTest
+            $('.confirmation-dialog').hide();
+        });
+
+        // Event listener for No button
+        $('.btn-no').click(function() {
+            $('.confirmation-dialog').hide();
+        });
+    });
+
+    // Function to delete the test via AJAX
+    function deleteGroup(groupId) {
+        // Your AJAX call to delete the test
+        $.ajax({
+            url: "{% url 'ajx_delete_group' %}",
+            type: 'POST',
+            data: {
+                'group_id': groupId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Group deleted successfully');
+            },
+            error: function(xhr, status, error) {
+                console.error('Error deleting test:', error);
+            }
+        });
+    }
+});
+
 </script>
 {% endblock javascript %}

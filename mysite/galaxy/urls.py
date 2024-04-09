@@ -43,6 +43,7 @@ urlpatterns = [
     path('add_group/', add_group, name='add_group'),
     path('update_group_name/', update_group_name, name='update_group_name'),
     path('delete_group/<int:group_id>/', delete_group, name='delete_group'),
+    path('ajx_delete_group/', ajx_delete_group, name='ajx_delete_group'),
     path('update_student_group', update_student_group, name='update_student_group'),
 
     path('my_results/', ShowResults.as_view(), name='show_results'),

@@ -494,6 +494,16 @@ def delete_group(request, group_id):
     return redirect('show_groups')
 
 
+def ajx_delete_group(request):
+    if request.method == 'POST':
+        group_id = request.POST.get('group_id')
+        group = get_object_or_404(Groups, id=group_id)
+        group.delete()
+        return JsonResponse({'message': 'Test deleted successfully'}, status=200)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
 @user_passes_test(teacher_check, login_url='home')
 def update_student_group(request):
     print('!!!!!!!!!!!!!!!!!!!')
@@ -1250,10 +1260,6 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
         return render(request, 'galaxy/add_test.html', context)
 
 
-def edit_test(request):
-    pass
-
-
 def delete_test(request):
     if request.method == 'POST':
         test_id = request.POST.get('test_id')
@@ -1465,6 +1471,7 @@ def delete_question(request, question_id):
 class ShowOrEditTest(LoginRequiredMixin, TeacherUserMixin, View):
     login_url = '/login/'
     redirect_field_name = 'login'
+    # todo change template name to test
     template_name = "galaxy/show_test.html"
 
     def get(self, request, show_type, test_pk):
