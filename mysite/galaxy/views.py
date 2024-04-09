@@ -1320,6 +1320,72 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
             return redirect('add_q_and_a', chapter_id)
 
 
+class EditTestData(LoginRequiredMixin, TeacherUserMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+
+    def get(self, request, *args, **kwargs):
+        test_id = self.kwargs.get('test_id')
+        test_obj = Tests.objects.get(id=test_id)
+        test_form = TestAddForm
+        test_form = test_form(instance=test_obj)
+
+        context = {
+            'test_form': test_form,
+            'test': test_obj,
+        }
+
+        return render(request, 'galaxy/edit_test_data.html', context)
+
+    def post(self, request, *args, **kwargs):
+        test_id = self.kwargs.get('test_id')
+        test_obj = Tests.objects.get(id=test_id)
+        old_media_path = test_obj.media.path if test_obj.media else None
+        test_form = TestAddForm
+        test_form = test_form(request.POST, request.FILES, instance=test_obj)
+        if test_form.is_valid():
+            test_obj = test_form.save(commit=False)
+            test_obj.save()
+            if ('media' in request.FILES and old_media_path) or request.POST.get('media-clear') == 'on':
+                if os.path.exists(old_media_path):
+                    os.remove(old_media_path)
+
+        # todo check redirect
+        return redirect('test', 'edit', test_id)
+
+
+class EditChapterData(LoginRequiredMixin, TeacherUserMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+
+    def get(self, request, *args, **kwargs):
+        chapter_id = self.kwargs.get('chapter_id')
+        chapter_obj = Chapters.objects.get(id=chapter_id)
+        test_obj = chapter_obj.test_id
+        chapter_form = EditChapterForm
+        chapter_form = chapter_form(instance=chapter_obj)
+
+        context = {
+            'chapter_form': chapter_form,
+            'test': test_obj,
+        }
+
+        return render(request, 'galaxy/edit_chapter_data.html', context)
+
+    def post(self, request, *args, **kwargs):
+        chapter_id = self.kwargs.get('chapter_id')
+        chapter_obj = Chapters.objects.get(id=chapter_id)
+
+        chapter_form = EditChapterForm
+        chapter_form = chapter_form(request.POST, request.FILES, instance=chapter_obj)
+        if chapter_form.is_valid():
+            chapter_obj = chapter_form.save(commit=False)
+            chapter_obj.save()
+
+        # todo check redirect
+        return redirect('test', 'edit', chapter_obj.test_id.id)
+
+
 class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, AddQuestionConstValues, View):
     login_url = '/login/'
     redirect_field_name = 'login'
@@ -1364,6 +1430,7 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
                 except Answers.DoesNotExist:
                     pass
 
+        # saving question
         if question_form.is_valid() and formset.is_valid():
             question_obj = question_form.save(commit=False)
             question_obj.save()
@@ -1376,8 +1443,8 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
 
                     answer_obj.question_id = question_obj
                     answer_obj.save()
-            #todo change redirect
-            return redirect('show_test', question_obj.test_id.id)
+            # todo check redirect
+            return redirect('test', 'edit', question_obj.test_id.id)
 
         return redirect('edit_q_and_a', question_id)
 
@@ -1428,7 +1495,6 @@ class ShowOrEditTest(LoginRequiredMixin, TeacherUserMixin, View):
                             for key in
                             Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').
                                 order_by('match')}
-                        print(qa[question])
                 elif question.question_type == 'input_type':
                     qa[question] = Answers.objects.get(question_id__id=question.id)  # незачем запрашивать?
                 else:  #

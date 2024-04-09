@@ -96,6 +96,17 @@ class ChapterAddForm(forms.ModelForm):
         }
 
 
+class EditChapterForm(forms.ModelForm):
+    class Meta:
+        model = Chapters
+        fields = ['chapter_number', 'info', 'text_name', 'text']
+        widgets = {
+            'chapter_number': forms.TextInput(attrs={'class': 'chapter-number-info-add'}),
+            'text': forms.Textarea(attrs={'class': 'chapter-text-add', 'oninput': "auto_grow(this)"}),
+            'text_name': forms.TextInput(attrs={'class': 'chapter-text-name-add', 'oninput': "this.size = this.value.length"}),
+        }
+
+
 class TaskCheckForm(forms.ModelForm):       # выставление баллов?
     class Meta:
         model = TasksToCheck

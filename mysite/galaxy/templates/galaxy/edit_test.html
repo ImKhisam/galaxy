@@ -14,7 +14,7 @@
 <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
 <div class="buttons_shell">
     <div class="question_controls">
-        <a class="single_btn" href="#">
+        <a class="single_btn" href="{% url 'edit_test_data' test.id %}">
             <span>EDIT TEST</span>
         </a>
     </div>
@@ -37,7 +37,7 @@
             <h2>Chapter: {{ chapter.chapter_number }}</h2>
             <div class="buttons_shell">
                 <div class="question_controls">
-                    <a class="single_btn" href="#">
+                    <a class="single_btn" href="{% url 'edit_chapter_data' chapter.id %}">
                         <span>EDIT CHAPTER</span>
                     </a>
                     <a class="single_btn" href="#">

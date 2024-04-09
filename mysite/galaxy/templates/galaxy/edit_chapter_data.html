@@ -1,0 +1,50 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+<link type="text/css" href="{% static 'galaxy/css/forms.css' %}" rel="stylesheet">
+<link type="text/css" href="{% static 'galaxy/css/edit_questions.css' %}" rel="stylesheet">
+<link type="text/css" href="{% static 'galaxy/css/edit_test_data.css' %}" rel="stylesheet">
+<style>
+h1{
+    text-align: center;
+}
+.test{
+    padding: 60px;
+    color: black;
+    background-color: #ffffff;
+    width: 60%;
+    margin: auto;
+    text-align: left;
+}
+
+.hidden{
+  display: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test">
+    <h1>Edit chapter data</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="test-form">
+            {{ chapter_form.as_p }}
+        </div>
+
+        <div style="display: flex; justify-content: center;">
+            <div style="width: 20%; display: inline-flex;">
+                <button class="single_btn" type="submit">
+                    <span>Save</span>
+                </button>
+                <a class="single_btn" href="{% url 'test' 'edit' test.id %}">
+                    <span>Cancel</span>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="margin_bot"></div>
+{% endblock %}
