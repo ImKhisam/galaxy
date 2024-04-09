@@ -4,6 +4,7 @@
 
 {% block custom_styles %}
     <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/edit_test.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block content %}
@@ -11,6 +12,13 @@
 <div class="test-parent">
 <div class="test">
 <h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
+<div class="buttons_shell">
+    <div class="question_controls">
+        <a class="single_btn" href="#">
+            <span>EDIT TEST</span>
+        </a>
+    </div>
+</div>
 {% if test.media %}
     <div style="display: flex;">
         <audio style="margin: auto;
@@ -26,6 +34,17 @@
     </div>
     {% for chapter, qa in content_dict.items %}
         <div class="chapter">
+            <h2>Chapter: {{ chapter.chapter_number }}</h2>
+            <div class="buttons_shell">
+                <div class="question_controls">
+                    <a class="single_btn" href="#">
+                        <span>EDIT CHAPTER</span>
+                    </a>
+                    <a class="single_btn" href="#">
+                        <span>DELETE ???</span>
+                    </a>
+                </div>
+            </div>
             {% if chapter.info %}
                 <div class="chapter-info">
                     {{chapter.info}}
@@ -49,7 +68,18 @@
             {% endif %}
 
             {% for question, answers in qa.items %}
+
                 <div class="question_obj">
+                    <div class="buttons_shell">
+                        <div class="question_controls">
+                            <a class="single_btn" href="{% url 'edit_q_and_a' question.id %}">
+                                <span>EDIT</span>
+                            </a>
+                            <a class="single_btn" href="{% url 'delete_question' question.id %}">
+                                <span>DELETE</span>
+                            </a>
+                        </div>
+                    </div>
                     {% if question.question_type == 'match_type' %}     <!-- Match type of question-->
                         <div class="question">
                             <p class="question-number">{{question.question_number}}</p>

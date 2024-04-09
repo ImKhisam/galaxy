@@ -1256,9 +1256,7 @@ def edit_test(request):
 
 def delete_test(request):
     if request.method == 'POST':
-        print('!!!!!!!!!!!!!!!!!!!!')
         test_id = request.POST.get('test_id')
-        #test_obj = Tests.objects.get(id=test_id)
         test = get_object_or_404(Tests, id=test_id)
         test.delete()
         return JsonResponse({'message': 'Test deleted successfully'}, status=200)
@@ -1378,7 +1376,7 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
 
                     answer_obj.question_id = question_obj
                     answer_obj.save()
-
+            #todo change redirect
             return redirect('show_test', question_obj.test_id.id)
 
         return redirect('edit_q_and_a', question_id)
@@ -1393,17 +1391,19 @@ def delete_question(request, question_id):
         question.save()
 
     question_obj.delete()
-
+    # todo change redirect
     return redirect('show_test', test_obj.id)
 
 
-class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
+class ShowOrEditTest(LoginRequiredMixin, TeacherUserMixin, View):
     login_url = '/login/'
     redirect_field_name = 'login'
+    template_name = "galaxy/show_test.html"
 
-    def get(self, request, test_pk):
+    def get(self, request, show_type, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
-
+        if show_type == 'edit':
+            self.template_name = "galaxy/edit_test.html"
         content_dict = {}
         chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
         for chapter in chapters_for_test:
@@ -1439,7 +1439,7 @@ class ShowTest(LoginRequiredMixin, TeacherUserMixin, View):
                    'content_dict': content_dict,
                    }
 
-        return render(request, 'galaxy/show_test.html', context)
+        return render(request, self.template_name, context)
 
 
 # def testing_page(request):

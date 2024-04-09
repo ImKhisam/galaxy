@@ -18,8 +18,8 @@
         <td>{{test.test_num}}</td>
         <td>
             <div style="display: flex; justify-content: space-evenly;">
-                <a class="multiple_btn" href="{% url 'show_test' test.id %}"><span>Open</span></a>
-                <a class="multiple_btn" href="#"><span>Edit</span></a>
+                <a class="multiple_btn" href="{% url 'test' 'open' test.id %}"><span>Open</span></a>
+                <a class="multiple_btn" href="{% url 'test' 'edit' test.id %}"><span>Edit</span></a>
                 <a class="multiple_btn delete" href="#" data-test-id="{{ test.id }}"><span>Delete</span></a>
             </div>
         </td>

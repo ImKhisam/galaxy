@@ -71,7 +71,7 @@ urlpatterns = [
     path('add_q_and_a/<int:chapter_id>/', AddQandAView.as_view(), name='add_q_and_a'),
     path('edit_q_and_a/<int:question_id>/', EditQandAView.as_view(), name='edit_q_and_a'),
     path('delete_question/<int:question_id>/', delete_question, name='delete_question'),
-    path('show_test/<int:test_pk>/', ShowTest.as_view(), name='show_test'),
+    path('test/<slug:show_type>/<int:test_pk>/', ShowOrEditTest.as_view(), name='test'),
 
     path('show_assessments_for_teacher/', ShowAssessmentsForTeacher.as_view(), name='show_assessments_for_teacher'),
     path('filter_assessments_for_teacher/', filter_assessments_for_teacher, name='filter_assessments_for_teacher'),
