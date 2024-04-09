@@ -1250,6 +1250,22 @@ class AddTestAndChaptersView(LoginRequiredMixin, TeacherUserMixin, AddTestConstV
         return render(request, 'galaxy/add_test.html', context)
 
 
+def edit_test(request):
+    pass
+
+
+def delete_test(request):
+    if request.method == 'POST':
+        print('!!!!!!!!!!!!!!!!!!!!')
+        test_id = request.POST.get('test_id')
+        #test_obj = Tests.objects.get(id=test_id)
+        test = get_object_or_404(Tests, id=test_id)
+        test.delete()
+        return JsonResponse({'message': 'Test deleted successfully'}, status=200)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
 class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, AddQuestionConstValues, View):
     login_url = '/login/'
     redirect_field_name = 'login'

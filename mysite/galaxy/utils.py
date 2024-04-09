@@ -289,13 +289,6 @@ class ChooseAddQuestForm:
                 'edit Grammar and Vocabulary': EditQuestionForm,
                 'edit Reading': EditQuestionForm,
                 }
-        #if chapter_object.test_id.part == 'Writing':
-        #    return WritingQandAAddForm
-        #elif chapter_object.test_id.part == 'Speaking':
-        #    return SpeakingQandAAddForm
-        #else:
-        #    return QuestionAddForm
-
         return dict[key]
 
 

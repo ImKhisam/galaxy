@@ -139,7 +139,13 @@
                     <td>{{test.part}}</td>
                     {% endif %}
                     <td>{{test.test_num}}</td>
-                    <td><a class="btn btn5" href="{% url 'show_test' test.id %}"><span>Open</span></a></td>
+                    <td>
+                        <div style="display: flex; justify-content: space-evenly;">
+                            <a class="multiple_btn" href="{% url 'show_test' test.id %}"><span>Open</span></a>
+                            <a class="multiple_btn" href="#"><span>Edit</span></a>
+                            <a class="multiple_btn delete" href="#" data-test-id="{{ test.id }}"><span>Delete</span></a>
+                        </div>
+                    </td>
                 </tr>
             {% endfor %}
                 <tr>
@@ -154,6 +160,18 @@
     </div>
 </div>
 
+<div class="confirmation-dialog" style="display: none;">
+    <h2>Do you really want to delete this test?</h2>
+    <div class="modal-buttons">
+        <button class="multiple_btn_color btn-yes">
+            <span>Yes</span>
+        </button>
+        <button class="multiple_btn_color btn-no">
+            <span>No</span>
+        </button>
+    </div>
+</div>
+
 {% include "galaxy/pagination.html" %}
 
 {% endblock %}
@@ -162,6 +180,25 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+// Define filterTestsAndAssessments function outside of jQuery document ready
+function filterTestsAndAssessments(filter_flag, checkboxes) {
+    $.ajax({
+        url: "{% url 'filter_tests_and_assessments' %}",
+        type: 'GET',
+        data: {
+            filter_flag: filter_flag,
+            checkboxes: checkboxes.join()
+        },
+        success: function(data) {
+            $('.table tbody').html(data.my_content);
+        },
+        error: function(xhr, status, error) {
+            console.error(error);
+        }
+    });
+}
+
+// Remaining jQuery code inside document ready
 $(document).ready(function() {
     // Pre-coloring chosen category
     var currentCat = "{{current_category}}";
@@ -238,27 +275,70 @@ $(document).ready(function() {
         }
     }
 
-    // Function to filter tests and assessments via AJAX
-    function filterTestsAndAssessments(filter_flag, checkboxes) {
-        $.ajax({
-            url: "{% url 'filter_tests_and_assessments' %}",
-            type: 'GET',
-            data: {
-                filter_flag: filter_flag,
-                checkboxes: checkboxes.join()
-            },
-            success: function(data) {
-                $('.table tbody').html(data.my_content);
-            },
-            error: function(xhr, status, error) {
-                console.error(error);
-            }
-        });
-    }
-
     // Apply stored state when page is loaded or navigated back to
     var storedState = retrieveStateFromSessionStorage();
     applyStoredState(storedState);
 });
+</script>
+
+<script>
+$(document).ready(function() {
+    // Function to get checked checkboxes
+    function getCheckedCheckboxes() {
+        var checkedCheckboxes = [];
+        // If "Show all" checkbox is checked, add its value to the array
+        if ($('#ALL').is(':checked')) {
+            checkedCheckboxes.push($('#ALL').val());
+        } else {
+            // Loop through each checked checkbox and add its value to the array
+            $('input[type="checkbox"]:checked').not('#ALL').each(function() {
+                checkedCheckboxes.push($(this).val());
+            });
+        }
+        return checkedCheckboxes;
+    }
+
+    // Event delegation for handling click on delete buttons
+    $(document).on('click', '.multiple_btn.delete', function(e) {
+        e.preventDefault();
+        var testId = $(this).data('test-id');
+        var filter_flag = $('input[name="cat"]:checked').val(); // Get filter_flag value
+        // Show confirmation dialog
+        $('.confirmation-dialog').show();
+
+        // Event listener for Yes button
+        $('.btn-yes').click(function() {
+            deleteTest(testId, filter_flag); // Pass filter_flag to deleteTest
+            $('.confirmation-dialog').hide();
+        });
+
+        // Event listener for No button
+        $('.btn-no').click(function() {
+            $('.confirmation-dialog').hide();
+        });
+    });
+
+    // Function to delete the test via AJAX
+    function deleteTest(testId, filter_flag) {
+        var checkedCheckboxes = getCheckedCheckboxes(); // Get checked checkboxes
+        // Your AJAX call to delete the test
+        $.ajax({
+            url: "{% url 'delete_test' %}",
+            type: 'POST',
+            data: {
+                'test_id': testId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Test deleted successfully');
+                filterTestsAndAssessments(filter_flag, checkedCheckboxes); // Pass filter_flag and checkedCheckboxes to filterTestsAndAssessments
+            },
+            error: function(xhr, status, error) {
+                console.error('Error deleting test:', error);
+            }
+        });
+    }
+});
+
 </script>
 {% endblock %}

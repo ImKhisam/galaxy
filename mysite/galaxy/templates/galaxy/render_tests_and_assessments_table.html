@@ -17,8 +17,10 @@
         {% endif %}
         <td>{{test.test_num}}</td>
         <td>
-            <div style="display: inline-flex; width: 80%;">
-                <a class="btn btn5" href="{% url 'show_test' test.id %}"><span>Open</span></a>
+            <div style="display: flex; justify-content: space-evenly;">
+                <a class="multiple_btn" href="{% url 'show_test' test.id %}"><span>Open</span></a>
+                <a class="multiple_btn" href="#"><span>Edit</span></a>
+                <a class="multiple_btn delete" href="#" data-test-id="{{ test.id }}"><span>Delete</span></a>
             </div>
         </td>
     </tr>
