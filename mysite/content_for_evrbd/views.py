@@ -48,10 +48,25 @@ from .models import *
 #        return context
 
 
+class BB(ListView):
+    model = BritishBulldog
+    template_name = 'content_for_evrbd/BB.html'
+    context_object_name = 'bb_tasks'
+
+    def get_queryset(self):
+        content_dict = {year_obj: {x: BritishBulldog.objects.get(year=year_obj.year, classes=x)
+                                   if BritishBulldog.objects.filter(year=year_obj.year, classes=x).exists()
+                                   else ' '
+                                   for x in ['1-2', '3-4', '5-6', '7-8', '9-11', 'Answers']}
+                        for year_obj in BritishBulldog.objects.order_by('-year').distinct('year')}
+
+        return content_dict
+
+
 def showdoc(request, classes_id):
     media = settings.MEDIA_ROOT                                     # importing from settings
-    obj = get_object_or_404(BritishBulldog, id=classes_id)      # get path from db
-    filepath = os.path.join(media, str(obj.content))             # uniting path
+    obj = get_object_or_404(BritishBulldog, id=classes_id)          # get path from db
+    filepath = os.path.join(media, str(obj.content))                # uniting path
 
     try:
         return FileResponse(open(filepath, 'rb'), content_type='application/pdf')

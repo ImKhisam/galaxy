@@ -198,6 +198,7 @@ option{
 /* Checked radio */
 .question-choices input:checked + label{
     color: black;
+    background-color: var(--blue-transparent);
     border: 2px solid black;
 }
 .question-choices input:hover + label{

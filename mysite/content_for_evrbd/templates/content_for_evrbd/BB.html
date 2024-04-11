@@ -1,0 +1,76 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_table_head">
+        <div class="empty"></div>
+        <div class="table_head">
+            <h1>British Bulldog archive</h1>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="table">
+        <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Year</th>
+                <th scope="col">1-2</th>
+                <th scope="col">3-4</th>
+                <th scope="col">5-6</th>
+                <th scope="col">7-8</th>
+                <th scope="col">9-11</th>
+                <th scope="col">Answers</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for key, value in bb_tasks.items %}
+            <tr>
+                <td scope="row">{{ forloop.counter }}</td>
+                <td scope="row">{{ key.year }}</td>
+                {% for classes in value.values %}
+                    <td scope="row">
+                        {% if classes == ' ' %}
+                            <span>-</span>
+                        {% else %}
+                            {% if classes.audio %}
+                                <div>
+                                    <a target=”_blank” href="{% url 'show_doc' classes.id %}">PDF</a>
+                                    <a target=”_blank” href="{% url 'play_audio' classes.id %}">Audio</a>
+                                </div>
+                            {% else %}
+                                <a target=”_blank” href="{% url 'show_doc' classes.id %}">PDF</a>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="confirmation-dialog" style="display: none;">
+    <h2>Do you really want to delete this group?</h2>
+    <div class="modal-buttons">
+        <button class="multiple_btn_color btn-yes">
+            <span>Yes</span>
+        </button>
+        <button class="multiple_btn_color btn-no">
+            <span>No</span>
+        </button>
+    </div>
+</div>
+
+{% endblock content %}

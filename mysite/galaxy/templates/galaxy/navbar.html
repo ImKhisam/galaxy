@@ -42,12 +42,8 @@
                     </li>
                 {% endif %}
                 {% if request.user.is_authenticated %}
-                    <li class="first-row"><a href="https://learnenglish.britishcouncil.org/skills">Develop your skills</a></li>
-                    <li class="first-row"><a href="">British Bulldog</a>
-                        <ul class="menu_second_row">
-                            {% drop_menu_bb %}
-                        </ul>
-                    </li>
+                    <li class="first-row"><a target=”_blank” href="https://learnenglish.britishcouncil.org/skills">Develop your skills</a></li>
+                    <li class="first-row"><a href="{% url 'BB' %}">British Bulldog</a></li>
                     <li class="first-row"><a href="#">Idioms & Collocations</a>
                         <ul class="menu_second_row">
                             <li><a href="{% url 'play_video' %}">Watch & learn</a></li>

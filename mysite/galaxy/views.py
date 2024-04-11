@@ -885,7 +885,7 @@ class ShowTestsByPart(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         part = data[1]
 
         # Query to fetch all tests along with the best result points
-        tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False)
+        tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False).order_by('test_num')
         best_result_dict = {}
         for test in tests_with_results:
             best_result_points_obj = Results.objects.filter(test_id=test.id,
@@ -904,7 +904,7 @@ class ShowTestsByPart(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         type = data[0]
         part = data[1]
 
-        tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False)
+        tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False).order_by('test_num')
 
         return tests_with_results
 
@@ -917,7 +917,7 @@ def filter_tests_by_part(request):
     show_only_not_passed = request.GET.get('not_passed')
     user_id = request.user
 
-    tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False)
+    tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False).order_by('test_num')
 
     best_result_dict = {}
     for test in tests_with_results:
@@ -1276,11 +1276,22 @@ class AddQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Add
 
     def get(self, request, *args, **kwargs):
         chapter_id = self.kwargs.get('chapter_id')
-        question_form = self.choose_form('add', Chapters.objects.get(id=chapter_id))
+        chapter_obj = Chapters.objects.get(id=chapter_id)
+        try:
+            next_chapter_obj_id = Chapters.objects.get(test_id=chapter_obj.test_id, id=chapter_id + 1).id
+        except Chapters.DoesNotExist:
+            next_chapter_obj_id = None
+
+
+        sum_of_questions = Questions.objects.filter(chapter_id=chapter_obj).count()
+        question_form = self.choose_form('add', chapter_obj)
         answer_formset = formset_factory(AnswerAddForm, extra=0)
         context = {
             'question_form': question_form,
             'answer_formset': answer_formset,
+            'chapter_obj': chapter_obj,
+            'next_chapter_obj_id': next_chapter_obj_id,
+            'sum_of_questions': sum_of_questions,
         }
 
         return render(request, 'galaxy/add_q_and_a.html', context)

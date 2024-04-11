@@ -26,10 +26,12 @@ urlpatterns = [
     path('reset_password_complete/',
          auth_views.PasswordResetCompleteView.as_view(template_name="galaxy/password_reset_done.html"),
          name='password_reset_complete'),
+
     path('personal_acc/<slug:acc_slug>/', PersonalAcc.as_view(), name='personal_acc'),
     path('delete_account/<int:user_id>', delete_account, name='delete_account'),
     path('idioms/', Idioms.as_view(), name='idioms'),
     path('julik/', julik, name='julik'),
+
     path('show_doc/<int:classes_id>/<doc_type>/', showdoc, name='show_doc'),
     path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio'),
 
