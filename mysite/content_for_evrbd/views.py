@@ -3,7 +3,6 @@ from django.views.generic import TemplateView, ListView, DetailView
 from django.http import FileResponse, Http404
 from django.conf import settings
 
-from galaxy.models import OlympWay
 from .models import *
 
 
@@ -64,6 +63,11 @@ class BB(ListView):
 
         return content_dict
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'BB Archive'
+        return context
+
 
 class Olymp(ListView):
     model = OlympWay
@@ -86,6 +90,11 @@ class Olymp(ListView):
 
         return content_dict
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Olymp Archive'
+        return context
+
 
 def showdoc(request, classes_id):
     media = settings.MEDIA_ROOT                                     # importing from settings
@@ -98,15 +107,32 @@ def showdoc(request, classes_id):
         raise Http404()
 
 
+# todo add LoginRequiredMixin
 class Playaudio(DetailView):
-    model = BritishBulldog
     template_name = 'content_for_evrbd/play_audio.html'
-    pk_url_kwarg = 'classes_id'
     context_object_name = 'file'
+
+    def get_object(self, queryset=None):
+        classes_id = self.kwargs.get('classes_id')
+        source = self.kwargs.get('source')
+        if source == 'BB':
+            self.model = BritishBulldog
+        elif source == 'Olymp':
+            self.model = OlympWay
+        else:
+            raise Http404("Invalid source")
+
+        try:
+            obj = self.model.objects.get(pk=classes_id)
+        except self.model.DoesNotExist:
+            raise Http404("Object does not exist")
+
+        return obj
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
+        #context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
+        context['title'] = 'Play audio'
         return context
 
 

@@ -46,7 +46,7 @@
                             {% if classes.audio %}
                                 <div>
                                     <a target=”_blank” href="{% url 'show_doc' classes.id %}">PDF</a>
-                                    <a target=”_blank” href="{% url 'play_audio' classes.id %}">Audio</a>
+                                    <a target=”_blank” href="{% url 'play_audio' 'BB' classes.id %}">Audio</a>
                                 </div>
                             {% else %}
                                 <a target=”_blank” href="{% url 'show_doc' classes.id %}">PDF</a>

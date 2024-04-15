@@ -41,7 +41,7 @@
                                             <div class="class_element"><a target="_blank" href="{% url 'show_doc' class.id 'answer' %}">Answer</a></div>
                                             <div class="class_element"><a target="_blank" href="{% url 'show_doc' class.id 'script' %}">Script</a></div>
                                             {% if class.audio %}
-                                                <div class="class_element"><a target="_blank" href="{% url 'play_audio' class.id %}">Audio</a></div>
+                                                <div class="class_element"><a target="_blank" href="{% url 'play_audio' 'Olymp' class.id %}">Audio</a></div>
                                             {% else %}
                                             <div class="class_element"><span>No audio</span></div>
                                             {% endif %}

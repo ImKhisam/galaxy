@@ -836,18 +836,18 @@ def showdoc(request, classes_id, doc_type):
         raise Http404()
 
 
-class Playaudio(LoginRequiredMixin, DetailView):
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    model = OlympWay
-    template_name = 'galaxy/play_audio.html'
-    pk_url_kwarg = 'classes_id'
-    context_object_name = 'file'
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = '_'.join(('Olymp', context['file'].year, context['file'].classes))
-        return context
+#class Playaudio(LoginRequiredMixin, DetailView):
+#    login_url = '/login/'
+#    redirect_field_name = 'login'
+#    model = OlympWay
+#    template_name = 'galaxy/play_audio.html'
+#    pk_url_kwarg = 'classes_id'
+#    context_object_name = 'file'
+#
+#    def get_context_data(self, *, object_list=None, **kwargs):
+#        context = super().get_context_data(**kwargs)
+#        context['title'] = '_'.join(('Olymp', context['file'].year, context['file'].classes))
+#        return context
 
 
 class Idioms(LoginRequiredMixin, TemplateView):
