@@ -3,6 +3,8 @@ from django import forms
 from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from django.urls import reverse
+from django.db.models.functions import Cast
+from django.db.models import Value, CharField
 
 
 class Groups(models.Model):
@@ -56,6 +58,7 @@ class OlympWay(models.Model):
     year = models.CharField(max_length=255, verbose_name='Year')
     stage = models.CharField(max_length=255, verbose_name='Stage', choices=choices_in_stage)
     classes = models.CharField(max_length=255, verbose_name='Class')
+    order = models.IntegerField(verbose_name='Order')
     task = models.FileField(upload_to=content_file_name_olymp)
     answer = models.FileField(upload_to=content_file_name_olymp, blank=True)
     audio = models.FileField(upload_to=content_file_name_olymp, blank=True)

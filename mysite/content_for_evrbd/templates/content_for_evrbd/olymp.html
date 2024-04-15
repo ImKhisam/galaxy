@@ -1,0 +1,76 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css'%}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/olymp.css'%}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_table_head">
+        <div class="empty"></div>
+        <div class="table_head">
+            <h1>Olympic archive</h1>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="table_cell_outer">
+        <div class="table_cell">
+            {% for year_obj, stages in olymp_tasks.items %}
+                <div class="year_cell">
+                    <div class="year_obj"><span onclick="toggleStages(this)">{{ year_obj.year }}</span></div>
+                    <div style="display: none;" class="stages_cell">
+                        {% for stage_obj, classes in stages.items %}
+                            {% if forloop.counter == 1 %}
+                            <div class="stage_cell">
+                            {% else %}
+                            <div style="border-top: 2px solid white" class="stage_cell">
+                            {% endif %}
+                                <div class="stage_obj"><span onclick="toggleClasses(this)">{{ stage_obj.stage }}</span></div>
+                                <div style="display: none;" class="classes_cell">
+                                    {% for class in classes %}
+                                        <div class="class">
+                                            <div class="class_element"><span>{{ class.classes }}: </span></div>
+                                            <div class="class_element"><a target="_blank" href="{% url 'show_doc' class.id 'task' %}">Task</a></div>
+                                            <div class="class_element"><a target="_blank" href="{% url 'show_doc' class.id 'answer' %}">Answer</a></div>
+                                            <div class="class_element"><a target="_blank" href="{% url 'show_doc' class.id 'script' %}">Script</a></div>
+                                            {% if class.audio %}
+                                                <div class="class_element"><a target="_blank" href="{% url 'play_audio' class.id %}">Audio</a></div>
+                                            {% else %}
+                                            <div class="class_element"><span>No audio</span></div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="margin_bot"></div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+    function toggleStages(element) {
+        var stagesCell = element.parentNode.nextElementSibling;
+        stagesCell.style.display = (stagesCell.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function toggleClasses(element) {
+        var classesCell = element.parentNode.nextElementSibling;
+        classesCell.style.display = (classesCell.style.display === 'block') ? 'none' : 'block';
+    }
+</script>
+{% endblock javascript %}

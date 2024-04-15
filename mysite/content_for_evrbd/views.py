@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView, ListView, DetailView
 from django.http import FileResponse, Http404
 from django.conf import settings
+
+from galaxy.models import OlympWay
 from .models import *
 
 
@@ -59,6 +61,28 @@ class BB(ListView):
                                    else ' '
                                    for x in ['1-2', '3-4', '5-6', '7-8', '9-11', 'Answers']}
                         for year_obj in BritishBulldog.objects.order_by('-year').distinct('year')}
+
+        return content_dict
+
+
+class Olymp(ListView):
+    model = OlympWay
+    template_name = 'content_for_evrbd/olymp.html'
+    context_object_name = 'olymp_tasks'
+
+    def get_queryset(self):
+        from django.db.models.functions import Cast
+        from django.db.models import Value, CharField, IntegerField
+        content_dict = {}
+
+        #for item in OlympWay.objects.order_by('-year').distinct('year'):
+        #    menu_dict[item] = {key: {value: {item for item in OlympWay.objects.filter(id=key.id)}
+        #                             for value in OlympWay.objects.filter(year=item.year, stage=key.stage)}
+        #                       for key in OlympWay.objects.filter(year=item.year).order_by('-stage').distinct('stage')}
+
+        for item in OlympWay.objects.order_by('-year').distinct('year'):
+            content_dict[item] = {key: OlympWay.objects.filter(year=item.year, stage=key.stage).order_by('order')
+                               for key in OlympWay.objects.filter(year=item.year).order_by('-stage').distinct('stage')}
 
         return content_dict
 

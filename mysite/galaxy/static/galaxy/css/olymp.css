@@ -1,0 +1,70 @@
+:root {
+  --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
+  --gray-hover: #54514f;
+}
+
+a {
+  text-decoration: none;
+  color: white;
+}
+
+.table_cell_outer{
+  width: 60%;
+  font-size: 25px;
+}
+
+.table_cell{
+  border-top: 2px solid white;
+  border-left: 2px solid white;
+  border-right: 2px solid white;
+  background-color: var(--blue-transparent);
+}
+
+.year_cell{
+ display: flex;
+ border-bottom: 2px solid white;
+}
+
+.year_str{
+  display: flex;
+  border-bottom: 2px solid white;
+}
+
+.year_obj{
+  width: 15%;
+  border-right: 2px solid white;
+  text-align: center;
+}
+
+.stages_cell{
+  width: 85%;
+
+}
+
+.stage_obj{
+  width: 30%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+}
+
+.stage_obj span{
+  margin: auto;
+}
+
+.stage_cell{
+  display: flex;
+}
+
+.classes_cell{
+  width: 75%;
+}
+.class{
+  display: flex;
+}
+
+.class_element{
+  width: 20%;
+}
