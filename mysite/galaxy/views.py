@@ -876,16 +876,15 @@ class ShowTestsByPart(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Available Tests'
         context['pagination_number'] = self.paginate_by
-        context['current_type'] = self.kwargs.get('part').split(',')[0]
-        context['current_part'] = self.kwargs.get('part').split(',')[1].split(' ')[0]
+        context['chosen_type'] = self.kwargs.get('type')
+        context['default_part'] = 'Listening'
 
         user_id = self.request.user
-        data = self.kwargs.get('part').split(',')
-        type = data[0]
-        part = data[1]
+        tests_type = self.kwargs.get('type')
+        tests_part = 'Listening'
 
         # Query to fetch all tests along with the best result points
-        tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False).order_by('test_num')
+        tests_with_results = Tests.objects.filter(type=tests_type, part=tests_part, is_assessment=False).order_by('test_num')
         best_result_dict = {}
         for test in tests_with_results:
             best_result_points_obj = Results.objects.filter(test_id=test.id,
@@ -900,11 +899,9 @@ class ShowTestsByPart(LoginRequiredMixin, ConfirmStudentMixin, ListView):
 
     def get_queryset(self):
         user_id = self.request.user
-        data = self.kwargs.get('part').split(',')
-        type = data[0]
-        part = data[1]
-
-        tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False).order_by('test_num')
+        tests_type = self.kwargs.get('type')
+        tests_part = 'Listening'
+        tests_with_results = Tests.objects.filter(type=tests_type, part=tests_part, is_assessment=False).order_by('test_num')
 
         return tests_with_results
 
@@ -912,12 +909,12 @@ class ShowTestsByPart(LoginRequiredMixin, ConfirmStudentMixin, ListView):
 def filter_tests_by_part(request):
     data = dict()
     # Get parameters from AJAX request
-    type = request.GET.get('type')
-    part = request.GET.get('part')
+    tests_type = request.GET.get('type')
+    tests_part = 'Grammar and Vocabulary' if request.GET.get('part') == 'Grammar' else request.GET.get('part')
     show_only_not_passed = request.GET.get('not_passed')
     user_id = request.user
 
-    tests_with_results = Tests.objects.filter(type=type, part=part, is_assessment=False).order_by('test_num')
+    tests_with_results = Tests.objects.filter(type=tests_type, part=tests_part, is_assessment=False).order_by('test_num')
 
     best_result_dict = {}
     for test in tests_with_results:
@@ -1053,7 +1050,10 @@ def filter_tests_to_check(request):
     except EmptyPage:
         paginated_tests = paginator.page(paginator.num_pages)
 
+    results_dict = {key: Results.objects.get(test_to_check=key) for key in tests_to_check}
+
     context = {'tests_to_check': paginated_tests}
+    context['results_dict'] = results_dict
     context['current_category'] = filter_flag
     data['my_content'] = render_to_string('galaxy/render_tests_to_check_table.html',
                                           context, request=request)
@@ -1164,6 +1164,15 @@ class CheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
     pk_url_kwarg = 'test_to_check_id'
     context_object_name = 'test_to_check'
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'checking test'
+        #context['form'] = TaskCheckForm()  # не нужна?
+        test_to_check = context['test_to_check']
+        tasks_to_check = TasksToCheck.objects.filter(test_to_check_id=test_to_check)
+        context['tasks_to_check'] = tasks_to_check
+        return context
+
     def post(self, request, *args, **kwargs):
         pk = self.kwargs.get('test_to_check_id')
         test_to_check = TestsToCheck.objects.get(id=pk)
@@ -1191,14 +1200,51 @@ class CheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
 
         return redirect('show_tests_to_check')
 
+
+class ReCheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = TestsToCheck
+    template_name = 'galaxy/checking_test.html'
+    pk_url_kwarg = 'test_to_check_id'
+    context_object_name = 'test_to_check'
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'checking test'
-        context['form'] = TaskCheckForm()  # не нужна?
+
+        context['recheck'] = True
+        result_obj = Results.objects.get(test_to_check=context['test_to_check'])
+        context['result'] = result_obj
+
         test_to_check = context['test_to_check']
         tasks_to_check = TasksToCheck.objects.filter(test_to_check_id=test_to_check)
         context['tasks_to_check'] = tasks_to_check
         return context
+
+    def post(self, request, *args, **kwargs):
+        pk = self.kwargs.get('test_to_check_id')
+        test_to_check = TestsToCheck.objects.get(id=pk)
+        tasks_to_check = TasksToCheck.objects.filter(test_to_check_id=test_to_check)
+        sum_points_for_test = 0
+        for task in tasks_to_check:
+            index = str(task.id)
+            task.points = request.POST.get(index)
+            try:
+                sum_points_for_test += int(request.POST.get(index))
+            except ValueError:
+                pass
+            task.save()
+        test_to_check.is_checked = True
+        test_to_check.save()
+
+        '''Сохранение изменений в баллах'''
+        result = Results.objects.get(test_to_check=test_to_check)
+        result.points = sum_points_for_test
+        result.commentary = request.POST.get('commentary')
+        result.save()
+
+        return redirect('show_tests_to_check')
 
 
 # def download(request, document_id):
@@ -1535,6 +1581,8 @@ class TestingPage(View):  # wtf is this
 
     def get(self, request):
         return render(request, self.template_name)
+
+
 
     def post(self, request):
         if len(request.FILES) > 0:

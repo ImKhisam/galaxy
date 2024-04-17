@@ -55,6 +55,7 @@ urlpatterns = [
     path('show_tests_to_check/', ShowTestsToCheck.as_view(), name='show_tests_to_check'),
     path('filter_tests_to_check/', filter_tests_to_check, name='filter_tests_to_check'),
     path('checking_test/<int:test_to_check_id>/', CheckingTest.as_view(), name='checking_test'),
+    path('rechecking_test/<int:test_to_check_id>/', ReCheckingTest.as_view(), name='rechecking_test'),
 
     path('test_details/<int:test_pk>/', TestDetails.as_view(), name='test_details'),
     path('pass_test/<int:test_pk>/', PassTest.as_view(), name='pass_test'),
@@ -66,7 +67,7 @@ urlpatterns = [
 
     path('show_tests_and_assessments/', ShowTestsAndAssessments.as_view(), name='show_tests_and_assessments'),
     path('filter_tests_and_assessments', filter_tests_and_assessments, name='filter_tests_and_assessments'),
-    path('show_tests_by_part/<part>/', ShowTestsByPart.as_view(), name='show_tests_by_part'),
+    path('show_tests_by_part/<type>/', ShowTestsByPart.as_view(), name='show_tests_by_part'),
     path('filter_tests_by_part/', filter_tests_by_part, name='filter_tests_by_part'),
     path('add_test/', AddTestAndChaptersView.as_view(), name='add_test'),
     path('delete_test/', delete_test, name='delete_test'),

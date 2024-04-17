@@ -53,7 +53,7 @@
                 </div>
                 <div class="part_choice_shell">
                     <div class="part_choice">
-                        <input style="display: none;" type="radio" id="Grammar" name="part" value="Grammar and Vocabulary">
+                        <input style="display: none;" type="radio" id="Grammar" name="part" value="Grammar">
                         <label for="Grammar"><span>Grammar</span></label>
                     </div>
                     <div class="empty"></div>
@@ -150,46 +150,55 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the current category ID from the Django context
-    var currentType = "{{current_type}}";
-    var currentPart = "{{current_part}}";
 
-    // Set the checked state of the type radio buttons
-    $('#' + currentType).prop('checked', true);
-
-    // Set the checked state of the part radio buttons
-    $('#' + currentPart).prop('checked', true);
-});
-</script>
-
-
-<script>
-    $(document).ready(function() {
-    var currentPart = "{{ current_part }}";
-    var currentType = "{{ current_type }}";
-
+$(document).ready(function() {
     // Listening for clicks on type radio buttons
     $('input[name="type"]').change(function() {
         var type = $(this).val(); // Get the ID of the selected radio button
         var part = $('input[name="part"]:checked').val();
-        filterTests(type, part, $('#not_passed').prop('checked'));
+        updateFilters(type, part, $('#not_passed').prop('checked'));
     });
 
     // Listening for clicks on part radio buttons
     $('input[name="part"]').change(function() {
         var type = $('input[name="type"]:checked').val();
         var part = $(this).val(); // Get the ID of the selected radio button
-        filterTests(type, part, $('#not_passed').prop('checked'));
+        updateFilters(type, part, $('#not_passed').prop('checked'));
     });
 
     // Listening for changes on the "not passed" checkbox
     $('#not_passed').change(function() {
         var type = $('input[name="type"]:checked').val();
         var part = $('input[name="part"]:checked').val();
-        filterTests(type, part, $(this).prop('checked'));
+        updateFilters(type, part, $(this).prop('checked'));
     });
 
+    // Function to update filters and trigger filtering
+    function updateFilters(type, part, notPassed) {
+        // Store the state in session storage
+        storeStateInSessionStorage(type, part, notPassed);
+
+        // Filter tests based on the selected filters
+        filterTests(type, part, notPassed);
+    }
+
+    // Function to store state in session storage
+    function storeStateInSessionStorage(type, part, notPassed) {
+        var state = {
+            currentType: type,
+            currentPart: part,
+            notPassed: notPassed
+        };
+        sessionStorage.setItem('TestsByPart'+type, JSON.stringify(state));
+    }
+
+    // Function to retrieve stored state from session storage
+    function retrieveStateFromSessionStorage(chosenType) {
+        var stateJSON = sessionStorage.getItem('TestsByPart'+ chosenType);
+        return stateJSON ? JSON.parse(stateJSON) : null;
+    }
+
+    // Function to filter tests
     function filterTests(type, part, notPassed) {
         $.ajax({
             url: "{% url 'filter_tests_by_part' %}", // URL to your Django view for filtering
@@ -208,6 +217,33 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Apply stored state when page is loaded or navigated back to
+    var chosenType = "{{ chosen_type }}";
+    var storedState = retrieveStateFromSessionStorage(chosenType);
+    if (storedState) {
+        $('#' + storedState.currentType).prop('checked', true);
+        $('#' + storedState.currentPart).prop('checked', true);
+        $('#not_passed').prop('checked', storedState.notPassed);
+        filterTests(storedState.currentType, storedState.currentPart, storedState.notPassed);
+    }
+    else {
+        // If there is no stored state, first appearance on this page
+        var chosenType = "{{ chosen_type }}";
+        var defaultPart = "{{ default_part }}";
+        var notPassed = "{{ not_passed }}";
+
+        // Set the checked state of the type and part radio buttons
+        $('#' + chosenType).prop('checked', true);
+        $('#' + defaultPart).prop('checked', true);
+        $('#not_passed').prop('checked', notPassed === 'True'); // Convert string to boolean
+
+        // Filter tests based on the stored state
+        filterTests(currentType, currentPart, $('#not_passed').prop('checked'));
+    }
 });
 </script>
+
+
+
 {% endblock %}

@@ -112,13 +112,21 @@
                 <div style="display: flex">
                     <div class="mark_input">
                         <label for="{{task.pk}}">Mark: </label>
+                        {% if recheck %}
+                        <input type="number" name="{{task.pk}}" id="{{task.pk}}" value="{{task.points}}" min="0" max="{{task.question_id.points}}">
+                        {% else %}
                         <input type="number" name="{{task.pk}}" id="{{task.pk}}" min="0" max="{{task.question_id.points}}">
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}
             <h2>Commentary:</h2>
             <div class="result_commentary">
+                {% if recheck %}
+                <textarea class="commentary" name="commentary" rows="15" cols="70"> {{ result.commentary }}</textarea>
+                {% else %}
                 <textarea class="commentary" name="commentary" rows="15" cols="70"></textarea>
+                {% endif %}
             </div>
             <div style="display: flex">
                 <button class="btn btn5" type="submit">
