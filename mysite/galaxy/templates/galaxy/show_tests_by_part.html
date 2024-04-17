@@ -238,7 +238,7 @@ $(document).ready(function() {
         $('#' + defaultPart).prop('checked', true);
         $('#not_passed').prop('checked', notPassed === 'True'); // Convert string to boolean
 
-        // Filter tests based on the stored state
+        // Filter tests based on the stored state  !!!!! NO NEED???
         filterTests(currentType, currentPart, $('#not_passed').prop('checked'));
     }
 });

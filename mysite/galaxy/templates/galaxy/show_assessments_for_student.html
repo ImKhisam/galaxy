@@ -73,26 +73,27 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    // Pre-coloring chosen category
-    document.addEventListener('DOMContentLoaded', function() {
-    // Get the current category ID from the Django context
-    var currentCat = "{{current_category}}";
-
-    // Set the checked state of the type radio buttons
-    $('#' + currentCat).prop('checked', true);
-});
-</script>
-
-<script>
-    // Changing categories
-    $(document).ready(function() {
-    var currentCategory = {{current_category}}
-
+// Changing categories
+$(document).ready(function() {
     // Listening for clicks on type radio buttons
     $('input[name="cat"]').change(function() {
         var filter_flag = $('input[name="cat"]:checked').val();
+        storeStateInSessionStorage(filter_flag);
         filterAssessmentsForStudent(filter_flag);
     });
+
+    function storeStateInSessionStorage(filter_flag) {
+        var state = {
+            filter_flag: filter_flag
+        };
+        sessionStorage.setItem('ShowAssessmentsForSt', JSON.stringify(state));
+    }
+
+    function retrieveStateFromSessionStorage() {
+        var stateJSON = sessionStorage.getItem('ShowAssessmentsForSt');
+        return stateJSON ? JSON.parse(stateJSON) : null;
+    }
+
 
     function filterAssessmentsForStudent(filter_flag) {
         $.ajax({
@@ -112,6 +113,18 @@
             }
         });
     }
+
+    var storedState = retrieveStateFromSessionStorage();
+    if (storedState) {
+        $('#' + storedState.filter_flag).prop('checked', true);
+        filterAssessmentsForStudent(storedState.filter_flag)
+    }
+    else{
+        var currentCategory = {{current_category}}
+        // Set the checked state of the type radio buttons
+        $('#' + currentCat).prop('checked', true);
+    }
+
 });
 </script>
 
