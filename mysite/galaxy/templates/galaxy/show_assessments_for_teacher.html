@@ -89,86 +89,109 @@
 {% endblock content %}
 
 {% block javascript %}
-    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
-    <script>
-        function initializeDatepicker() {
-            $( "#datepicker" ).datepicker();
-        }
+<script>
+// Function to initialize datepicker
+function initializeDatepicker() {
+    $( "#datepicker" ).datepicker();
+}
 
-        $(document).ready(function() {
-            initializeDatepicker(); // Initialize datepicker on page load
+$(document).ready(function() {
+    initializeDatepicker(); // Initialize datepicker on page load
 
-            // Get the current category ID from the Django context
-            var currentCat = "{{current_category}}";
-            // Set the checked state of the type radio buttons
-            $('#' + currentCat).prop('checked', true);
+    // Delegate the click event for adding assessments
+    $(document).on('click', '#add-assessment-btn', function() {
+        $('#new-assessment-row').removeClass('hidden');
+        $('#add-assessment-row').addClass('hidden');
+    });
 
-            // Delegate the click event for adding assessments
-            $(document).on('click', '#add-assessment-btn', function() {
-                $('#new-assessment-row').removeClass('hidden');
-                $('#add-assessment-row').addClass('hidden');
-            });
+    // Delegate the click event for canceling adding assessments
+    $(document).on('click', '#cancel-adding-btn', function() {
+        $('#new-assessment-row').addClass('hidden');
+        $('#add-assessment-row').removeClass('hidden');
+    });
 
-            // Delegate the click event for canceling adding assessments
-            $(document).on('click', '#cancel-adding-btn', function() {
-                $('#new-assessment-row').addClass('hidden');
-                $('#add-assessment-row').removeClass('hidden');
-            });
-
-            // Delegate the click event for saving assessments
-            $(document).on('click', '#save-assessment-btn', function() {
-                var group = $('#group').val();
-                var date = $('#datepicker').val();
-                $.ajax({
-                    url: "{% url 'save_an_assessment' %}",
-                    data: {group: group, date: date},
-                    success: function() {
-                        location.reload();
-                    }
-                });
-            });
-
-            // Delegate the click event for closing assessments
-            $(document).on('click', '#close-assessment-btn', function() {
-                var id = $(this).data('id');
-                $.ajax({
-                    url: "{% url 'close_assessment'%}",
-                    data: {id: id},
-                    success: function() {
-                        location.reload();
-                    }
-                });
-            });
-
-            // Changing categories
-            $('input[name="cat"]').change(function() {
-                var filter_flag = $('input[name="cat"]:checked').val();
-                filterAssessmentsForTeacher(filter_flag);
-            });
-
-            function filterAssessmentsForTeacher(filter_flag) {
-                $.ajax({
-                    url: "{% url 'filter_assessments_for_teacher' %}",
-                    type: 'GET',
-                    data: {
-                        filter_flag: filter_flag
-                    },
-                    success: function(data) {
-                        // Update the table with the filtered data
-                        $('.table tbody').html(data.my_content);
-                        // Update the pagination links
-                        $('.pagination').html(data.pagination_html);
-
-                        // Reinitialize datepicker after content is reloaded
-                        initializeDatepicker();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(error);
-                    }
-                });
+    // Delegate the click event for saving assessments
+    $(document).on('click', '#save-assessment-btn', function() {
+        var group = $('#group').val();
+        var date = $('#datepicker').val();
+        $.ajax({
+            url: "{% url 'save_an_assessment' %}",
+            data: {group: group, date: date},
+            success: function() {
+                location.reload();
             }
         });
-    </script>
+    });
+
+    // Delegate the click event for closing assessments
+    $(document).on('click', '#close-assessment-btn', function() {
+        var id = $(this).data('id');
+        $.ajax({
+            url: "{% url 'close_assessment'%}",
+            data: {id: id},
+            success: function() {
+                location.reload();
+            }
+        });
+    });
+
+    // Changing categories
+    $('input[name="cat"]').change(function() {
+        var filter_flag = $('input[name="cat"]:checked').val();
+        storeStateInSessionStorage(filter_flag);
+        filterAssessmentsForTeacher(filter_flag);
+    });
+
+    // Function to store state in session storage
+    function storeStateInSessionStorage(filter_flag) {
+        var state = {
+            filter_flag: filter_flag
+        };
+        sessionStorage.setItem('ShowAssessmentsForTeacher', JSON.stringify(state));
+    }
+
+    // Function to retrieve stored state from session storage
+    function retrieveStateFromSessionStorage() {
+        var stateJSON = sessionStorage.getItem('ShowAssessmentsForTeacher');
+        return stateJSON ? JSON.parse(stateJSON) : null;
+    }
+
+    // Function to filter assessments based on category
+    function filterAssessmentsForTeacher(filter_flag) {
+        $.ajax({
+            url: "{% url 'filter_assessments_for_teacher' %}",
+            type: 'GET',
+            data: {
+                filter_flag: filter_flag
+            },
+            success: function(data) {
+                // Update the table with the filtered data
+                $('.table tbody').html(data.my_content);
+                // Update the pagination links
+                $('.pagination').html(data.pagination_html);
+
+                // Reinitialize datepicker after content is reloaded
+                initializeDatepicker();
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+
+    // Apply stored state when page is loaded
+    var storedState = retrieveStateFromSessionStorage();
+    if (storedState) {
+        $('#' + storedState.filter_flag).prop('checked', true);
+        filterAssessmentsForTeacher(storedState.filter_flag);
+    } else {
+        // Default behavior if no stored state is found
+        var currentCategory = "{{ current_category }}";
+        $('#' + currentCategory).prop('checked', true);
+    }
+});
+</script>
 {% endblock javascript %}
