@@ -75,7 +75,6 @@
 <script>
 // Changing categories
 $(document).ready(function() {
-    // Listening for clicks on type radio buttons
     $('input[name="cat"]').change(function() {
         var filter_flag = $('input[name="cat"]:checked').val();
         storeStateInSessionStorage(filter_flag);
@@ -119,12 +118,10 @@ $(document).ready(function() {
         $('#' + storedState.filter_flag).prop('checked', true);
         filterAssessmentsForStudent(storedState.filter_flag)
     }
-    else{
-        var currentCategory = {{current_category}}
-        // Set the checked state of the type radio buttons
-        $('#' + currentCat).prop('checked', true);
+    else {
+        var currentCategory = "{{ current_category }}";
+        $('#' + currentCategory).prop('checked', true);
     }
-
 });
 </script>
 

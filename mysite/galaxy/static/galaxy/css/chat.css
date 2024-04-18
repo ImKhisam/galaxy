@@ -39,8 +39,7 @@ nav ul {
 }
 nav li {
   position: relative;
-  padding-right: 20px;
-  padding-left: 20px;
+
   display: flex;
 }
 .first-row{
@@ -55,7 +54,7 @@ nav li {
 
 nav a {
   display: block;
-  padding: 10px;
+  padding: 23px;
   color: #fbfbfbe6;
   text-decoration: none;
   margin: auto;
@@ -161,7 +160,7 @@ nav .menu_second_row {
   font-size: 18px;
 }
 .user_name_menu{
-  min-width: 40px;
+  min-width: 50px;
   text-align: center;
 }
 

@@ -88,35 +88,38 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    // Pre-coloring chosen category
-    document.addEventListener('DOMContentLoaded', function() {
-    // Get the current category ID from the Django context
-    var currentCat = "{{current_category}}";
 
-    // Set the checked state of the type radio buttons
-    $('#' + currentCat).prop('checked', true);
-});
-</script>
-
-<script>
-    // Changing categories
-    $(document).ready(function() {
-    var currentCategory = {{current_category}}
-
-    // Listening for clicks on type radio buttons
+$(document).ready(function() {
     $('input[name="cat"]').change(function() {
-        var filter_flag = $(this).val(); // Get the ID of the selected radio button
+        var filter_flag = $(this).val();
         currentCategory = filter_flag
-        filterTestsToCheck(filter_flag);
+        var searchValue = $('#filterInput').val().toLowerCase();
+        storeStateInSessionStorage(currentCategory, searchValue);
+        filterTestsToCheck(currentCategory, searchValue);
     });
 
     // Function to filter tests based on input text
     $('#filterInput').on('input', function() {
-        var filterValue = $(this).val().toLowerCase();
-        filterTestsToCheck(currentCategory, filterValue);
+        var currentCategory = $('input[name="cat"]:checked').val();
+        var searchValue = $(this).val().toLowerCase();
+        storeStateInSessionStorage(currentCategory, searchValue);
+        filterTestsToCheck(currentCategory, searchValue);
     });
 
-    function filterTestsToCheck(filter_flag, filterValue='') {
+    function storeStateInSessionStorage(currentCategory, searchValue) {
+        var state = {
+            currentCategory: currentCategory,
+            searchValue: searchValue
+        };
+        sessionStorage.setItem('ShowTestsToCheck', JSON.stringify(state));
+    }
+
+    function retrieveStateFromSessionStorage() {
+        var stateJSON = sessionStorage.getItem('ShowTestsToCheck');
+        return stateJSON ? JSON.parse(stateJSON) : null;
+    }
+
+    function filterTestsToCheck(filter_flag, filterValue) {
         $.ajax({
             url: "{% url 'filter_tests_to_check' %}", // URL to your Django view for filtering
             type: 'GET',
@@ -134,6 +137,17 @@
                 console.error(error);
             }
         });
+    }
+
+    var storedState = retrieveStateFromSessionStorage();
+    if (storedState) {
+        $('#' + storedState.currentCategory).prop('checked', true);
+        $('#filterInput').val(storedState.searchValue);
+        filterTestsToCheck(storedState.currentCategory, storedState.searchValue);
+    }
+    else {
+        var currentCategory = "{{ current_category }}";
+        $('#' + currentCategory).prop('checked', true);
     }
 });
 </script>

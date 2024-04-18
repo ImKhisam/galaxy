@@ -17,8 +17,8 @@
                 </a>
 
                 {% if request.user.is_confirmed %}
-                    <li class="first-row wider-menu-item"><a href="{% url 'show_tests_by_part' 'GSE' %}">GSE</a></li>
-                    <li class="first-row wider-menu-item"><a href="{% url 'show_tests_by_part' 'USE' %}">USE</a></li>
+                    <li class="first-row"><a href="{% url 'show_tests_by_part' 'GSE' %}">GSE</a></li>
+                    <li class="first-row"><a href="{% url 'show_tests_by_part' 'USE' %}">USE</a></li>
                     <li class="first-row"><a href="{% url 'olymp' %}">Olymp Way</a></li>
                 {% endif %}
                 {% if request.user.is_authenticated %}
