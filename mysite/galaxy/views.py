@@ -1114,7 +1114,7 @@ class ShowStudents(LoginRequiredMixin, TeacherUserMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Students'
         context['pagination_number'] = self.paginate_by
-        context['type_flag'] = 'Pending'
+        context['current_category'] = 'Pending'
         context['group_list'] = Groups.objects.all()
         return context
 
@@ -1126,19 +1126,19 @@ def filter_students(request):
     data = dict()
     # Get parameters from AJAX request
     value_dict = {'Denied': False, 'Pending': None, 'Confirmed': True}
-    type_flag = request.GET.get('type_flag')
-    flag_value = value_dict[type_flag]
-    filter_value = request.GET.get('filter_value')
+    current_category = request.GET.get('currentCategory')
+    confirmation_status = value_dict[current_category]
+    search_value = request.GET.get('searchValue')
     # Query to fetch all tests along with user's results and applying filters
     # students = CustomUser.objects.filter(role='Student', is_confirmed=flag_value).order_by('id')
-    students = CustomUser.objects.filter(role='Student', is_confirmed=flag_value).filter(
-        Q(username__icontains=filter_value) |
-        Q(first_name__icontains=filter_value) |
-        Q(last_name__icontains=filter_value)
+    students = CustomUser.objects.filter(role='Student', is_confirmed=confirmation_status).filter(
+        Q(username__icontains=search_value) |
+        Q(first_name__icontains=search_value) |
+        Q(last_name__icontains=search_value)
     ).order_by('id')
 
     context = {'students': students}
-    context['type_flag'] = type_flag
+    context['currentCategory'] = current_category
     context['group_list'] = Groups.objects.all()
     data['my_content'] = render_to_string('galaxy/render_students_table.html',
                                           context, request=request)

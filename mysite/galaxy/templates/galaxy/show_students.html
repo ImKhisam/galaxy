@@ -44,7 +44,7 @@
     <div class="outer_filter_input">
             <div class="empty"></div>
                 <div class="filter">
-                    <input class="filter_input" type="text" id="filterInput" placeholder="Search">
+                    <input class="filter_input" type="text" id="searchInput" placeholder="Search">
                 </div>
             <div class="empty"></div>
     </div>
@@ -98,41 +98,47 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    // Pre-coloring chosen category
-    document.addEventListener('DOMContentLoaded', function() {
-    // Get the current category ID from the Django context
-    var currentCat = "{{type_flag}}";
 
-    // Set the checked state of the type radio buttons
-    $('#' + currentCat).prop('checked', true);
-});
-</script>
-
-<script>
-    // Changing categories
-    $(document).ready(function() {
-    var currentCategory = {{ type_flag }}
+$(document).ready(function() {
+    var currentCategory = {{ current_category }}
 
     // Listening for clicks on type radio buttons
     $('input[name="student-status"]').change(function() {
-        var type_flag = $(this).val(); // Get the ID of the selected radio button
-        currentCategory = type_flag
-        filterStudents(type_flag);
+        var currentCategory = $(this).val(); // Get the ID of the selected radio button
+        var searchValue = $('#searchInput').val().toLowerCase();
+        storeStateInSessionStorage(currentCategory, searchValue);
+        filterStudents(currentCategory, searchValue);
     });
 
     // Function to filter students based on input text
-    $('#filterInput').on('input', function() {
-        var filterValue = $(this).val().toLowerCase();
-        filterStudents(currentCategory, filterValue);
+    $('#searchInput').on('input', function() {
+        var currentCategory = $('input[name="student-status"]:checked').val();
+        var searchValue = $(this).val().toLowerCase();
+        storeStateInSessionStorage(currentCategory, searchValue);
+        filterStudents(currentCategory, searchValue);
     });
 
-    function filterStudents(type_flag, filterValue='') {
+    function storeStateInSessionStorage(currentCategory, searchValue) {
+        var state = {
+            currentCategory: currentCategory,
+            searchValue: searchValue
+        };
+        sessionStorage.setItem('ShowStudents', JSON.stringify(state));
+    }
+
+    function retrieveStateFromSessionStorage() {
+        var stateJSON = sessionStorage.getItem('ShowStudents');
+        return stateJSON ? JSON.parse(stateJSON) : null;
+    }
+
+
+    function filterStudents(currentCategory, searchValue) {
         $.ajax({
             url: "{% url 'filter_students' %}", // URL to your Django view for filtering
             type: 'GET',
             data: {
-                type_flag: type_flag,
-                filter_value: filterValue
+                currentCategory: currentCategory,
+                searchValue: searchValue
             },
             success: function(data) {
                 // Update the table with the filtered data
@@ -169,6 +175,18 @@
             }
         });
     });
+
+    var storedState = retrieveStateFromSessionStorage();
+    if (storedState) {
+        $('#' + storedState.currentCategory).prop('checked', true);
+        $('#searchInput').val(storedState.searchValue);
+        filterStudents(storedState.currentCategory, storedState.searchValue);
+    }
+    else {
+        var currentCategory = "{{ current_category }}";
+        $('#' + currentCategory).prop('checked', true);
+    }
+
 
 });
 </script>
