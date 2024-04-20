@@ -45,11 +45,11 @@
                         {% else %}
                             {% if classes.audio %}
                                 <div>
-                                    <a target=”_blank” href="{% url 'show_doc' classes.id %}">PDF</a>
-                                    <a target=”_blank” href="{% url 'play_audio' 'BB' classes.id %}">Audio</a>
+                                    <a target=”_blank” href="{% url 'show_doc' classes.id 'BB' 'BB' %}">PDF</a>
+                                    <a target=”_blank” href="{% url 'play_audio' classes.id 'BB' %}">Audio</a>
                                 </div>
                             {% else %}
-                                <a target=”_blank” href="{% url 'show_doc' classes.id %}">PDF</a>
+                                <a target=”_blank” href="{% url 'show_doc' classes.id 'BB' 'BB' %}">PDF</a>
                             {% endif %}
                         {% endif %}
                     </td>

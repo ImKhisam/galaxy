@@ -96,10 +96,19 @@ class Olymp(ListView):
         return context
 
 
-def showdoc(request, classes_id):
+def showdoc(request, classes_id, source, doc_type):
     media = settings.MEDIA_ROOT                                     # importing from settings
-    obj = get_object_or_404(BritishBulldog, id=classes_id)          # get path from db
-    filepath = os.path.join(media, str(obj.content))                # uniting path
+    model = OlympWay if source == 'Olymp' else BritishBulldog
+    obj = get_object_or_404(model, id=classes_id)          # get path from db
+
+    if source == 'BB':
+        filepath = os.path.join(media, str(obj.content))                # uniting path
+    elif source == 'Olymp':
+        filepath = os.path.join(media, str(obj.task))  # uniting path
+        if doc_type == 'answer':
+            filepath = os.path.join(media, str(obj.answer))
+        elif doc_type == 'script':
+            filepath = os.path.join(media, str(obj.script))
 
     try:
         return FileResponse(open(filepath, 'rb'), content_type='application/pdf')

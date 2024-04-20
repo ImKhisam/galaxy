@@ -821,19 +821,19 @@ class TestResultWithPoints(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
 
 
 # need decorator for checking student confirmation - to show only bb docs, not olymp
-def showdoc(request, classes_id, doc_type):
-    media = settings.MEDIA_ROOT  # importing from settings
-    obj = get_object_or_404(OlympWay, id=classes_id)  # get path from db
-    filepath = os.path.join(media, str(obj.task))  # uniting path
-    if doc_type == 'answer':
-        filepath = os.path.join(media, str(obj.answer))
-    elif doc_type == 'script':
-        filepath = os.path.join(media, str(obj.script))
-
-    try:
-        return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
-    except FileNotFoundError:
-        raise Http404()
+#def showdoc(request, classes_id, doc_type):
+#    media = settings.MEDIA_ROOT  # importing from settings
+#    obj = get_object_or_404(OlympWay, id=classes_id)  # get path from db
+#    filepath = os.path.join(media, str(obj.task))  # uniting path
+#    if doc_type == 'answer':
+#        filepath = os.path.join(media, str(obj.answer))
+#    elif doc_type == 'script':
+#        filepath = os.path.join(media, str(obj.script))
+#
+#    try:
+#        return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
+#    except FileNotFoundError:
+#        raise Http404()
 
 
 #class Playaudio(LoginRequiredMixin, DetailView):
