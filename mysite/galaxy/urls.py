@@ -32,9 +32,6 @@ urlpatterns = [
     path('idioms/', Idioms.as_view(), name='idioms'),
     path('julik/', julik, name='julik'),
 
-    #path('show_doc/<int:classes_id>/<doc_type>/', showdoc, name='show_doc'),
-    #path('play_audio/<int:classes_id>/', Playaudio.as_view(), name='play_audio'),
-
     path('groups/', ShowGroups.as_view(), name='show_groups'),
     path('show_group_participants/<int:group_id>/', ShowGroupParticipants.as_view(), name='show_group_participants'),
 

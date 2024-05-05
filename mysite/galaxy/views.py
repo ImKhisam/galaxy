@@ -544,6 +544,9 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
     def get(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
+        if not user.is_confirmed and not test.trial_test:
+            return render(request, 'galaxy/julik.html')
+
         template = 'galaxy/pass_speaking_test.html' if test.part == 'Speaking' else 'galaxy/pass_test.html'
 
         # if str(test.id) in user.assessments_passed:
@@ -898,7 +901,6 @@ class ShowTestsByPart(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         return context
 
     def get_queryset(self):
-        user_id = self.request.user
         tests_type = self.kwargs.get('type')
         tests_part = 'Listening'
         tests_with_results = Tests.objects.filter(type=tests_type, part=tests_part, is_assessment=False).order_by('test_num')
@@ -998,7 +1000,7 @@ def filter_tests_and_assessments(request):
             .filter(type__in=checkbox_values, part__in=checkbox_values)\
             .order_by('type', 'order', 'test_num')
 
-    context = {}
+    context = dict()
     context['tests'] = tests
     context['current_category'] = filter_flag
     data['my_content'] = render_to_string('galaxy/render_tests_and_assessments_table.html',
@@ -1479,8 +1481,11 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
         question_form = self.choose_form('edit', Chapters.objects.get(id=question_obj.chapter_id.id))
         question_form = question_form(request.POST, request.FILES, instance=question_obj)
 
-        answer_formset = modelformset_factory(Answers, AnswerAddForm)
-        formset = answer_formset(request.POST, request.FILES)
+        answers_fl = False
+        if len(Answers.objects.filter(question_id=question_obj)) > 0:
+            answers_fl = True
+            answer_formset = modelformset_factory(Answers, AnswerAddForm)
+            formset = answer_formset(request.POST, request.FILES)
 
         # deleting answers
         if request.POST.get('deleted_answer_ids', '') != '':
@@ -1494,19 +1499,24 @@ class EditQandAView(LoginRequiredMixin, TeacherUserMixin, ChooseAddQuestForm, Ad
                     pass
 
         # saving question
-        if question_form.is_valid() and formset.is_valid():
+        if answers_fl:      # saving with answers
+            if question_form.is_valid() and formset.is_valid():
+                question_obj = question_form.save(commit=False)
+                question_obj.save()
+
+                for answer_form in formset.forms:
+                    if answer_form.has_changed():
+                        answer_obj = answer_form.save(commit=False)
+                        if question_obj.question_type == 'input_type':
+                            answer_obj.answer = answer_obj.answer.upper()
+
+                        answer_obj.question_id = question_obj
+                        answer_obj.save()
+                # todo check redirect
+                return redirect('test', 'edit', question_obj.test_id.id)
+        else:               # saving without answers
             question_obj = question_form.save(commit=False)
             question_obj.save()
-
-            for answer_form in formset.forms:
-                if answer_form.has_changed():
-                    answer_obj = answer_form.save(commit=False)
-                    if question_obj.question_type == 'input_type':
-                        answer_obj.answer = answer_obj.answer.upper()
-
-                    answer_obj.question_id = question_obj
-                    answer_obj.save()
-            # todo check redirect
             return redirect('test', 'edit', question_obj.test_id.id)
 
         return redirect('edit_q_and_a', question_id)

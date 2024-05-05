@@ -81,6 +81,7 @@ class Tests(models.Model):
     media = models.FileField(upload_to=content_file_name_test, blank=True)
     is_assessment = models.BooleanField(default=False)           # Разделение тестов на проверочные работы и свободную практику
     groups = models.ManyToManyField(Groups, through="Assessments")
+    trial_test = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         order_dict = {'Listening': 1,

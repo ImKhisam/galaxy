@@ -15,13 +15,24 @@
                 <a style="padding: 0px; height: 70px;" href="{% url 'home' %}">
                     <img src="../../static/galaxy/images/logo(3).png">
                 </a>
-
-                {% if request.user.is_confirmed %}
-                    <li class="first-row"><a href="{% url 'show_tests_by_part' 'GSE' %}">GSE</a></li>
-                    <li class="first-row"><a href="{% url 'show_tests_by_part' 'USE' %}">USE</a></li>
-                    <li class="first-row"><a href="{% url 'olymp' %}">Olymp Way</a></li>
-                {% endif %}
                 {% if request.user.is_authenticated %}
+                    {% if request.user.is_confirmed %}
+                        <li class="first-row"><a href="{% url 'show_tests_by_part' 'GSE' %}">GSE</a></li>
+                        <li class="first-row"><a href="{% url 'show_tests_by_part' 'USE' %}">USE</a></li>
+                    {% else %}
+                        <li class="first-row"><a href="#">GSE</a>
+                            <ul>
+                                {% drop_menu_trial_test 'GSE' %}
+                            </ul>
+                        </li>
+                        <li  class="first-row"><a href="#">USE</a>
+                            <ul>
+                                {% drop_menu_trial_test 'USE' %}
+                            </ul>
+                        </li>
+                    {% endif %}
+
+                    <li class="first-row"><a href="{% url 'olymp' %}">Olymp Way</a></li>
                     <li class="first-row"><a target=”_blank” href="https://learnenglish.britishcouncil.org/skills">Develop your skills</a></li>
                     <li class="first-row"><a href="{% url 'BB' %}">British Bulldog</a></li>
                     <li class="first-row"><a href="#">Idioms & Collocations</a>

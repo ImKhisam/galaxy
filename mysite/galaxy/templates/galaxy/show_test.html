@@ -341,13 +341,18 @@
                                         <span>Choose a file...</span>
                                     </label>
                                 </div>
-                                {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
-                                <div class="file">
-                                    <label for="{{question.pk}}_media2">Additional:</label>
-                                    <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
-                                </div>
-                                {% endif %}
                             </div>
+                            {% if test.type == 'USE' and question.question_number > 1 %}
+                                <div class="add-files">
+                                    <div class="file">
+                                        <label class="input-file">
+                                            <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                                            <span>Additional</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endif %}
+
                         {% endif %}
                     {% endif %}
                 </div>

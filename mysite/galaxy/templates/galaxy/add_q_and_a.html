@@ -26,14 +26,21 @@ h1{
 {% block content %}
 <div class="question">
     <h1>Adding question</h1>
-    <div class="chapter_information_block">
-        <span class="chapter_information">Current chapter number: {{ chapter_obj.chapter_number }}</span>
 
-        <span class="chapter_information">Questions in chapter: {{ sum_of_questions }}</span>
+    <div class="chapter_information_block">
+        <div class="chapter_information_element">
+            <span class="chapter_information">Current chapter number: {{ chapter_obj.chapter_number }}</span>
+        </div>
+        <div class="chapter_information_element">
+            <span class="chapter_information">Questions in chapter: {{ sum_of_questions }}</span>
+        </div>
         {% if next_chapter_obj_id %}
-            <a class="single_btn" href="{% url 'add_q_and_a' next_chapter_obj_id %}"><span>Next chapter</span></a>
-        {% endif %}
+            <div class="chapter_information_element">
+                <a class="single_btn" href="{% url 'add_q_and_a' next_chapter_obj_id %}"><span>Next chapter</span></a>
+            </div>
+                {% endif %}
     </div>
+
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ question_form.as_p }}
