@@ -104,6 +104,7 @@ class Assessments(models.Model):
     test = models.ForeignKey(Tests, on_delete=models.CASCADE)
     group = models.ForeignKey(Groups, on_delete=models.CASCADE)
     date = models.DateField(null=True, blank=True)  # Дата сдачи теста
+    is_opened = models.BooleanField(default=False)
     is_passed = models.BooleanField(default=False)
 
 

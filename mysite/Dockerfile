@@ -1,13 +1,13 @@
 FROM python:3.10-slim
 
-RUN mkdir site
-WORKDIR site
+RUN mkdir app
+WORKDIR app
 
-ADD requirements.txt /site/
+ADD requirements.txt /app/
 RUN pip3 install -r requirements.txt
 
-ADD . /site/
-ADD .env.docker /site/.env
+ADD . /app/
+ADD .env.docker /app/.env
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
