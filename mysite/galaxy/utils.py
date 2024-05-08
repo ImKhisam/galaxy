@@ -6,6 +6,8 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from galaxy.forms import *
 from galaxy.models import CustomUser
 from django.shortcuts import redirect
+from datetime import date
+
 
 class TokenGenerator(PasswordResetTokenGenerator):
 
@@ -219,6 +221,7 @@ class AddChapterConstValues:
             chapter_obj.info = self.info[key]
             chapter_obj.save()
 
+
 class AddQuestionConstValues:
     question_preparation_times = {'USESpeaking1': 90,
                                   'USESpeaking2': 90,
@@ -299,7 +302,7 @@ def teacher_check(user):
 def form_assessment_dict(user_id):
     user = CustomUser.objects.get(id=user_id)
     user_assessment_dates = Assessments.objects \
-        .filter(group=user.group).order_by('date').distinct('date')
+        .filter(group=user.group, date__lt=date.today()).order_by('date').distinct('date')
     assessment_dict = {x: Assessments.objects.filter(date=x.date) for x in user_assessment_dates}
     ordered_dict = {}
     right_order = ['Listening', 'Reading', 'Grammar and Vocabulary', 'Writing', 'Speaking']

@@ -6,7 +6,7 @@
             <th scope="col">#</th>
             <th scope="col">Name</th>
             <th scope="col">Username</th>
-            {% if type_flag == 'Confirmed' %}
+            {% if currentCategory == 'Confirmed' %}
                 <th scope="col">Group</th>
             {% endif %}
             <th scope="col">Action</th>
@@ -24,35 +24,35 @@
             {% endif %}
             <td> {{student.last_name}} {{student.first_name}} </td>
             <td>{{student.username}}</td>
-            {% if type_flag == 'Confirmed' %}
+            {% if currentCategory == 'Confirmed' %}
                 {% if student.group == Null %}
-                  <td>
-                      <select name="{{student.pk}}" id="group-select-{{student.pk}}">
-                          <option>No group</option>
-                          {% for item in group_list %}
-                            <option value="{{item.pk}}">{{item.name}}</option>
-                          {% endfor %}
-                      </select>
-                  </td>
-              {% else %}
-                  <td>
-                      <select name="{{student.pk}}" id="group-select-{{student.pk}}">
-                          <option>{{student.group.name}}</option>
-                          {% for item in group_list %}
-                            {% if item != student.group %}
-                                <option value="{{item.pk}}">{{item.name}}</option>
-                            {% endif %}
-                          {% endfor %}
-                      </select>
-                  </td>
-              {% endif %}
+                    <td>
+                        <select name="{{student.pk}}" id="group-select-{{student.pk}}">
+                            <option>No group</option>
+                            {% for item in group_list %}
+                              <option value="{{item.pk}}">{{item.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                {% else %}
+                    <td>
+                        <select name="{{student.pk}}" id="group-select-{{student.pk}}">
+                            <option>{{student.group.name}}</option>
+                            {% for item in group_list %}
+                              {% if item != student.group %}
+                                  <option value="{{item.pk}}">{{item.name}}</option>
+                              {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                {% endif %}
             {% endif %}
             <td>
-                {% if type_flag == 'Confirmed' %}
+                {% if currentCategory == 'Confirmed' %}
                     <button class="btn btn5 btn-action" data-student-id="{{ student.id }}" data-action="deny">
                         <span>Deny</span>
                     </button>
-                {% elif type_flag == 'Denied' %}
+                {% elif currentCategory == 'Denied' %}
                     <button class="btn btn5 btn-action" data-student-id="{{ student.id }}" data-action="confirm">
                         <span>Confirm</span>
                     </button>

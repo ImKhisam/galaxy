@@ -1,0 +1,203 @@
+:root {
+    --dark-transparent: #000000e3;
+    --blue-transparent: #365a99e3;
+    --white-transparent: #fbfbfbe6;
+    --gray-hover: #54514f;
+}
+.wrapper{
+
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+}
+.wrapper{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10%;
+}
+
+.auth_window{
+  padding: 40px;
+  background-color: var(--blue-transparent);
+  border: 2px solid white;
+  width: 25%;
+}
+
+.center{
+    display: flex;
+}
+.auth_line input{
+    width: 85%;
+    background: transparent;
+    border: none;
+    height: 30px;
+    color: white;
+    font-size: 16px;
+    outline: none;
+    padding: 0;
+    border-bottom: 1px solid white;
+}
+.auth_line{
+    width: 100%;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.auth_line input:hover, .auth_line input:focus{
+    border-bottom: 1px solid grey;
+}
+
+input{ 
+    text-indent: 10px; 
+}
+
+.show_hide_pass{
+    position: absolute;
+    top: 50%;
+    left: 95%;
+    transform: translateY(-50%);
+}
+
+.eye_button {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    position: relative;
+    top: 0px; left: 5px;
+    width: 30px;
+    height: 30px;
+}
+.eye_button.moon {
+    background-image: url('../images/moon.png');
+}
+.eye_button.sun {
+    background-image: url('../images/sunny.png');
+}
+.tooltip {
+    visibility: hidden;
+    width: 120px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.eye_button:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+.login_center_button{
+    display: flex;
+    margin-top: 30px;
+}
+.login_button{
+    width: 85%;
+    padding: 0;
+    background: transparent;
+    color: white;
+    height: 40px;
+    border: 1px solid white;
+    font-size: 20px;
+    margin-top: 30px;
+}
+.login_button:hover{
+    border: 1px solid grey;
+    color: grey;
+}
+.forgot_pass{
+    font-size: 18px;
+}
+.forgot_pass a{
+    color: var(--white-transparent);
+}
+h1{
+    margin: 0px 0px 0px 0px;
+}
+form{
+    padding-top: 0px;
+}
+.center{
+    margin-top: 30px;
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px plum inset !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+   -webkit-transition-delay: 9999s;
+   transition-delay: 9999s;
+}
+
+
+.invalid-feedback{
+    display: flex;
+    align-items: center;
+    background: brown;
+    margin-top: 0px;
+    position: absolute;
+    left: 110%;
+    width: max-content;
+    font-size: 18px;
+    height: 40px;
+    border-radius: 5px;
+    padding: 0 10px 0 10px;
+}
+.disabled_button{
+    margin-top: 0px;
+}
+
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color: var(--white-transparent);
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color: var(--white-transparent);
+   opacity:  1;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color: var(--white-transparent);
+   opacity:  1;
+}
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color: var(--white-transparent);
+}
+::-ms-input-placeholder { /* Microsoft Edge */
+   color: var(--white-transparent);
+}
+
+::placeholder { /* Most modern browsers support this now. */
+   color: var(--white-transparent);
+}
+
+
+
+input:focus::placeholder {
+  color: grey;
+}
+
+input:hover::placeholder {
+  color: grey;
+}

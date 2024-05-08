@@ -12,8 +12,8 @@ services:
     #  - 5432
     ports:
       - "5444:5432"
-    #volumes:
-    #  - ./db_dump/galaxy_dump.sql:/docker-entrypoint-initdb.d/dummy_dump.sql
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   mysite:
     build: .
@@ -24,6 +24,7 @@ services:
     volumes:
       - static_volume:/app/static
       - media_volume:/app/media
+      - code_volume:/app/galaxy
 
   nginx:
     image: nginx:latest
@@ -64,3 +65,5 @@ services:
 volumes:
   static_volume:
   media_volume:
+  code_volume:
+  pgdata:

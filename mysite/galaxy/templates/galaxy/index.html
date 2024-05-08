@@ -9,10 +9,8 @@
         {% endif %}
         -->
     {% endif %}
-<h1>main page for {{ user.username }}</h1>
-<a href="{% url 'testing_page' %}">Testing page</a>
 {% else %}
-<h1>Hi unknown star</h1>
+    <h1>Hi unknown star</h1>
 {% endif %}
 
 {% endblock %}

@@ -1,0 +1,118 @@
+:root {
+    --dark-transparent: #000000e3;
+    --blue-transparent: #365a99e3;
+    --gray-hover: #54514f;
+}
+
+html, body {
+    
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    color: #ffffff;
+}
+
+body {
+    background-image: url("bg-final.jpg");
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.logo {
+    
+    
+} 
+
+.notification {
+    margin: auto;
+    text-align: center;
+    width: 20px;
+    height: 20px;
+    background: url('../images/notification_bell.png') no-repeat;
+    background-size: contain;
+    color: red;
+    font-size: medium;
+}
+
+
+nav ul ul li {
+    width: auto !important;
+    min-width: unset !important;
+}
+
+.form-input {
+    width: 250px;
+    font-size: 18px;
+}
+.form-choice {
+    width: 150px;
+    font-size: 18px;
+}
+.form-label {
+    display: inline-block;
+    min-width: 150px;
+    vertical-align: top;
+    color: #ffffff
+}
+
+.form-error ul {
+    list-style: none;
+    padding: 0;
+    color: #CC0000;
+}
+
+.form-button {
+    min-width: 200px;
+    font-size: 16px;
+}
+
+.modal{
+  padding: 30px;
+  background-color: var(--dark-transparent);
+  position: fixed; top: 50%; left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+.center{
+    display: flex;
+}
+h1{
+  text-align: center;
+}
+form{
+  padding-top: 10px;
+  font-size: 20px;
+}
+.disabled_button{
+    color: var(--dark-transparent);
+    border: 2px solid #FFFFFF;
+    display: inline-block;
+    padding: 15px 32px;
+    font-size: 15px;
+    border-radius: 2px;
+    background-color: var(--dark-transparent);
+    transition-duration: 0.4s;
+    font-size: 17px;
+    text-decoration: none;
+    margin: auto;
+    margin-top: 30px;
+}
+.disabled_button:hover {
+    background-color: var(--dark-transparent);
+}
+.dark-frame{
+    padding: 40px;
+    background-color: var(--dark-transparent);
+    width: 50%;
+    margin: auto;
+    text-align: center;
+}
+.outer {
+    display: flex;
+    height: 70%;
+}
+.dark-frame p {
+    font-size: 20px;
+}

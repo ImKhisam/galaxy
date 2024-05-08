@@ -1,0 +1,72 @@
+:root {
+  --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
+  --gray-hover: #54514f;
+}
+
+.chapter_information_block{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.chapter_information_element{
+    width: 20%;
+    display: flex;
+    justify-content: center;
+}
+
+.chapter_information{
+    font-size: 20px;
+    margin: 5px;
+}
+
+.single_btn{
+  color: black;
+  background-color: transparent;
+  width: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.8s ease;
+  position: relative;
+  border: 2px solid black;
+  font-family: auto;
+  padding: 0px;
+  font-size: 20px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
+}
+
+.single_btn::before,
+.single_btn::after {
+  position: absolute;
+  display: block;
+  content: "";
+  width: 100%;
+  height: 100%;
+}
+.single_btn {
+  overflow: hidden;
+  transition: all 300ms ease;
+}
+.single_btn:after {
+  width: 300%;
+  height: 300%;
+  left: -300%;
+  transform: rotate(0deg);
+  background-color: var(--dark-transparent);
+  transition: all 500ms ease;
+}
+.single_btn:hover span{
+  color: white;
+  z-index: 10;
+  font-weight: 500;
+}
+.single_btn:hover::after {
+  left: -100%;
+}
+
+.single_btn span{
+    margin: 5px;
+}

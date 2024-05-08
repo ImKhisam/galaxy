@@ -1,0 +1,15 @@
+:root {
+  --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
+  --gray-hover: #54514f;
+}
+
+.frame{
+  padding: 40px;
+  background-color: var(--blue-transparent);
+  width: 50%;
+  margin: auto;
+  text-align: center;
+  font-size: 20px;
+}

@@ -1,0 +1,30 @@
+:root {
+  --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
+  --gray-hover: #54514f;
+}
+
+
+div.parent {
+  display: flex;
+  justify-content: center;
+}
+
+.sheet{
+  width: 60%;
+  background-color: white;
+  color: black;
+}
+
+h2{
+  text-align: center;
+}
+
+.answers{
+  margin: 30px;
+}
+
+.answer{
+  font-size: 20px;
+}

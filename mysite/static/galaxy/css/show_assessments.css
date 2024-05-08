@@ -1,0 +1,128 @@
+:root {
+    --dark-transparent: #000000e3;
+    --blue-transparent: #365a99e3;
+    --white-transparent: #fbfbfbe6;
+    --gray-hover: #54514f;
+}
+
+.hidden{
+  display: none;
+}
+
+
+.outer_type_choice{
+    width: 60%;
+    display: flex;
+    border-top: 2px solid;
+}
+.type_choices{
+    width: 100%;
+    display: flex;
+}
+.type_choice_shell{
+    width: 50%;
+    display: flex;
+}
+.type_choice{
+    width: 100%;
+    text-align: center;
+    font-size: 22px;
+}
+.type_choice label{
+    display: flex;
+    width: 100%;
+    background-color: var(--blue-transparent);
+}
+.type_choice label:hover{
+    color: grey;
+}
+.type_choice input:checked + label{
+    background-color: #fbfbfbe6;
+    color: #365a99e3;
+}
+.type_choice span{
+    margin: auto;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+td:first-child {
+    width: 5%;
+}
+
+td:nth-child(2) {
+    width: 25%;
+}
+
+td:nth-child(3) {
+    width: 25%;
+}
+
+.adding_assessment_actions{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.assessment_group_select{
+    color: var(--blue-transparent);
+    font-family: auto;
+    font-size: 20px;
+}
+
+.datepicker_obj{
+    margin: auto;
+}
+
+.datepicker_obj input{
+    height: 20px;
+    color: var(--blue-transparent);
+    font-size: 18px;
+    font-family: auto;
+}
+
+.ui-datepicker-header{
+    color: var(--blue-transparent);
+    background-color: var(--white-transparent);
+    border-top: 2px solid var(--blue-transparent);
+    border-right: 2px solid var(--blue-transparent);
+    border-left: 2px solid var(--blue-transparent);
+}
+
+.ui-datepicker-title{
+    display: flex;
+    justify-content: center;
+}
+
+.ui-datepicker-calendar tr{
+    background-color: var(--white-transparent);
+    border: 2px solid var(--blue-transparent);
+}
+
+.ui-datepicker-calendar th{
+    color: var(--blue-transparent);
+    border: 2px solid var(--blue-transparent);
+}
+
+.ui-datepicker-calendar td{
+    border: 2px solid var(--blue-transparent);
+}
+
+.ui-datepicker-calendar a{
+    color: var(--blue-transparent);
+}
+
+.ui-datepicker-calendar td:first-child{
+    width: auto;
+}
+
+.ui-datepicker-calendar td:nth-child(2){
+    width: auto;
+}
+
+.ui-datepicker-calendar td:nth-child(3){
+    width: auto;
+}
+
+.ui-datepicker-prev{
+    padding-right: 200px;
+}

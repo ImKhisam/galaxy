@@ -1777,8 +1777,7 @@ class ShowAssessmentsForStudent(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
         today = date.today()
-        #todo need to show todays assessments
-        return UserToAssessment.objects.filter(user=user).values_list('assessment', flat=True)
+        return Assessments.objects.filter(group=user.group)
         #return Assessments.objects.filter(group=user.group, date=today) \
         #    .exclude(test_id__in=[int(id) for id in user.assessments_passed.split(',') if id])  # надо ли исключать?
 
@@ -1793,7 +1792,7 @@ def filter_assessments_for_student(request):
     else:
         today = date.today()
         # todo need to show todays assessments
-        assessments = UserToAssessment.objects.filter(user=user).values_list('assessment', flat=True)
+        assessments = Assessments.objects.filter(group=user.group)
         #assessments = Assessments.objects.filter(group=user.group, date=today) \
         #    .exclude(test_id__in=[int(id_) for id_ in user.assessments_passed.split(',') if id_])
         context = {'assessments': assessments}
