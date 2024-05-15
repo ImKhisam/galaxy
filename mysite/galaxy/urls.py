@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('debug/', Debug.as_view(), name='debug'),
     path('testing_page', TestingPage.as_view(), name='testing_page'),
+    path('black_hole', BlackHole.as_view(), name='black_hole'),
 
     path('', Index.as_view(), name='home'),
     path('register/', SignUp.as_view(), name='register'),
@@ -45,7 +46,9 @@ urlpatterns = [
     path('ajx_delete_group/', ajx_delete_group, name='ajx_delete_group'),
     path('update_student_group', update_student_group, name='update_student_group'),
 
-    path('my_results/', ShowResults.as_view(), name='show_results'),
+    path('my_results/', ShowResults.as_view(), name='show_student_results'),
+    path('results/', ShowResultsForTeacher.as_view(), name='show_results'),
+    path('filter_results/', filter_results, name='filter_results'),
     path('show_students/', ShowStudents.as_view(), name='show_students'),
     path('filter_students/', filter_students, name='filter_students'),
     path('confirm_deny_student/', confirm_deny_student, name='confirm_deny_student'),

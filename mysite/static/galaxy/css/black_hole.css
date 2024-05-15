@@ -1,0 +1,16 @@
+:root {
+  --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
+  --gray-hover: #54514f;
+}
+
+body {
+    background-image: url("black-hole.jpg");
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.menu_first_row{
+  background-color: var(--dark-transparent);
+}

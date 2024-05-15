@@ -4,6 +4,7 @@
 
 {% block custom_styles %}
     <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/bb.css' %}" rel="stylesheet"/>
 {% endblock custom_styles %}
 
 {% block content %}
@@ -44,12 +45,18 @@
                             <span>-</span>
                         {% else %}
                             {% if classes.audio %}
-                                <div>
-                                    <a target=”_blank” href="{% url 'show_doc' classes.id 'BB' 'BB' %}">PDF</a>
-                                    <a target=”_blank” href="{% url 'play_audio' classes.id 'BB' %}">Audio</a>
+                                <div class="two_link_shell">
+                                    <div class="button_shell">
+                                        <a target=”_blank” class="btn btn5" href="{% url 'show_doc' classes.id 'BB' 'BB' %}"><span>PDF</span></a>
+                                    </div>
+                                    <div class="button_shell">
+                                        <a target=”_blank” class="btn btn5" href="{% url 'play_audio' classes.id 'BB' %}"><span>Audio</span></a>
+                                    </div>
                                 </div>
                             {% else %}
-                                <a target=”_blank” href="{% url 'show_doc' classes.id 'BB' 'BB' %}">PDF</a>
+                                <div class="button_shell">
+                                    <a target=”_blank” class="btn btn5" href="{% url 'show_doc' classes.id 'BB' 'BB' %}"><span>PDF</span></a>
+                                </div>
                             {% endif %}
                         {% endif %}
                     </td>

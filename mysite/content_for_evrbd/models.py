@@ -44,7 +44,8 @@ class OlympWay(models.Model):
     answer = models.FileField(upload_to=content_file_name_olymp, blank=True)
     audio = models.FileField(upload_to=content_file_name_olymp, blank=True)
     script = models.FileField(upload_to=content_file_name_olymp, blank=True)
-    order = models.IntegerField(verbose_name='Order')
+    stage_order = models.IntegerField(verbose_name='stage_order')
+    classes_order = models.IntegerField(verbose_name='classes_order')
 
     def __str__(self):
         return f"{self.year}, {self.stage}, {self.classes}"

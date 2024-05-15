@@ -33,6 +33,7 @@
     padding: 5px;
     background-color: var(--green);
     color: white;
+    text-align: center;
 }
 
 .wrong_input_answer{
@@ -40,6 +41,7 @@
     padding: 5px;
     background-color: var(--red);
     color: white;
+    text-align: center;
 }
 
 .matches{
@@ -89,4 +91,19 @@
     color: white;
     padding: 5px;
     margin: 0px;
+}
+
+.use-grammar-input-color-results{
+    justify-content: center;
+}
+
+.single-question-no-answer{
+    border: 2px solid grey;
+    color: white;
+    width: fit-content;
+    padding: 10px;
+    margin: 10px;
+    display: flex;
+    font-size: 17px;
+    background-color: var(--red);
 }

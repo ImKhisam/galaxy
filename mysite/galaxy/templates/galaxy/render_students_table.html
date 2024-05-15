@@ -22,7 +22,11 @@
             {% else %}
                 <td scope="row">{{ forloop.counter }}</td>
             {% endif %}
-            <td> {{student.last_name}} {{student.first_name}} </td>
+            {% if currentCategory == 'Confirmed' %}
+            <td><a href="{% url 'user_profile' student.id %}"><span>{{student.last_name}} {{student.first_name}}</span></a></td>
+            {% else %}
+            <td>{{student.last_name}} {{student.first_name}}</td>
+            {% endif %}
             <td>{{student.username}}</td>
             {% if currentCategory == 'Confirmed' %}
                 {% if student.group == Null %}

@@ -85,8 +85,8 @@ class Olymp(ListView):
         #                       for key in OlympWay.objects.filter(year=item.year).order_by('-stage').distinct('stage')}
 
         for item in OlympWay.objects.order_by('-year').distinct('year'):
-            content_dict[item] = {key: OlympWay.objects.filter(year=item.year, stage=key.stage).order_by('order')
-                               for key in OlympWay.objects.filter(year=item.year).order_by('-stage').distinct('stage')}
+            content_dict[item] = {key: OlympWay.objects.filter(year=item.year, stage=key.stage).order_by('classes_order')
+                               for key in OlympWay.objects.filter(year=item.year).order_by('stage_order').distinct('stage_order')}
 
         return content_dict
 

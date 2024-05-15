@@ -209,7 +209,29 @@ class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         return context
 
     def get_queryset(self):
-        return Results.objects.filter(student_id=self.request.user, test_id__is_assessment=False)
+        return Results.objects.filter(student_id=self.request.user, test_id__is_assessment=False).order_by('-date')
+
+
+class ShowResultsForTeacher(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    paginate_by = 10
+    model = Results
+    template_name = "galaxy/show_results_for_teacher.html"
+    context_object_name = 'results'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'My results'
+        context['pagination_number'] = self.paginate_by
+        tests = [x.test_id for x in Results.objects.distinct('test_id')]
+        context['dict'] = {key: 20 if key.type == 'USE' and key.part == 'Writing'
+                            else Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+                           for key in tests}
+        return context
+
+    def get_queryset(self):
+        return Results.objects.order_by('-date')
 
 
 class ResultSummary(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
@@ -272,9 +294,13 @@ class ShowColouredResult(LoginRequiredMixin, View):
         result_record_answers = str(result_object.record_answers)
         temp_list = [x.lstrip(' ') for x in result_record_answers.split(';')]
         student_answers_dict = {int(x.split(') ')[0]): {y.split('-')[0]: y.split('-')[1]
+                                                        if '-' in y
+                                                        else y
                                                         for y in x.split(') ')[1].split(', ')}
-        if '-' in x.split(') ')[1]
-        else x.split(') ')[1] for x in temp_list[:-1]}
+                                if '-' in x.split(') ')[1]
+                                else x.split(') ')[1]
+                                for x in temp_list[:-1]
+                                }
 
         right_answers_dict = {}
         content_dict = {}
@@ -455,7 +481,7 @@ class ShowUserResults(LoginRequiredMixin, TeacherUserMixin, ListView):
     def get_queryset(self):
         user_id = self.kwargs['user_pk']
         user = CustomUser.objects.get(id=user_id)
-        return Results.objects.filter(student_id=user.id, test_id__is_assessment=False)
+        return Results.objects.filter(student_id=user.id, test_id__is_assessment=False).order_by('-date')
 
 
 class ShowUserAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
@@ -1588,6 +1614,13 @@ class ShowOrEditTest(LoginRequiredMixin, TeacherUserMixin, View):
 
 class TestingPage(View):  # wtf is this
     template_name = 'galaxy/testing.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+
+class BlackHole(View):  # wtf is this
+    template_name = 'galaxy/black_hole.html'
 
     def get(self, request):
         return render(request, self.template_name)

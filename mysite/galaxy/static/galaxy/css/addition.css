@@ -106,6 +106,7 @@ form{
     background-color: var(--dark-transparent);
 }
 .frame{
+  border: 2px solid white;  
   padding: 40px;
   background-color: var(--blue-transparent);
   width: 50%;

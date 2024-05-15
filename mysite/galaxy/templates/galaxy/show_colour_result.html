@@ -196,106 +196,125 @@
                         {% endif %}
                     {% elif question.question_type == 'input_type'%}    <!-- Input type question -->
                         {% if test.part == 'Grammar and Vocabulary' %}
-                        <div class="input-outer">
-                            <div class="use-grammar-input-question">
-                                <p class="question-number">{{question.question_number}}</p>
-                                <p class="use-grammar-question-text">{{question.question}}</p>
-                            </div>
-                            <div class="use-grammar-input-right-part">
-                                <div class="input-addition use-grammar-input-addition">
-                                    <p class="input-addition-text">{{question.addition_after}}</p>
+                            <div class="input-outer">
+                                <div class="use-grammar-input-question">
+                                    <p class="question-number">{{question.question_number}}</p>
+                                    <p class="use-grammar-question-text">{{question.question}}</p>
                                 </div>
-                                <div class="input-type use-grammar-input-type">
-                                    <input type="text" class="input-answer" name="{{answers.pk}}">
+                                <div class="use-grammar-input-right-part">
+                                    <div class="input-addition use-grammar-input-addition">
+                                        <p class="input-addition-text">{{question.addition_after}}</p>
+                                    </div>
+                                    <div class="input-type use-grammar-input-type use-grammar-input-color-results">
+                                        <div>
+                                        {% with current_answer=right_answers_dict|get_item:question.question_number%}
+                                            <p class="right_input_answer">{{ current_answer }}</p>
+                                            {% if current_answer|is_list %}
+                                                {% if student_answers_dict|get_item:question.question_number not in current_answer %}
+                                                    <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if student_answers_dict|get_item:question.question_number != current_answer %}
+                                                    <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         {% else %}
-                        <div class="input-outer">
-                            <div class="input-question">
-                                <p class="question-number">{{question.question_number}}</p>
-                                <p class="question-text">{{question.question}}</p>
-                            </div>
-                            {% if question.addition_before %}
-                                <div class="input-addition">
-                                    <p class="input-addition-text">{{question.addition_before}}</p>
+                            <div class="input-outer">
+                                <div class="input-question">
+                                    <p class="question-number">{{question.question_number}}</p>
+                                    <p class="question-text">{{question.question}}</p>
                                 </div>
-                            {% else %}
-                                <div class="input-addition"></div>
-                            {% endif %}
-                            <div class="input-type">
-                                <div>
-                                    {% with current_answer=right_answers_dict|get_item:question.question_number%}
-                                        <p class="right_input_answer">{{ current_answer }}</p>
-                                        {% if current_answer|is_list %}
-                                            {% if student_answers_dict|get_item:question.question_number not in answers_list %}
-                                                <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                {% if question.addition_before %}
+                                    <div class="input-addition">
+                                        <p class="input-addition-text">{{question.addition_before}}</p>
+                                    </div>
+                                {% else %}
+                                    <div class="input-addition"></div>
+                                {% endif %}
+                                <div class="input-type">
+                                    <div>
+                                        {% with current_answer=right_answers_dict|get_item:question.question_number%}
+                                            <p class="right_input_answer">{{ current_answer }}</p>
+                                            {% if current_answer|is_list %}
+                                                {% if student_answers_dict|get_item:question.question_number not in current_answer %}
+                                                    <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if student_answers_dict|get_item:question.question_number != current_answer %}
+                                                    <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                                {% endif %}
                                             {% endif %}
-                                        {% else %}
-                                            {% if student_answers_dict|get_item:question.question_number != current_answer %}
-                                                <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
-                                            {% endif %}
-                                        {% endif %}
-                                    {% endwith %}
+                                        {% endwith %}
+                                    </div>
                                 </div>
+                                {% if question.addition_after %}
+                                    <div class="input-addition">
+                                        <p class="input-addition-text">{{question.addition_after}}</p>
+                                    </div>
+                                {% else %}
+                                    <div class="input-addition"></div>
+                                {% endif %}
                             </div>
-                            {% if question.addition_after %}
-                                <div class="input-addition">
-                                    <p class="input-addition-text">{{question.addition_after}}</p>
-                                </div>
-                            {% else %}
-                                <div class="input-addition"></div>
-                            {% endif %}
-                        </div>
                         {% endif %}
                     {% elif question.question_type == 'single_choice_type' %} <!-- Single choice type question -->
                         {% if test.type == 'USE' and test.part == 'Grammar and Vocabulary' %}
-                        <div class="use-grammar-question-radio">
-                            <div class="question">
-                            	<p class="use-grammar-question-number">{{question.question_number}}</p>
-                            </div>
-                            <div class="question-choices">
-                                {% for answer in answers %}
-                                    <div class="question-choice">
-                                        <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
-                                            {% if answer.answer in right_answers_dict.values %}
-                                            <label class="right_answer" for="{{answer.pk}}">
-                                            {% elif answer.answer == student_answers_dict|get_item:question.question_number %}
-                                            <label class="student_wrong_answer" for="{{answer.pk}}">
-                                            {% else %}
-                                            <label for="{{answer.pk}}">
-                                            {% endif %}
-                                            <span class="center">{{ answer.answer }}</span>
-                                            </label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="question-radio">
-                            <div class="question">
-                            	<p class="question-number">{{question.question_number}}</p>
-                            	<p class="question-text">{{question.question}}</p>
-                            </div>
-                            <div class="left-margin-wrap">
+                            <div class="use-grammar-question-radio">
+                                <div class="question">
+                                	<p class="use-grammar-question-number">{{question.question_number}}</p>
+                                </div>
                                 <div class="question-choices">
+                                    {% if student_answers_dict|get_item:question.question_number == 'No answer' %}
+                                        <span class="single-question-no-answer">No answer</span>
+                                    {% endif %}
                                     {% for answer in answers %}
                                         <div class="question-choice">
                                             <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
-                                                {% if answer.answer in right_answers_dict.values %}
-                                                <label class="right_answer" for="{{answer.pk}}">
+                                                {% if answer.answer == right_answers_dict|get_item:question.question_number %}
+                                                    <label class="right_answer" for="{{answer.pk}}">
                                                 {% elif answer.answer == student_answers_dict|get_item:question.question_number %}
-                                                <label class="student_wrong_answer" for="{{answer.pk}}">
+                                                    <label class="student_wrong_answer" for="{{answer.pk}}">
                                                 {% else %}
-                                                <label for="{{answer.pk}}">
+                                                    <label for="{{answer.pk}}">
                                                 {% endif %}
-                                                    <span class="center">{{ answer.answer }}</span>
+                                                <span class="center">{{ answer.answer }}</span>
                                                 </label>
                                         </div>
                                     {% endfor %}
                                 </div>
                             </div>
-                        </div>
+                        {% else %}
+                            <div class="question-radio">
+                                <div class="question">
+                                	<p class="question-number">{{question.question_number}}</p>
+                                	<p class="question-text">{{question.question}}</p>
+                                </div>
+                                <div class="left-margin-wrap">
+                                    <div class="question-choices">
+                                        {% if student_answers_dict|get_item:question.question_number == 'No answer' %}
+                                            <span class="single-question-no-answer">No answer</span>
+                                        {% endif %}
+                                        {% for answer in answers %}
+                                            <div class="question-choice">
+                                                <input type="radio" id="{{answer.pk}}" name="{{question.pk}}" value="{{answer.pk}}">
+                                                    {% if answer.answer == right_answers_dict|get_item:question.question_number %}
+                                                        <label class="right_answer" for="{{answer.pk}}">
+                                                    {% elif answer.answer == student_answers_dict|get_item:question.question_number %}
+                                                        <label class="student_wrong_answer" for="{{answer.pk}}">
+                                                    {% else %}
+                                                        <label for="{{answer.pk}}">
+                                                    {% endif %}
+                                                        <span class="center">{{ answer.answer }}</span>
+                                                    </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
                         {% endif %}
                     {% elif question.question_type == 'true_false_type' %}  <!-- True/False type question -->
                         <div class="question_true_false">

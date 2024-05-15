@@ -165,10 +165,10 @@ nav .menu_second_row {
 }
 
 .first-row:hover{
-  background-color: #fbfbfbe6;
+  background-color: var(--white-transparent);
 }
 .first-row:hover > a{
-  color: #365a99e3;
+  color: var(--blue-transparent);
 }
 .menu_second_row li:hover{
   background-color: #fbfbfbe6;

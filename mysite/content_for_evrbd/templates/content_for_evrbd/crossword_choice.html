@@ -3,12 +3,21 @@
 {% load static %}
 
 {% block custom_styles %}
-
-<link type="text/css" href="{% static 'galaxy/css/cross_table.css' %}" rel="stylesheet"/>
-
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/cross_table.css' %}" rel="stylesheet"/>
 {% endblock custom_styles %}
 
 {% block content %}
+
+    <div class="parent">
+        <div class="outer_table_head">
+            <div class="empty"></div>
+            <div class="table_head">
+                <h1>Crosswords</h1>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
 
     <div class="parent">
         <div class="table">
@@ -24,22 +33,38 @@
                     <tr>
                         <td scope="row">1</td>
                         <td> Painting </td>
-                        <td><a href="{% url 'cross' 1 %}">Open</a></td>
+                        <td>
+                            <div class="button_shell">
+                                <a class="btn btn5" href="{% url 'cross' 1 %}"><span>Open</span></a>
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <td scope="row">2</td>
                         <td> St. Patricks Day </td>
-                        <td><a href="{% url 'cross' 2 %}">Open</a></td>
+                        <td>
+                            <div class="button_shell">
+                                <a class="btn btn5" href="{% url 'cross' 2 %}"><span>Open</span></a>
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <td scope="row">3</td>
                         <td> Spring </td>
-                        <td><a href="{% url 'cross' 3 %}">Open</a></td>
+                        <td>
+                            <div class="button_shell">
+                                <a class="btn btn5" href="{% url 'cross' 3 %}"><span>Open</span></a>
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <td scope="row">4</td>
                         <td> Easter </td>
-                        <td><a href="{% url 'cross' 4 %}">Open</a></td>
+                        <td>
+                            <div class="button_shell">
+                                <a class="btn btn5" href="{% url 'cross' 4 %}"><span>Open</span></a>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>

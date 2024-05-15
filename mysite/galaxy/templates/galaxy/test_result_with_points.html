@@ -7,7 +7,7 @@
 {% endblock %}
 {% block content %}
 <div class="outer">
-<div class="dark-frame">
+<div class="frame">
     <p>Your result in {{result.test_id}}: {{result.points}}/{{max_points}}. You've made it in {{test_time}}</p>
     <br><br>
     <a class="btn btn5" href="{% url 'show_results'%}">

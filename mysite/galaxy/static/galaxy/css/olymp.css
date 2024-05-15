@@ -11,7 +11,7 @@ a {
 }
 
 .table_cell_outer{
-  width: 60%;
+  width: 70%;
   font-size: 25px;
 }
 
@@ -36,6 +36,11 @@ a {
   width: 15%;
   border-right: 2px solid white;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 5px;
+  padding-top: 5px;
 }
 
 .stages_cell{
@@ -44,10 +49,13 @@ a {
 }
 
 .stage_obj{
-  width: 30%;
+  width: 25%;
   text-align: center;
   display: flex;
   align-items: center;
+  border-right: 2px solid;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .stage_obj span{
@@ -67,4 +75,13 @@ a {
 
 .class_element{
   width: 20%;
+  text-align: center;
+  border-right: 2px solid;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.audio_element{
+  width: 20%;
+  text-align: center;
 }
