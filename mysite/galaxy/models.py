@@ -75,7 +75,7 @@ class Tests(models.Model):
     test_num = models.PositiveIntegerField()
     type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
     part = models.CharField(max_length=255, verbose_name='Part of exam', choices=choices_in_part)
-    order = models.PositiveIntegerField()
+    order = models.PositiveIntegerField()   # order in category
     test_details = models.TextField(default="Текст, который выводится перед началом теста")
     time_limit = models.PositiveIntegerField(null=True)
     media = models.FileField(upload_to=content_file_name_test, blank=True)

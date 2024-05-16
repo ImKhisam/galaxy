@@ -234,6 +234,40 @@ class ShowResultsForTeacher(LoginRequiredMixin, TeacherUserMixin, ListView):
         return Results.objects.order_by('-date')
 
 
+def filter_results(request):
+    data = dict()
+    # Get parameters from AJAX request
+    filter_value = request.GET.get('filterValue')
+    filter_parts = filter_value.split()
+
+    query = Q()
+    for part in filter_parts:
+        query &= (Q(student_id__first_name__icontains=part) |
+                  Q(student_id__last_name__icontains=part) |
+                  Q(test_id__type__icontains=part) |
+                  Q(test_id__part__icontains=part))
+
+    results = Results.objects.filter(query).order_by('-date')
+
+    #results = Results.objects.filter(
+    #    Q(student_id__first_name__icontains=filter_value) |
+    #    Q(student_id__last_name__icontains=filter_value) |
+    #    Q(test_id__type__icontains=filter_value) |
+    #    Q(test_id__part__icontains=filter_value) |
+    #    Q(date__icontains=filter_value)
+    #).order_by('-date')
+
+    context = {'results': results}
+    context['pagination_number'] = 15
+    tests = [x.test_id for x in Results.objects.distinct('test_id')]
+    context['dict'] = {key: 20 if key.type == 'USE' and key.part == 'Writing'
+                       else Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+                       for key in tests}
+    data['my_content'] = render_to_string('galaxy/render_results_table.html',
+                                          context, request=request)
+    return JsonResponse(data)
+
+
 class ResultSummary(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
     login_url = '/login/'
     redirect_field_name = 'login'

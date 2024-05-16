@@ -1,0 +1,17 @@
+:root {
+  --dark-transparent: #000000e3;
+  --gray-hover: #54514f;
+}
+
+.quiz-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 5%;
+}
+.quiz {
+  margin: 10px;
+}
+.quiz img {
+  height: 500px;
+}

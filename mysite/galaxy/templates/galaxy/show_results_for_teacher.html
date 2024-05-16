@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block custom_styles %}
-
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
     <link type="text/css" href="{% static 'galaxy/css/show_results.css' %}" rel="stylesheet"/>
     <link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet"/>
 
@@ -25,7 +25,7 @@
     <div class="outer_filter_input">
             <div class="empty"></div>
                 <div class="filter">
-                    <input class="filter_input" type="text" id="searchInput" placeholder="Search">
+                    <input class="filter_input" type="text" id="filterInput" placeholder="Search">
                 </div>
             <div class="empty"></div>
     </div>
@@ -92,3 +92,58 @@
 {% include "galaxy/pagination.html" %}
 
 {% endblock %}
+
+
+{% block javascript %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+
+$(document).ready(function() {
+    // Function to filter tests based on input text
+    $('#filterInput').on('input', function() {
+        var filterValue = $(this).val().toLowerCase();
+        storeStateInSessionStorage(filterValue);
+        filterResults(filterValue);
+    });
+
+    function storeStateInSessionStorage(filterValue) {
+        var state = {
+            filterValue: filterValue
+        };
+        sessionStorage.setItem('ShowResults', JSON.stringify(state));
+    }
+
+    function retrieveStateFromSessionStorage() {
+        var stateJSON = sessionStorage.getItem('ShowResults');
+        return stateJSON ? JSON.parse(stateJSON) : null;
+    }
+
+    function filterResults(filterValue) {
+        $.ajax({
+            url: "{% url 'filter_results' %}", // URL to your Django view for filtering
+            type: 'GET',
+            data: {
+                filterValue: filterValue
+            },
+            success: function(data) {
+                // Update the table with the filtered data
+                $('.table').html(data.my_content);
+                // Update the pagination links
+                $('.pagination').html(data.pagination_html);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+
+    var storedState = retrieveStateFromSessionStorage();
+    if (storedState) {
+        $('#filterInput').val(storedState.filterValue);
+        filterTestsToCheck(storedState.filterValue);
+    }
+});
+</script>
+{% endblock javascript %}

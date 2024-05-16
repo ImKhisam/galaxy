@@ -1,0 +1,55 @@
+{% load galaxy_tags %}
+
+<table>
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Student</th>
+          <th scope="col">Test</th>
+          <th scope="col">Date</th>
+          <th scope="col">Points</th>
+          <th scope="col">Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for result in results %}
+        <tr>
+            {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
+            <td scope="row">{{ forloop.counter|add:offset }}</td>
+            <td scope="row">{{ result.student_id }}</td>
+            {% endwith %}
+            {% if result.test_id.part == 'Grammar and Vocabulary' %}
+            <td>{{result.test_id.type}} Grammar {{result.test_id.test_num}}</td>
+            {% else %}
+            <td>{{result.test_id.type}} {{result.test_id.part}} {{result.test_id.test_num}}</td>
+            {% endif %}
+            <td>{{result.date}}</td>
+            <td>{{result.points}} / {{ dict|get_item:result.test_id }}</td>
+            <td>{{result.time}}</td>
+            {% if result.test_id.part == 'Speaking' or result.test_id.part == 'Writing' %}
+                <td>
+                    <div class="button_shell">
+                        <a class="btn btn5" href="{% url 'result_preview' result.id %}"><span>Open</span></a>
+                    </div>
+                </td>
+            {% else %}
+                {% if request.user.role == 'Teacher' or request.user.is_staff %}
+                    <td>
+                        <div class="button_shell">
+                            <a class="btn btn5" href="{% url 'show_colour_result' result.id %}"><span>Open</span></a>
+                        </div>
+                    </td>
+                {% else %}
+                    <td>
+                        <div class="button_shell">
+                            <a class="btn btn5" href="{% url 'result_summary' result.id %}"><span>Open</span></a>
+                        </div>
+                    </td>
+                {% endif %}
+            {% endif %}
+        </tr>
+
+      {% endfor %}
+      </tbody>
+      </table>
