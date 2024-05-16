@@ -122,15 +122,33 @@ def content_file_name_chapter(instance, filename):
                      filename])
 
 
+class ReadAndLearnTest(models.Model):
+    Intermediate = 'Intermediate'
+    Advanced = 'Advanced'
+    choices_in_type = [
+        (Intermediate, 'Intermediate'),
+        (Advanced, 'Advanced'),
+    ]
+    test_num = models.PositiveIntegerField()
+    type = models.CharField(max_length=255, verbose_name='Type of exam', choices=choices_in_type)
+
+    def __str__(self):
+        return f"Read and Learn #{self.test_num}, {self.type}"
+
+
 class Chapters(models.Model):
-    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE, blank=True, null=True)
+    read_and_learn_test = models.ForeignKey(ReadAndLearnTest, on_delete=models.CASCADE, blank=True, null=True)
     chapter_number = models.PositiveIntegerField()
     info = models.TextField(blank=True)
     text_name = models.CharField(max_length=50, blank=True)
     text = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.test_id}, Chapter #{self.chapter_number}"
+        if self.test_id:
+            return f"{self.test_id}, Chapter #{self.chapter_number}"
+        else:
+            return f"{self.read_and_learn_test}, Chapter #{self.chapter_number}"
 
 
 def content_file_name_question(instance, filename):
@@ -165,9 +183,10 @@ class Questions(models.Model):
         (essay, 'essay'),
     ]
 
-    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    test_id = models.ForeignKey(Tests, on_delete=models.CASCADE, blank=True, null=True)
+    read_and_learn_test = models.ForeignKey(ReadAndLearnTest, on_delete=models.CASCADE, blank=True, null=True)
     chapter_id = models.ForeignKey(Chapters, on_delete=models.CASCADE)
-    points = models.PositiveIntegerField()
+    points = models.PositiveIntegerField(blank=True, null=True)
     question = models.TextField(blank=True)
     addition_before = models.CharField(max_length=50, blank=True)
     addition_after = models.CharField(max_length=50, blank=True)
@@ -179,7 +198,7 @@ class Questions(models.Model):
     picture = models.FileField(upload_to=content_file_name_question, blank=True)
     text = models.TextField(blank=True)
     text_name = models.CharField(max_length=50, blank=True)
-    writing_fl = models.CharField(max_length=255, verbose_name='Type of question', choices=choices_in_writing_fl)
+    writing_fl = models.CharField(max_length=255, verbose_name='Type of writing question', choices=choices_in_writing_fl, blank=True, null=True)
     writing_from = models.CharField(max_length=50, blank=True)
     writing_to = models.CharField(max_length=50, blank=True)
     writing_subject = models.CharField(max_length=50, blank=True)
@@ -187,7 +206,10 @@ class Questions(models.Model):
     writing_after = models.TextField(max_length=600, blank=True)
 
     def __str__(self):
-        return f"{self.test_id}, {self.chapter_id}, Q{self.question_number}"
+        if self.test_id:
+            return f"{self.test_id}, {self.chapter_id}, Q{self.question_number}"
+        else:
+            return f"{self.read_and_learn_test}, Chapter#{self.chapter_id.chapter_number}, Q{self.question_number}"
 
 
 class Answers(models.Model):

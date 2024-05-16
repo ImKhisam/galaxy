@@ -1,0 +1,25 @@
+:root {
+  --dark-transparent: #000000e3;
+  --blue-transparent: #365a99e3;
+  --white-transparent: #fbfbfbe6;
+  --gray-hover: #54514f;
+}
+
+.listening-select {
+    font-size: 18px;
+}
+
+.chapter-text{
+    margin-left: 40px;
+}
+
+.question-text {
+    margin: auto;
+    font-size: 22px;
+    margin-left: 20px;
+    flex: 1;
+}
+
+.question-number {
+    margin: auto;
+}    

@@ -24,8 +24,12 @@ class TestsAdmin(admin.ModelAdmin):
     list_display = ('id', 'type', 'part', 'test_num', 'time_limit')
 
 
+class ReadAndLearnTestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'test_num', 'type')
+
+
 class ChaptersAdmin(admin.ModelAdmin):
-    list_display = ('id', 'test_id', 'chapter_number', 'text', 'media')
+    list_display = ('id', 'test_id', 'read_and_learn_test', 'chapter_number', 'text')
 
 
 class QuestionsAdmin(admin.ModelAdmin):
@@ -47,6 +51,7 @@ class ResultsAdmin(admin.ModelAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Groups, GroupsAdmin)
 admin.site.register(Tests, TestsAdmin)
+admin.site.register(ReadAndLearnTest, ReadAndLearnTestAdmin)
 admin.site.register(Chapters, ChaptersAdmin)
 admin.site.register(Questions, QuestionsAdmin)
 admin.site.register(Answers, AnswersAdmin)

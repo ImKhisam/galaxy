@@ -1902,3 +1902,53 @@ class Debug(View):
         response_data = {'message': 'POST request processed successfully'}
         return JsonResponse(response_data)
         # return redirect('home')
+
+
+class ReadAndLearn(LoginRequiredMixin, ListView):   # ConfirmStudentMixin
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = Tests
+    template_name = "galaxy/read_and_learn.html"
+    context_object_name = 'tests'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Read and Learn'
+        return context
+
+    def get_queryset(self):
+        return ReadAndLearnTest.objects.all()
+
+
+class PassReadAndLearnTest(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+
+    def get(self, request, test_pk):
+        test = get_object_or_404(ReadAndLearnTest, id=test_pk)
+        template = 'galaxy/pass_read_and_learn_test.html'
+
+        content_dict = {}
+        chapters_for_test = Chapters.objects.filter(read_and_learn_test__id=test.id).order_by('chapter_number')
+        for chapter in chapters_for_test:
+            questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+            qa = {}
+            for question in questions_for_test:
+                if question.question_type == 'match_type':
+                    qa[question] = {
+                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                            'answer',
+                            flat=True)
+                        for key in
+                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by(
+                            'match')}
+                elif question.question_type == 'input_type':
+                    qa[question] = Answers.objects.get(question_id__id=question.id)
+                else:
+                    qa[question] = Answers.objects.filter(question_id__id=question.id)
+            content_dict[chapter] = qa
+
+        context = {'test': test,
+                   'content_dict': content_dict,
+                   }
+        return render(request, template, context)

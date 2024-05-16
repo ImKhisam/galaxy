@@ -86,4 +86,7 @@ urlpatterns = [
 
     path('show_assessments_for_student/', ShowAssessmentsForStudent.as_view(), name='show_assessments_for_student'),
     path('filter_assessments_for_student/', filter_assessments_for_student, name='filter_assessments_for_student'),
+
+    path('read_and_learn/', ReadAndLearn.as_view(), name='read_and_learn'),
+    path('pass_read_and_learn_test/<int:test_pk>/', PassReadAndLearnTest.as_view(), name='pass_read_and_learn_test'),
     ]

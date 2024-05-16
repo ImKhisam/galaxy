@@ -1,0 +1,51 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/cross_table.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+
+    <div class="parent">
+        <div class="outer_table_head">
+            <div class="empty"></div>
+            <div class="table_head">
+                <h1>Crosswords</h1>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
+
+    <div class="parent">
+        <div class="table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Test</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for test in tests %}
+                        <tr>
+                            <td scope="row">{{ forloop.counter }}</td>
+                            <td>{{ test.test_num }}</td>
+                            <td>{{ test.type }}</td>
+                            <td>
+                                <div class="button_shell">
+                                    <a class="btn btn5" href="{% url 'pass_read_and_learn_test' test.pk %}"><span>Open</span></a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock content %}
