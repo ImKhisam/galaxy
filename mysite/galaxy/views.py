@@ -203,8 +203,9 @@ class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         context['title'] = 'My results'
         context['pagination_number'] = self.paginate_by
         tests = [x.test_id for x in Results.objects.filter(student_id=self.request.user).distinct('test_id')]
-        context['dict'] = {key: 20 if key.type == 'USE' and key.part == 'Writing'
-        else Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+        context['dict'] = {key: 20
+                           if key.type == 'USE' and key.part == 'Writing'
+                           else Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
                            for key in tests}
         return context
 
@@ -678,21 +679,6 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         record_to_add_in += (str(answer_match) + '-' + answer_to_add)
         return record_to_add_in
 
-    # @staticmethod
-    # def convert_to_mp3(file_path):
-    #    print('IM IN COVERT')
-    #    import subprocess
-    #    mp3_file_path = file_path.replace('.wav', '.mp3')
-    #    # Use FFmpeg to convert the WAV file to MP3
-    #    subprocess.run(["ffmpeg", "-i", file_path, mp3_file_path])
-    #    print('IM OUT CONVERT')
-    #    return mp3_file_path
-
-    # @staticmethod
-    # def convert_wav_to_mp3(wav_path, mp3_path):
-    #    sound = AudioSegment.from_wav(wav_path)
-    #    sound.export(mp3_path, format="mp3")
-
     def post(self, request, test_pk):
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
@@ -724,6 +710,8 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
             test_to_check.student_id = user
             test_to_check.save()
             result_obj = Results()
+            result_obj.student_id = user
+            result_obj.test_id = test
             result_obj.test_to_check = test_to_check
             result_obj.time = str(timedelta(seconds=test_time))
             result_obj.save()
@@ -734,7 +722,7 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         #    user.assessments_passed += str(test.id)
         #    user.save()
         if test.is_assessment:
-            assessment_obj = Assessments.objects.filter(test=test, group=user.group)
+            assessment_obj = Assessments.objects.get(test=test, group=user.group)
             user_to_assessment_obj = UserToAssessment(user=user, assessment=assessment_obj)
             user_to_assessment_obj.save()
 
@@ -1000,26 +988,26 @@ def filter_tests_by_part(request):
     return JsonResponse(data)
 
 
-class ShowTests(LoginRequiredMixin, TeacherUserMixin, ListView):
-    login_url = '/login/'
-    redirect_field_name = 'login'
-    paginate_by = 10
-    model = Tests
-    template_name = "galaxy/show_tests.html"
-    context_object_name = 'tests'
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Available Tests'
-        context['pagination_number'] = self.paginate_by
-        return context
-
-    def get_queryset(self):
-        self.template_name = "galaxy/show_assessment_tests.html" if self.kwargs.get('assessment_fl') == 1 \
-            else "galaxy/show_tests.html"
-        flag = True if self.kwargs.get('assessment_fl') == 1 else False
-        # return Tests.objects.all().order_by('type', 'part', 'test_num')
-        return Tests.objects.filter(is_assessment=flag).order_by('type', 'part', 'test_num')
+#class ShowTests(LoginRequiredMixin, TeacherUserMixin, ListView):
+#    login_url = '/login/'
+#    redirect_field_name = 'login'
+#    paginate_by = 10
+#    model = Tests
+#    template_name = "galaxy/show_tests.html"
+#    context_object_name = 'tests'
+#
+#    def get_context_data(self, *, object_list=None, **kwargs):
+#        context = super().get_context_data(**kwargs)
+#        context['title'] = 'Available Tests'
+#        context['pagination_number'] = self.paginate_by
+#        return context
+#
+#    def get_queryset(self):
+#        self.template_name = "galaxy/show_assessment_tests.html" if self.kwargs.get('assessment_fl') == 1 \
+#            else "galaxy/show_tests.html"
+#        flag = True if self.kwargs.get('assessment_fl') == 1 else False
+#        # return Tests.objects.all().order_by('type', 'part', 'test_num')
+#        return Tests.objects.filter(is_assessment=flag).order_by('type', 'part', 'test_num')
 
 
 class ShowTestsAndAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
@@ -1253,8 +1241,8 @@ class CheckingTest(LoginRequiredMixin, TeacherUserMixin, DetailView):
 
         '''Создание результата для отображения у ученика'''
         result = Results.objects.get(test_to_check=test_to_check)
-        result.student_id = test_to_check.student_id
-        result.test_id = test_to_check.test_id
+        #result.student_id = test_to_check.student_id
+        #result.test_id = test_to_check.test_id
         result.points = sum_points_for_test
         result.commentary = request.POST.get('commentary')
         result.test_to_check = test_to_check
@@ -1712,7 +1700,7 @@ def filter_assessments_for_teacher(request):
     context['current_category'] = filter_flag
     group_list = Groups.objects.all().order_by('name')
     context['group_list'] = group_list
-    data['my_content'] = render_to_string('galaxy/render_assessments_table.html',
+    data['my_content'] = render_to_string('galaxy/render_assessments_for_teacher.html',
                                           context, request=request)
     data['pagination_html'] = render_to_string('galaxy/pagination.html', {'page_obj': paginated_tests}, request=request)
     return JsonResponse(data)
@@ -1781,6 +1769,46 @@ def close_assessment(request):
     return redirect('show_assessments')
 
 
+class OpenCurrentAssessment(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = CustomUser
+    context_object_name = 'assessment_contestants'
+    template_name = "galaxy/open_current_assessment.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        assessment_obj = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
+        context['title'] = str(assessment_obj.group) + 'assessment'
+        context['assessment'] = assessment_obj
+        return context
+
+    def get_queryset(self):
+        from django.db.models import Case, When, Value, CharField
+        assessment = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
+        group = assessment.group
+        # users = [x if assessment.pk in x.assessment_passed for x in CustomUser.objects.filter(group=group)]
+        users = CustomUser.objects.filter(group=group)
+        right_order = ['Listening', 'Reading', 'Grammar and Vocabulary', 'Writing', 'Speaking']
+        whens = [When(test__part=part, then=Value(i)) for i, part in enumerate(right_order)]
+        assessments = Assessments.objects.filter(group=group, date=assessment.date).annotate(
+            custom_order=Case(*whens, output_field=CharField())
+        ).order_by('custom_order')
+        #tests = [assessment.test for assessment in assessments]  # 5 appointed tests
+        #temp_dict = {user: [Results.objects.get(student_id=user, test_id=test)
+        #                    if Results.objects.filter(student_id=user, test_id=test).exists()
+        #                    else 'no result'
+        #                    for test in tests]
+        #             for user in users}
+
+        temp_dict = {user: ['Passed'
+                            if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists()
+                            else 'Nope'
+                            for assessment_obj in assessments]
+                     for user in users}
+        return temp_dict
+
+
 class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
@@ -1813,22 +1841,27 @@ class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
                             else 'no result'
                             for test in tests]
                      for user in users}
+
+        print(temp_dict)
         # counting %
         for user, results in temp_dict.items():
             if assessment.test.type == 'USE':
                 max_points = 82
             else:
                 max_points = 68
-            while len(results) < 5:
-                results.append('no result')
+            #while len(results) < 5:                # ????????????
+            #    results.append('no result')
             cleared_list = [i for i in results if i != 'no result']
-            sum_of_points = sum([int(result.points) for result in cleared_list])
+            sum_of_points = sum([int(result.points) for result in cleared_list if result.points != ''])
             results.append(str(sum_of_points) + '(' + str(max_points) + ')')
             results.append(str(round(sum_of_points / (max_points / 100))) + '%')
+
+        print(temp_dict)
+
         return temp_dict
 
 
-class ShowAssessmentsForStudent(LoginRequiredMixin, ListView):
+class ShowAssessmentsForStudent(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = Assessments
@@ -1843,10 +1876,7 @@ class ShowAssessmentsForStudent(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        today = date.today()
-        return Assessments.objects.filter(group=user.group)
-        #return Assessments.objects.filter(group=user.group, date=today) \
-        #    .exclude(test_id__in=[int(id) for id in user.assessments_passed.split(',') if id])  # надо ли исключать?
+        return Assessments.objects.filter(group=user.group, is_passed=False).distinct('date')
 
 
 def filter_assessments_for_student(request):
@@ -1857,17 +1887,48 @@ def filter_assessments_for_student(request):
         assessments_dict = form_assessment_dict(user.id)
         context = {'assessments': assessments_dict}
     else:
-        today = date.today()
-        # todo need to show todays assessments
-        assessments = Assessments.objects.filter(group=user.group)
-        #assessments = Assessments.objects.filter(group=user.group, date=today) \
-        #    .exclude(test_id__in=[int(id_) for id_ in user.assessments_passed.split(',') if id_])
+        assessments = Assessments.objects.filter(group=user.group, is_passed=False).distinct('date')
         context = {'assessments': assessments}
 
     context['current_category'] = filter_flag
     data['my_content'] = render_to_string('galaxy/render_assessments_for_student.html',
                                           context, request=request)
     return JsonResponse(data)
+
+
+class ShowAssessmentTests(LoginRequiredMixin, ConfirmStudentMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = Assessments
+    context_object_name = 'assessments'
+    template_name = "galaxy/show_assessment_tests.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Tests in assessment'
+        assessment_object = Assessments.objects.get(id=self.kwargs.get('assessment_id'))
+        context['assessment'] = assessment_object
+        user = self.request.user
+        results = {x.test: Results.objects.get(test_id=x.test, student_id=user)
+                   for x in Assessments.objects.filter(group=assessment_object.group, date=assessment_object.date)
+                   if Results.objects.filter(test_id=x.test, student_id=user).exists()}
+
+
+        max_points_dict = {key: 20
+                           if key.type == 'USE' and key.part == 'Writing'
+                           else Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
+                           for key in
+                           [x.test for x in Assessments.objects.
+                                                    filter(group=assessment_object.group, date=assessment_object.date)]}
+        context['max_points_dict'] = max_points_dict
+        context['results'] = results
+
+        return context
+
+    def get_queryset(self):
+        assessment_object = Assessments.objects.get(id=self.kwargs.get('assessment_id'))
+        return Assessments.objects.\
+            filter(group=assessment_object.group, date=assessment_object.date).order_by('test__order')
 
 
 class Debug(View):
@@ -1926,7 +1987,7 @@ class PassReadAndLearnTest(LoginRequiredMixin, View):
 
     def get(self, request, test_pk):
         test = get_object_or_404(ReadAndLearnTest, id=test_pk)
-        template = 'galaxy/pass_read_and_learn_test.html'
+        template = 'galaxy/read_and_learn_pass_test.html'
 
         content_dict = {}
         chapters_for_test = Chapters.objects.filter(read_and_learn_test__id=test.id).order_by('chapter_number')
@@ -1952,3 +2013,96 @@ class PassReadAndLearnTest(LoginRequiredMixin, View):
                    'content_dict': content_dict,
                    }
         return render(request, template, context)
+
+    def post(self, request, test_pk):
+        test = get_object_or_404(ReadAndLearnTest, id=test_pk)
+
+        student_answers_dict = {}
+        questions_for_test = Questions.objects.filter(read_and_learn_test__id=test.id).order_by('question_number')
+        for question in questions_for_test:
+            if question.question_type == 'match_type':
+                record_match_answers = {}
+                for answer in Answers.objects.filter(question_id__id=question.id).exclude(
+                        match__exact=''):  # ??перебираем только "правильные" ответы, отрезая пустышку без match
+                    student_answer = request.POST.get(str(answer.id))
+
+                    record_match_answers[answer.match] = student_answer
+
+                record_to_add = record_match_answers
+            else:   # elif question.question_type == 'input_type':
+                answer = Answers.objects.get(question_id__id=question.id)
+                answers = str(answer.answer)
+                right_answers = [x.strip() for x in list(answers.split(','))]
+                student_answer = str(request.POST.get(str(answer.id)))
+                record_to_add = 'No answer' if len(student_answer) == 0 else student_answer
+            #elif question.question_type == 'true_false_type':  # Подсчет вопросов с True/False
+            #    try:
+            #        if request.POST.get(str(question.id)) == Questions.objects.get(
+            #                id=question.id).addition_after:  # .addition
+            #            total_test_points += question.points
+            #            detailed_test_points = self.add_detail_points(question, detailed_test_points,
+            #                                                          question.points)
+            #        else:
+            #            detailed_test_points = self.add_detail_points(question, detailed_test_points, 0)
+            #    except:
+            #        pass
+            #    pass
+            #    record_to_add = 'No answer' if request.POST.get(str(question.id)) == None else request.POST.get(
+            #        str(question.id))
+            #else:  # Подсчет вопросов с выбором
+            #    try:  # потому что студент может оставить radio невыбранным
+            #        answer_object = Answers.objects.get(pk=request.POST.get(str(question.id)))
+            #        if answer_object.is_true:
+#
+            #            detailed_test_points = self.add_detail_points(question, detailed_test_points,
+            #                                                          question.points)
+            #        else:
+            #            detailed_test_points = self.add_detail_points(question, detailed_test_points, 0)
+            #        record_to_add = answer_object.answer  # добавление ответа в запись
+            #    except:
+            #        detailed_test_points = self.add_detail_points(question, detailed_test_points, 0)
+            #        record_to_add = 'No answer'  # добавление ответа в запись
+
+            student_answers_dict[question.question_number] = record_to_add
+
+        # forming right answers dict
+        right_answers_dict = {}
+        content_dict = {}
+
+        chapters_for_test = Chapters.objects.filter(read_and_learn_test__id=test.id).order_by('chapter_number')
+        for chapter in chapters_for_test:
+            questions_for_test = Questions.objects.filter(chapter_id__id=chapter.id).order_by('question_number')
+            qa = {}
+            for question in questions_for_test:
+                if question.question_type == 'match_type':
+                    qa[question] = {
+                        key: Answers.objects.filter(question_id__id=question.id).order_by('answer').values_list(
+                            'answer',
+                            flat=True)
+                        for key in
+                        Answers.objects.filter(question_id__id=question.id).exclude(match__exact='').order_by('match')}
+                    right_answers_dict[question.question_number] = \
+                        {answer.match: answer.answer for answer in Answers.objects.filter(question_id__id=question.id)}
+
+                elif question.question_type == 'input_type':
+                    qa[question] = Answers.objects.get(question_id__id=question.id)
+                    right_answers_dict[question.question_number] = \
+                        (Answers.objects.get(question_id__id=question.id)).answer.split(',') \
+                            if ',' in (Answers.objects.get(question_id__id=question.id)).answer \
+                            else (Answers.objects.get(question_id__id=question.id)).answer
+                elif question.question_type == 'single_choice_type':
+                    qa[question] = Answers.objects.filter(question_id__id=question.id)
+                    right_answers_dict[question.question_number] = (
+                        Answers.objects.get(question_id__id=question.id, is_true=True)).answer
+                else:  # true/false
+                    qa[question] = Answers.objects.filter(question_id__id=question.id)
+                    right_answers_dict[question.question_number] = Questions.objects.get(id=question.id).addition_after
+            content_dict[chapter] = qa
+
+        context = {'test': test,
+                   'content_dict': content_dict,
+                   'student_answers_dict': student_answers_dict,
+                   'right_answers_dict': right_answers_dict,
+                   }
+
+        return render(request, 'galaxy/read_and_learn_colour_result.html', context)

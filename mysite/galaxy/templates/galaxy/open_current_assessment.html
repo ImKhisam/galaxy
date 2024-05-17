@@ -1,0 +1,58 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/show_assessment_results.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/pagination.css' %}" rel="stylesheet"/>
+
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_table_head">
+        <div class="empty"></div>
+        <div class="table_head">
+            <h1>{{ assessment.group }} assessment on {{assessment.date}}</h1>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="table">
+        {% if assessment_contestants.count == 0 %}
+        <h2>Nobody passed tests</h2>
+        {% else %}
+            <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Listening</th>
+                    <th scope="col">Reading</th>
+                    <th scope="col">Grammar</th>
+                    <th scope="col">Writing</th>
+                    <th scope="col">Speaking</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for contestant, results in assessment_contestants.items %}
+                <tr>
+                    <td scope="row">{{ forloop.counter }}</td>
+                    <td><a href="{% url 'user_profile' contestant.id %}">{{ contestant.last_name }} {{contestant.first_name}}</a></td>
+                    {% for result in results %}
+                        <td>{{ result }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}

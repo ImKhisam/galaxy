@@ -12,7 +12,7 @@
 <div class="test">
 <h1>Test №{{ test.test_num }}. {{ test.type }} level. </h1>
 
-<form action="{% url 'pass_test' test.pk %}" method="post" id="my_form" enctype="multipart/form-data">
+<form action="{% url 'pass_read_and_learn_test' test.pk %}" method="post" id="my_form" enctype="multipart/form-data">
 {% csrf_token %}
     <div class="form errors">
         {{ form.non_field_errors }}

@@ -47,7 +47,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Test type</th>
+                        <th scope="col">Date</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
@@ -55,8 +55,12 @@
                 {% for assessment in assessments %}
                     <tr>
                         <td scope="row">{{ forloop.counter }}</td>
-                        <td>{{ assessment.test.part }}</td>
-                        <td><a class="btn btn5" href="{% url 'test_details' assessment.test.pk %}"><span>Start test</span></a></td>
+                        <td>{{ assessment.date }}</td>
+                        {% if assessment.is_opened %}
+                            <td><a class="btn btn5" href="{% url 'show_assessment_tests' assessment.id %}"><span>Open assessment</span></a></td>
+                        {% else %}
+                            <td><span>Wait till {{assessment.date}}</span></td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
                 </tbody>

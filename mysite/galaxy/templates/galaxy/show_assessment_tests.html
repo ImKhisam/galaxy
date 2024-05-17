@@ -1,102 +1,51 @@
 {% extends 'galaxy/base.html' %}
-{% load static %}
 {% load galaxy_tags %}
+{% load static %}
 
 {% block custom_styles %}
-<style>
-
-h1 {
-    text-align: center;
-}
-
-div.parent {
-  display: flex;
-  justify-content: center;
-}
-
-div.table {
-  width: 50%;
-}
-
-td {
-    height: 50px;
-}
-td:nth-child(2) {
-    width: 8%;
-}
-
-td:nth-child(3) {
-    width: 15%;
-}
-
-td:nth-child(4) {
-    width: 13%;
-}
-
-td:last-child {
-    width: 30%;
-}
-</style>
-
-<link type="text/css" href="{% static 'galaxy/css/table.css' %}" rel="stylesheet" />
-
-{% endblock %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/show_assessment_tests.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
 
 {% block content %}
 
-<div class="parent">
-    <div style="width: 30%"><h1><a href="{% url 'show_tests' 0 %}">Free tests</a></h1></div>
-    <div class="current" style="width: 30%"><h1><span>Assessment tests</span></h1></div>
-</div>
+    <div class="parent">
+        <div class="outer_table_head">
+            <div class="empty"></div>
+            <div class="table_head">
+                <h1>Assessment {{ assessment.date }}</h1>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
 
-<div class="parent">
-  <div class="table">
-      <table class="table">
-          <thead>
-              <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Part</th>
-                  <th scope="col">Test number</th>
-                  <th scope="col">Used in groups</th>
-                  <th scope="col">Action</th>
-              </tr>
-          </thead>
-          <tbody>
-          {% for test in tests %}
-              <tr>
-                  {% if page_obj.number %}
-                      {% with offset=page_obj.number|add:'-1'|multiply:pagination_number %}
-                      <td scope="row">{{ forloop.counter|add:offset }}</td>
-                      {% endwith %}
-                  {% else %}
-                      <td scope="row">{{ forloop.counter }}</td>
-                  {% endif %}
-                  <td> {{test.type}}</td>
-                  <td>{{test.part}}</td>
-                  <td>{{test.test_num}}</td>
-                  <td>{{test.used_in_groups}}</td>
-                  <td>
-                      <div style="display: inline-flex; width: 80%;">
-                          <a class="btn btn5" href="{% url 'show_test' test.id %}"><span>Open</span></a>
-                          <a class="btn btn5" href="{% url 'add_q_and_a' test.id %}"><span>Add question</span></a>
-                      </div>
-                  </td>
-              </tr>
-          {% endfor %}
-              <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td><a href="{% url 'add_test' %}">Add test</a> </td>
-              </tr>
-          </tbody>
-      </table>
-  </div>
-</div>
+    <div class="parent">
+        <div class="table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Test part</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assessment in assessments %}
+                        <tr>
+                            <td scope="row">{{ forloop.counter }}</td>
+                            <td>{{ assessment.test.part }}</td>
+                            {% if assessment.test in results.keys %}
+                                {% with result_object=results|get_item:assessment.test %}
+                                <td><span>{{ result_object.points }}/{{ max_points_dict|get_item:assessment.test }}</span></td>
+                                {% endwith %}
+                            {% else %}
+                                <td><a class="btn btn5" href="{% url 'test_details' assessment.test.pk %}"><span>Start test</span></a></td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-{% include "galaxy/pagination.html" %}
-
-{% endblock %}
+{% endblock content %}

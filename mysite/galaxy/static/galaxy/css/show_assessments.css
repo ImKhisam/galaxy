@@ -126,3 +126,9 @@ td:nth-child(3) {
 .ui-datepicker-prev{
     padding-right: 200px;
 }
+
+
+.two_buttons_div{
+    display: inline-flex;
+    width: 80%;
+}

@@ -1,0 +1,158 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+{% load galaxy_tags %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/test.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/show_color_result.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+<div class="test-parent">
+<div class="test">
+<h1>Test {{test.type }} {{test.part}} {{test.test_num}}</h1>
+
+<form action="{% url 'pass_test' test.pk %}" method="post" id="my_form" enctype="multipart/form-data">
+{% csrf_token %}
+    <div class="form errors">
+        {{ form.non_field_errors }}
+    </div>
+    {% for chapter, qa in content_dict.items %}
+        <div class="chapter">
+            {% if chapter.info %}
+                <div class="chapter-info">
+                    {{chapter.info}}
+                </div>
+            {% endif %}
+            {% if chapter.text_name %}
+                <div class="chapter-text-name">
+                    <h3>{{chapter.text_name}}</h3>
+                </div>
+            {% endif %}
+            {% if chapter.text %}
+                <div class="chapter-text">
+                    <p>{{chapter.text}}</p>
+                </div>
+            {% endif %}
+            {% if chapter.media %}
+                <br><br>
+                <div class="question_obj">
+                    <audio controls src="{{chapter.media.url}} "></audio>
+                </div>
+            {% endif %}
+
+            {% for question, answers in qa.items %}
+                <div class="question_obj">
+                    {% if question.question_type == 'match_type' %}     <!-- Match type of question-->
+                        <div class="question">
+                            <p class="question-number">{{question.question_number}}</p>
+                            <p class="question-text framed-italic-question">
+                                {{question.question}}
+                            </p>
+                        </div>
+                        {% if question.text %}
+                            <div class="chapter-text-name">
+                                <h3>{{question.text_name}}</h3>
+                            </div>
+                            <div class="chapter-text">
+                                <p>{{question.text}}</p>
+                            </div>
+                        {% endif %}
+
+                        {% for answer, answer_list in answers.items %}
+                            {% if forloop.first %}
+                                <div class="matches">
+                            {% endif %}
+                                <div class="select-wrapper listening-select-element">   <!-- Listening match -->
+                                    {% with right_dict=right_answers_dict|get_item:question.question_number %}
+                                    {% with student_dict=student_answers_dict|get_item:question.question_number %}
+                                    {% with right_answer=right_dict|get_item:answer.match %}
+                                    {% with student_answer=student_dict|get_item:answer.match %}
+                                            {% if right_answer != student_answer %}
+                                                <div class="match_label_div wrong_match">
+                                                    <span class="match_label">{{answer.match}}</span>
+                                                </div>
+                                            {% else %}
+                                                <div class="match_label_div  right_match">
+                                                    <span class="match_label">{{answer.match}}</span>
+                                                </div>
+                                            {% endif %}
+                                        <div>
+                                            <p class="match_right_answer">
+                                                {{ right_dict|get_item:answer.match }}
+                                            </p>
+                                                {% if right_answer != student_answer %}
+                                                    <p class="match_wrong_answer">
+                                                        {{ student_dict|get_item:answer.match }}
+                                                    </p>
+                                                {% endif %}
+                                        </div>
+                                    {% endwith %}
+                                    {% endwith %}
+                                    {% endwith %}
+                                    {% endwith %}
+                                </div>
+                            {% if forloop.last %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% elif question.question_type == 'input_type'%}    <!-- Input type question -->
+                        <div class="input-outer">
+                            <div class="input-question">
+                                <p class="question-number">{{question.question_number}}</p>
+                                <p class="question-text">{{question.question}}</p>
+                            </div>
+                            {% if question.addition_before %}
+                                <div class="input-addition">
+                                    <p class="input-addition-text">{{question.addition_before}}</p>
+                                </div>
+                            {% else %}
+                                <div class="input-addition"></div>
+                            {% endif %}
+                            <div class="input-type">
+                                <div>
+                                    {% with current_answer=right_answers_dict|get_item:question.question_number%}
+                                        {% if current_answer|is_list %}
+                                            <p class="right_input_answer">
+                                                {% for answer_variant in current_answer %}
+                                                    {% if forloop.last %}
+                                                        {{ answer_variant }}
+                                                    {% else %}
+                                                        {{ answer_variant }} /
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </p>
+                                        {% else %}
+                                            <p class="right_input_answer">{{ current_answer }}</p>
+                                        {% endif %}
+                                        {% if current_answer|is_list %}
+                                            {% if student_answers_dict|get_item:question.question_number not in current_answer %}
+                                                <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if student_answers_dict|get_item:question.question_number != current_answer %}
+                                                <p class="wrong_input_answer">{{ student_answers_dict|get_item:question.question_number }}</p>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                            {% if question.addition_after %}
+                                <div class="input-addition">
+                                    <p class="input-addition-text">{{question.addition_after}}</p>
+                                </div>
+                            {% else %}
+                                <div class="input-addition"></div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    <br><br>
+</form>
+</div>
+</div>
+
+{% endblock %}
