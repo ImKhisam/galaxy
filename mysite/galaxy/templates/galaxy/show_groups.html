@@ -40,9 +40,9 @@
               <td scope="row">{{ forloop.counter }}</td>
               <td class="group-name" data-group-id="{{ group.id }}">
                   <span class="editable">{{ group.name }}</span>
-                  <input class="edit-input hidden" type="text" value="{{ group.name }}">
-                  <button class="save-btn hidden">Save</button>
-                  <button class="cancel-btn hidden">Cancel</button>
+                  <input class="filter_input hidden" type="text" value="{{ group.name }}">
+                  <button class="little_btn save-btn hidden">Save</button>
+                  <button class="little_btn cancel-btn hidden">Cancel</button>
               </td>
               <td> {{group.test_type}}</td>
               <td>
@@ -82,7 +82,9 @@
 </div>
 
 <div class="confirmation-dialog" style="display: none;">
-    <h2>Do you really want to delete this group?</h2>
+    <div>
+        <h2>Do you really want to delete this group?</h2>
+    </div>
     <div class="modal-buttons">
         <button class="multiple_btn_color btn-yes">
             <span>Yes</span>
@@ -135,7 +137,7 @@
     const groupNames = document.querySelectorAll('.group-name');
     groupNames.forEach((groupName) => {
         const editable = groupName.querySelector('.editable');
-        const editInput = groupName.querySelector('.edit-input');
+        const editInput = groupName.querySelector('.filter_input');
         const saveBtn = groupName.querySelector('.save-btn');
         const cancelBtn = groupName.querySelector('.cancel-btn');
 
@@ -191,7 +193,7 @@ $(document).ready(function() {
 
         // Event listener for Yes button
         $('.btn-yes').click(function() {
-            deleteGroup(groupId); // Pass filter_flag to deleteTest
+            deleteGroup(groupId);
             $('.confirmation-dialog').hide();
         });
 
@@ -213,6 +215,7 @@ $(document).ready(function() {
             },
             success: function(response) {
                 console.log('Group deleted successfully');
+                location.reload();
             },
             error: function(xhr, status, error) {
                 console.error('Error deleting test:', error);

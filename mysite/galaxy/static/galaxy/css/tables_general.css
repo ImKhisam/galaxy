@@ -310,3 +310,7 @@ div.table {
 .multiple_btn_color span{
     margin: 5px;
 }
+
+.confirmation-dialog{
+  height: auto;
+}

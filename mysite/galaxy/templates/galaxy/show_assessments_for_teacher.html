@@ -48,12 +48,16 @@
                 <td scope="row">{{ forloop.counter }}</td>
                 <td> {{assessment.group.name}}</td>
                 <td> {{assessment.date}}</td>
-                <td>
-                    <div class="two_buttons_div">
-                        <a class="btn btn5" data-id="{{ assessment.id }}" id="close-assessment-btn"><span>Close</span></a>
-                        <a class="btn btn5" href="{% url 'open_current_assessment' assessment.id %}"><span>Open</span></a>
-                    </div>
-                </td>
+                {% if assessment.is_opened %}
+                    <td>
+                        <div class="two_buttons_div">
+                            <a class="btn btn5" href="{% url 'open_current_assessment' assessment.id %}"><span>Open</span></a>
+                            <a class="btn btn5" href="#" data-id="{{ assessment.id }}" id="close-assessment-btn"><span>Close</span></a>
+                        </div>
+                    </td>
+                {% else %}
+                    <td><a class="btn btn5 deny" data-assessment-id="{{ assessment.id }}" href="#"><span>Deny</span></a></td>
+                {% endif %}
             </tr>
         {% endfor %}
             <tr id="add-assessment-row">
@@ -91,6 +95,20 @@
 
 {% include "galaxy/pagination.html" %}
 
+<div class="confirmation-dialog" style="display: none;">
+    <div>
+        <h2 class="confirmation-question"></h2>
+    </div>
+    <div class="modal-buttons">
+        <button class="multiple_btn_color btn-yes">
+            <span>Yes</span>
+        </button>
+        <button class="multiple_btn_color btn-no">
+            <span>No</span>
+        </button>
+    </div>
+</div>
+
 {% endblock content %}
 
 {% block javascript %}
@@ -125,18 +143,6 @@ $(document).ready(function() {
         $.ajax({
             url: "{% url 'save_an_assessment' %}",
             data: {group: group, date: date},
-            success: function() {
-                location.reload();
-            }
-        });
-    });
-
-    // Delegate the click event for closing assessments
-    $(document).on('click', '#close-assessment-btn', function() {
-        var id = $(this).data('id');
-        $.ajax({
-            url: "{% url 'close_assessment'%}",
-            data: {id: id},
             success: function() {
                 location.reload();
             }
@@ -199,4 +205,82 @@ $(document).ready(function() {
     }
 });
 </script>
+
+
+<script>
+$(document).ready(function() {
+
+    function showConfirmationDialog(question, onConfirm) {
+        $('.confirmation-question').text(question);
+        $('.confirmation-dialog').show();
+
+        // Bind the confirmation button click event
+        $('.btn-yes').off('click').on('click', function() {
+            onConfirm();
+            $('.confirmation-dialog').hide();
+        });
+
+        // Bind the cancel button click event
+        $('.btn-no').off('click').on('click', function() {
+            $('.confirmation-dialog').hide();
+        });
+    }
+
+    $(document).on('click', '.deny', function(e) {
+        e.preventDefault();
+        var assessmentId = $(this).data('assessment-id');
+        showConfirmationDialog('Do you really want to deny assessment?', function() {
+            denyAssessment(assessmentId);
+        });
+    });
+
+
+    function denyAssessment(assessmentId) {
+        $.ajax({
+            url: "{% url 'deny_assessment'%}",
+            type: 'POST',
+            data: {
+                'assessment_id': assessmentId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Assessment denied successfully');
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error denying assessment:', error);
+            }
+        });
+    }
+
+    $(document).on('click', '#close-assessment-btn', function(e) {
+        e.preventDefault();
+        var assessmentId = $(this).data('id');
+        showConfirmationDialog('Do you really want to close assessment?', function() {
+            closeAssessment(assessmentId);
+        });
+    });
+
+    // Function to close an assessment
+    function closeAssessment(assessmentId) {
+        $.ajax({
+            url: "{% url 'close_assessment' %}",
+            type: 'POST',
+            data: {
+                'assessment_id': assessmentId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Assessment closed successfully');
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error closing assessment:', error);
+            }
+        });
+    }
+});
+
+</script>
+
 {% endblock javascript %}

@@ -113,7 +113,9 @@
                             {% if current_task.media1 %}
                                 <p><img class="task_check_photo" src="{{current_task.media1.url}}"></p>
                             {% else %}
-                                <p>Student forgot to load his answer</p>
+                                <div class="forgot_banner">
+                                    <p>Student forgot to load his answer</p>
+                                </div>
                             {% endif %}
                             {% if current_task.media2 %}
                                 <p><img class="task_check_photo" src="{{current_task.media2.url}}"></p>
@@ -126,7 +128,9 @@
                                     </audio>
                                 </div>
                             {% else %}
-                                <p>Student forgot to load his answer</p>
+                                <div class="forgot_banner">
+                                    <p>Student forgot to load his answer</p>
+                                </div>
                             {% endif %}
                         {% endif %}
                     {% endwith %}

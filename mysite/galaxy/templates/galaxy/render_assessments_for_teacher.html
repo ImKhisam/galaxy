@@ -8,8 +8,8 @@
         {% if current_category == 'Current' %}
         <td>
             <div class="two_buttons_div">
-                <a class="btn btn5" data-id="{{ assessment.id }}" id="close-assessment-btn"><span>Close</span></a>
                 <a class="btn btn5" href="{% url 'open_current_assessment' assessment.id %}"><span>Open</span></a>
+                <a class="btn btn5" href="#" data-id="{{ assessment.id }}" id="close-assessment-btn"><span>Close</span></a>
             </div>
         </td>
         {% else %}

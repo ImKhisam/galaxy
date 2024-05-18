@@ -253,7 +253,7 @@ option{
     height: 300%;
     left: -300%;
     transform: rotate(0deg);
-    background-color: #000000;
+    background-color: grey;
     transition: all 500ms ease;
 }
 .btn5 span{
@@ -563,4 +563,10 @@ h2{
 
 .single_btn span{
     margin: 5px;
+}
+
+.forgot_banner{
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 40px;
 }

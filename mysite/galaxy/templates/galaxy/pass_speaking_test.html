@@ -37,14 +37,14 @@
                                 </div>
                             {% endif %}
                             <div class="question">
-                                <p class="question_number">{{question.question_number}}</p>
+                                <p class="question-number">{{question.question_number}}</p>
     	                        <p class="question-text" style="white-space: break-spaces;">{{question.question}}</p>
                             </div>
                             <p>{{audio_media_fl}}</p>
                             {% if question.picture %}
                                 <p style="text-align: center; font-weight: 600; font-size: 27px;">{{question.text_name}}</p>
                                 <div class="picture">
-                                    <img style="height: 400px; margin: auto;" src="{{question.picture.url}}">
+                                    <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
                                 </div>
                             {% endif %}
                             {% if question.text %}

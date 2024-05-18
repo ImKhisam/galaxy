@@ -207,6 +207,7 @@ class ShowResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
                            if key.type == 'USE' and key.part == 'Writing'
                            else Questions.objects.filter(test_id=key).aggregate(Sum('points'))['points__sum']
                            for key in tests}
+
         return context
 
     def get_queryset(self):
@@ -301,8 +302,7 @@ class ResultPreview(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
         result_id = self.kwargs['result_id']
         result_obj = Results.objects.get(id=result_id)
         test = get_object_or_404(Tests, id=result_obj.test_id.id)
-        tasks_to_check = {quest_obj: TasksToCheck.objects.get
-        (test_to_check_id=result_obj.test_to_check, question_id=quest_obj)
+        tasks_to_check = {quest_obj: TasksToCheck.objects.get(test_to_check_id=result_obj.test_to_check, question_id=quest_obj)
                           for quest_obj in
                           [x.question_id for x in
                            TasksToCheck.objects.filter(test_to_check_id=result_obj.test_to_check)]}
@@ -610,9 +610,10 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
 
         template = 'galaxy/pass_speaking_test.html' if test.part == 'Speaking' else 'galaxy/pass_test.html'
 
-        # if str(test.id) in user.assessments_passed:
-        #    return render(request, 'galaxy/julik.html')
-        # if test in [x. UserToAssessment.objects.filter(user=user)]
+        if test.is_assessment:
+            assessment_obj = Assessments.objects.get(test=test, group=user.group)
+            if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists():
+                return render(request, 'galaxy/julik.html')
 
         try:
             time_obj = TestTimings.objects.get(test_id=test, user_id=user)
@@ -690,6 +691,14 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
             test_time = test.time_limit
         time_obj.delete()
 
+        if test.is_assessment:
+            assessment_obj = Assessments.objects.get(test=test, group=user.group)
+            if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists():
+                return render(request, 'galaxy/julik.html')
+
+            user_to_assessment_obj = UserToAssessment(user=user, assessment=assessment_obj)
+            user_to_assessment_obj.save()
+
         '''Если ученик не сможет прикрепить ответы или решит не заканчивать экзамен'''
         if 'no_attached_files' in request.session:  # if it remained from previous test
             del request.session['no_attached_files']
@@ -715,17 +724,6 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
             result_obj.test_to_check = test_to_check
             result_obj.time = str(timedelta(seconds=test_time))
             result_obj.save()
-
-        # if test.is_assessment:
-        #    if len(user.assessments_passed) > 0:
-        #        user.assessments_passed += ','
-        #    user.assessments_passed += str(test.id)
-        #    user.save()
-        if test.is_assessment:
-            assessment_obj = Assessments.objects.get(test=test, group=user.group)
-            user_to_assessment_obj = UserToAssessment(user=user, assessment=assessment_obj)
-            user_to_assessment_obj.save()
-
 
         '''Подсчитываем баллы за тест для 3х категорий'''
         total_test_points = 0
@@ -754,7 +752,6 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
                     answer = Answers.objects.get(question_id__id=question.id)
                     answers = str(answer.answer)
                     right_answers = [x.strip() for x in list(answers.split(','))]
-                    print(right_answers)
                     student_answer = str(request.POST.get(str(answer.id)))
                     if student_answer in right_answers:
                         total_test_points += question.points
@@ -824,9 +821,11 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
             )
 
         if test.part == 'Writing':
+            request.session['assessment_flag'] = 1 if test.is_assessment else 0
             return HttpResponseRedirect('/test_result_wo_points/')
 
         if test.part == 'Speaking':
+            request.session['assessment_flag'] = 1 if test.is_assessment else 0
             return JsonResponse({'empty_flag': 0})
 
         '''Создаем объект результата попытки выполнения теста для 3х категорий'''
@@ -838,6 +837,9 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         result.record_answers = record_test_answers
         result.time = str(timedelta(seconds=test_time))
         result.save()
+
+
+        request.session['assessment_flag'] = 1 if test.is_assessment else 0
         return HttpResponseRedirect('/test_result_with_points/' + str(result.pk) + '/')
 
 
@@ -849,6 +851,9 @@ class TestResultWOPoints(LoginRequiredMixin, ConfirmStudentMixin, TemplateView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Wait for results'
+        assessment_flag = self.request.session['assessment_flag']
+        del self.request.session['assessment_flag']
+        context['assessment_flag'] = assessment_flag
         return context
 
 
@@ -866,6 +871,9 @@ class TestResultWithPoints(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
         obj = Results.objects.get(pk=context['result'].pk)
         max_points = Questions.objects.filter(test_id=obj.test_id).aggregate(Sum('points'))['points__sum']
         test_time = obj.time
+        assessment_flag = self.request.session['assessment_flag']
+        del self.request.session['assessment_flag']
+        context['assessment_flag'] = assessment_flag
         context['test_time'] = test_time
         context['max_points'] = max_points
         return context
@@ -1715,10 +1723,6 @@ def save_an_assessment(request):
     '''Собираем свободные тесты для ассессмента по типам '''
     assessment_tests_by_part = []
     for part in ['Grammar and Vocabulary', 'Listening', 'Reading', 'Speaking', 'Writing']:
-        # assessment_tests_by_part.append(
-        #    Tests.objects.filter(is_assessment=True, type=group.test_type, part=part).
-        #        exclude(used_in_groups__contains=group.name)
-        # )
         from django.db.models import Subquery
         assessment_tests_by_part.append(
             Tests.objects.filter(is_assessment=True, type=group.test_type, part=part).
@@ -1741,32 +1745,34 @@ def save_an_assessment(request):
         '''Назначение даты 5 рандомным тестам '''
         if len(test_query) > 0:
             random_test = test_query.order_by('?')[0]  # rly random or everytime the same?
-            # list_used_in_groups = random_test.used_in_groups.split(', ')
-            # if list_used_in_groups == ['']:
-            #    random_test.used_in_groups = group.name
-            # else:
-            #    list_used_in_groups.append(group.name)
-            #    random_test.used_in_groups = ', '.join(list_used_in_groups)
-            # random_test.save()
             test_to_group_obj = UsedTestsToGroups(group=group, test=random_test)
             test_to_group_obj.save()
             assessment = Assessments(test=random_test, group=group, date=assessment_date)
             assessment.save()
+
+    # todo add email notification
     return JsonResponse({'success': True})
 
 
 @user_passes_test(teacher_check, login_url='home')
 def close_assessment(request):
-    assessment_id = request.GET.get('id')
-    assessment_object = Assessments.objects.get(id=assessment_id)
-    group = assessment_object.group
-    date = assessment_object.date
-    assessments_to_delete = Assessments.objects.filter(group=group, date=date)
-    for assessment in assessments_to_delete:
+    assessment_object = Assessments.objects.get(id=request.POST.get('assessment_id'))
+    assessments_to_close = Assessments.objects.filter(group=assessment_object.group, date=assessment_object.date)
+    for assessment in assessments_to_close:
         assessment.is_passed = True
         assessment.save()
 
-    return redirect('show_assessments')
+    return redirect('show_assessments_for_teacher')
+
+
+@user_passes_test(teacher_check, login_url='home')
+def deny_assessment(request):
+    assessment_object = Assessments.objects.get(id=request.POST.get('assessment_id'))
+    assessments_to_deny = Assessments.objects.filter(group=assessment_object.group, date=assessment_object.date)
+    for assessment in assessments_to_deny:
+        assessment.delete()
+    #todo add email notification
+    return redirect('show_assessments_for_teacher')
 
 
 class OpenCurrentAssessment(LoginRequiredMixin, TeacherUserMixin, ListView):
@@ -1821,6 +1827,11 @@ class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
         assessment_obj = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
         context['title'] = str(assessment_obj.group) + 'assessment'
         context['assessment'] = assessment_obj
+        context['max_points'] = {'USEListening': '12',
+                                 'USEReading': '12',
+                                 'USEGrammar and Vocabulary': '18',
+                                 'USEWriting': '20',
+                                 'USESpeaking': '20'}
         return context
 
     def get_queryset(self):
@@ -1842,21 +1853,17 @@ class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
                             for test in tests]
                      for user in users}
 
-        print(temp_dict)
         # counting %
         for user, results in temp_dict.items():
             if assessment.test.type == 'USE':
                 max_points = 82
             else:
                 max_points = 68
-            #while len(results) < 5:                # ????????????
-            #    results.append('no result')
+
             cleared_list = [i for i in results if i != 'no result']
             sum_of_points = sum([int(result.points) for result in cleared_list if result.points != ''])
             results.append(str(sum_of_points) + '(' + str(max_points) + ')')
             results.append(str(round(sum_of_points / (max_points / 100))) + '%')
-
-        print(temp_dict)
 
         return temp_dict
 

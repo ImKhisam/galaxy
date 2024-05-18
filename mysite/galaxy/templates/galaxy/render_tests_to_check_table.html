@@ -26,11 +26,14 @@
             <td>{{test_to_check.test_id}}</td>
             <td>{{test_to_check.date}}</td>
             {% if current_category == 'Checked' %}
-            {% with result=results_dict|get_item:test_to_check %}
-            <td>{{ result.points }}</td>
-            {% endwith %}
+                {% with result=results_dict|get_item:test_to_check %}
+                <td>{{ result.points }}</td>
+                <td><a class="btn btn5" href="{% url 'rechecking_test' test_to_check.id %}"><span>Open</span></a></td>
+                {% endwith %}
+            {% else %}
+                <td><a class="btn btn5" href="{% url 'checking_test' test_to_check.id %}"><span>Open</span></a></td>
             {% endif %}
-            <td><a class="btn btn5" href="{% url 'rechecking_test' test_to_check.id %}"><span>Open</span></a></td>
+
         </tr>
 
     {% endfor %}

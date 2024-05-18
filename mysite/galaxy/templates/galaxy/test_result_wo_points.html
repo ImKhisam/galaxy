@@ -13,7 +13,11 @@
     <p>Teacher will check your answers. Then the result will appear in "My results"</p>
     {% endif %}
     <br><br>
+    {% if assessment_flag == 1 %}
+    <a class="btn btn5" href="{% url 'show_assessments_for_student'%}">
+    {% else %}
     <a class="btn btn5" href="{% url 'home'%}">
+    {% endif %}
         <span>Got it!</span>
     </a>
 </div>

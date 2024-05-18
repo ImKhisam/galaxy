@@ -174,7 +174,7 @@ nav .menu_second_row {
   background-color: #fbfbfbe6;
 }
 .menu_second_row li:hover > a{
-  color: #365a99e3;
+  color: var(--blue-transparent);
 }
 
 a{
@@ -185,4 +185,19 @@ a{
   height: 100px;
 }
 
+.two_buttons_shell{
+  display: inline-flex;
+}
 
+.btnsmall span{
+  margin: 5px;
+}
+
+.btnsmall{
+  margin: 10px;
+}
+
+.btnsmall:disabled{
+  color: grey;
+  border: 2px solid grey;
+}

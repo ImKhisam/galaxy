@@ -82,6 +82,7 @@ urlpatterns = [
     path('filter_assessments_for_teacher/', filter_assessments_for_teacher, name='filter_assessments_for_teacher'),
     path('save_an_assessment/', save_an_assessment, name='save_an_assessment'),
     path('close_assessment/', close_assessment, name='close_assessment'),   # ajax func?
+    path('deny_assessment/', deny_assessment, name='deny_assessment'),
     path('open_current_assessment/<int:assessment_pk>/', OpenCurrentAssessment.as_view(), name='open_current_assessment'),
     path('show_assessment_results/<int:assessment_pk>/', ShowAssessmentResults.as_view(), name='show_assessment_results'),
 

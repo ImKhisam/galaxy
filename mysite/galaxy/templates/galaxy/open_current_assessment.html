@@ -45,7 +45,11 @@
                     <td scope="row">{{ forloop.counter }}</td>
                     <td><a href="{% url 'user_profile' contestant.id %}">{{ contestant.last_name }} {{contestant.first_name}}</a></td>
                     {% for result in results %}
-                        <td>{{ result }}</td>
+                        {% if result == 'Passed' %}
+                            <td class="passed">{{ result }}</td>
+                        {% else %}
+                            <td class="notpassed">{{ result }}</td>
+                        {% endif %}
                     {% endfor %}
                 </tr>
             {% endfor %}
