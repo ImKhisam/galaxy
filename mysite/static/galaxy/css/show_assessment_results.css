@@ -13,3 +13,10 @@ div.table {
     width: 70%;
 }
 
+.passed{
+    background-color: #0a640ab3;
+}
+
+.notpassed{
+    background-color: #911a1aa3;
+}

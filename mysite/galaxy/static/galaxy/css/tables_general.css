@@ -18,10 +18,23 @@ table {
     width: 100%;
     background-color: var(--blue-transparent);
 }
+
+.table_tail{
+    width: 100%;
+    background-color: var(--blue-transparent);
+    padding: 8px;
+}
+
 .outer_table_head{
     width: 70%;
     display: flex;
     border-top: 2px solid;
+}
+
+.outer_table_tail{
+    width: 70%;
+    display: flex;
+    border-bottom: 2px solid;
 }
 
 table, th, td {

@@ -25,6 +25,7 @@ class NotLoggedIn(UserPassesTestMixin):
     def handle_no_permission(self):
         return redirect('home')
 
+
 class ConfirmMixin:
     """Formation list of students, value in foo - True/False/None
     depending on type of students(confirmed/not confirmed/pending).
@@ -314,7 +315,7 @@ def teacher_check(user):
 def form_assessment_dict(user_id):
     user = CustomUser.objects.get(id=user_id)
     user_assessment_dates = Assessments.objects \
-        .filter(group=user.group, date__lt=date.today()).order_by('date').distinct('date')
+        .filter(group=user.group, is_passed=True).order_by('date').distinct('date')
     assessment_dict = {x: Assessments.objects.filter(date=x.date) for x in user_assessment_dates}
     ordered_dict = {}
     right_order = ['Listening', 'Reading', 'Grammar and Vocabulary', 'Writing', 'Speaking']
@@ -340,3 +341,16 @@ def form_assessment_dict(user_id):
         results.append(str(round(sum_of_points / (max_points / 100))) + '%')
 
     return content_dict
+
+
+def get_max_points_dict():
+    return {'GSEListening': '15',
+            'GSEReading': '13',
+            'GSEGrammar and Vocabulary': '15',
+            'GSEWriting': '10',
+            'GSESpeaking': '15',
+            'USEListening': '12',
+            'USEReading': '12',
+            'USEGrammar and Vocabulary': '18',
+            'USEWriting': '20',
+            'USESpeaking': '20'}

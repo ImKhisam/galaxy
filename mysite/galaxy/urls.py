@@ -28,7 +28,7 @@ urlpatterns = [
          auth_views.PasswordResetCompleteView.as_view(template_name="galaxy/password_reset_done.html"),
          name='password_reset_complete'),
 
-    path('personal_acc/<slug:acc_slug>/', PersonalAcc.as_view(), name='personal_acc'),
+    path('profile/<slug:acc_slug>/', Profile.as_view(), name='profile'),
     path('delete_account/<int:user_id>', delete_account, name='delete_account'),
     path('idioms/', Idioms.as_view(), name='idioms'),
     path('julik/', julik, name='julik'),
@@ -82,6 +82,7 @@ urlpatterns = [
     path('filter_assessments_for_teacher/', filter_assessments_for_teacher, name='filter_assessments_for_teacher'),
     path('save_an_assessment/', save_an_assessment, name='save_an_assessment'),
     path('close_assessment/', close_assessment, name='close_assessment'),   # ajax func?
+    path('force_open_assessment/', force_open_assessment, name='force_open_assessment'),
     path('deny_assessment/', deny_assessment, name='deny_assessment'),
     path('open_current_assessment/<int:assessment_pk>/', OpenCurrentAssessment.as_view(), name='open_current_assessment'),
     path('show_assessment_results/<int:assessment_pk>/', ShowAssessmentResults.as_view(), name='show_assessment_results'),

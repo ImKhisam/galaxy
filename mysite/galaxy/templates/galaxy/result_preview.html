@@ -110,15 +110,22 @@
                     <h2>Your answer:</h2>
                     {% with current_task=tasks_to_check|get_item:question %}
                         {% if current_task.test_to_check_id.test_id.part == 'Writing' %}
-                            {% if current_task.media1 %}
+
+                            {% if current_task.media2 %}
                                 <p><img class="task_check_photo" src="{{current_task.media1.url}}"></p>
+                                <p><img class="task_check_photo" src="{{current_task.media2.url}}"></p>
+                                <div class="result_preview_points">
+                                    <h2>Points: {{ current_task.points }}</h2>
+                                </div>
+                            {% elif current_task.media1 %}
+                                <p><img class="task_check_photo" src="{{current_task.media1.url}}"></p>
+                                <div class="result_preview_points">
+                                    <h2>Points: {{ current_task.points }}</h2>
+                                </div>
                             {% else %}
                                 <div class="forgot_banner">
                                     <p>Student forgot to load his answer</p>
                                 </div>
-                            {% endif %}
-                            {% if current_task.media2 %}
-                                <p><img class="task_check_photo" src="{{current_task.media2.url}}"></p>
                             {% endif %}
                         {% elif current_task.test_to_check_id.test_id.part == 'Speaking' %}
                             {% if current_task.media1 %}
@@ -126,6 +133,9 @@
                                     <audio controls style="margin: auto;">
                                         <source src="{{current_task.media1.url}}">
                                     </audio>
+                                </div>
+                                <div class="result_preview_points">
+                                    <h2>Points: {{ current_task.points }}</h2>
                                 </div>
                             {% else %}
                                 <div class="forgot_banner">
@@ -139,6 +149,11 @@
         </div>
     {% endfor %}
     <br><br>
+
+    <div class="result_preview_points">
+        <h2>Teacher's commentary:</h2>
+        <p>{{ result.commentary }}</p>
+    </div>
 </form>
 </div>
 </div>

@@ -1,5 +1,5 @@
 :root {
-  --dark-transparent: #000000e3;
+  --dark-transparent: #000000c9;
   --blue-transparent: #365a99e3;
   --white-transparent: #fbfbfbe6;
   --gray-hover: #54514f;
@@ -13,4 +13,29 @@ body {
 
 .menu_first_row{
   background-color: var(--dark-transparent);
+}
+
+.first-row:hover > a{
+  color: var(--dark-transparent);
+}
+
+.menu_second_row li:hover > a{
+  color: var(--dark-transparent);
+}
+
+nav ul{
+  background-color: var(--dark-transparent);
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dark-frame {
+  padding: 20px;
+  background-color: var(--dark-transparent);
+  border: 2px solid white;
+  text-align: center;
 }

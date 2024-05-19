@@ -39,8 +39,18 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 5px;
-  padding-top: 5px;
+}
+
+.year_obj span{
+  width: 100%;
+  height: 100%;
+  display: grid;
+  align-items: center;
+  min-height: 40px;
+}
+
+.year_obj:hover{
+  color: grey;
 }
 
 .stages_cell{
@@ -54,12 +64,18 @@ a {
   display: flex;
   align-items: center;
   border-right: 2px solid;
-  padding-top: 5px;
-  padding-bottom: 5px;
 }
 
 .stage_obj span{
-  margin: auto;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  align-items: center;
+  min-height: 40px;
+}
+
+.stage_obj span:hover{
+  color: grey;
 }
 
 .stage_cell{
@@ -77,11 +93,37 @@ a {
   width: 20%;
   text-align: center;
   border-right: 2px solid;
-  padding-top: 5px;
-  padding-bottom: 5px;
+}
+
+.class_element a{
+  width: 100%;
+  height: 100%;
+  display: grid;
+  align-items: center;
+  min-height: 40px;
+}
+
+.class_element span{
+  width: 100%;
+  height: 100%;
+  display: grid;
+  align-items: center;
+  min-height: 40px;
+}
+
+.class_element a:hover{
+  color: grey;
 }
 
 .audio_element{
   width: 20%;
   text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  min-height: 40px;
 }
+
+.audio_element a:hover{
+  color: grey;
+}
+

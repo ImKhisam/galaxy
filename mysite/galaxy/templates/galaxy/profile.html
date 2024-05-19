@@ -1,0 +1,106 @@
+{% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+
+{% if not user.is_confirmed %}
+    <p>You're not confirmed, please contact the administrator</p>
+    <div class="modal">
+        <a class="btn btn5" href="#" id="delete-account-button">
+            <span>Delete your acc? </span>
+        </a>
+    </div>
+{% else %}
+    <div class="parent">
+        <div class="outer_table_head">
+            <div class="empty"></div>
+            <div class="table_head">
+                <h1>{{ student.last_name }} {{ student.first_name }} profile</h1>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
+
+    <div class="parent">
+        <div class="table">
+            <table>
+                <tr>
+                    <td>Last time online</td>
+                    <td>{{ student.last_login }}</td>
+                </tr>
+                <tr>
+                    <td>Free tests passed</td>
+                    <td><a href="{% url 'show_user_results' student.id %}"> {{ results.count }} </a></td>
+                </tr>
+                <tr>
+                    <td>Avg.</td>
+                    <td>{{ avg_result }}%</td>
+                </tr>
+                <tr>
+                    <td>Assessments passed</td>
+                    <td><a href="{% url 'show_user_assessments' student.id %}"> {{ assessments.count }} </a></td>
+                </tr>
+                <tr>
+                    <td>Avg.</td>
+                    <td>{{ avg_assessment }}%</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="parent">
+        <div class="outer_table_tail">
+            <div class="empty"></div>
+            <div class="table_tail">
+                <a class="btn btn5" href="#" id="delete-account-button"><span>Delete your account? </span></a>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="confirmation-dialog" style="display: none;">
+    <div>
+        <h2>Do you really want to delete your account?</h2>
+    </div>
+    <div class="modal-buttons">
+        <button class="multiple_btn_color btn-yes">
+            <span>Yes</span>
+        </button>
+        <button class="multiple_btn_color btn-no">
+            <span>No</span>
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block javascript %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Show the confirmation modal when the button is clicked
+        $("#delete-account-button").click(function() {
+            $('.confirmation-dialog').show();
+        });
+
+        // Event listener for Yes button
+        $('.btn-yes').click(function() {
+            window.location.href = "{% url 'delete_account' user.pk %}";
+        });
+
+        // Event listener for No button
+        $('.btn-no').click(function() {
+            $('.confirmation-dialog').hide();
+        });
+    });
+</script>
+
+{% endblock %}

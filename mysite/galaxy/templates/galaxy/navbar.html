@@ -37,7 +37,7 @@
                     <li class="first-row"><a href="{% url 'BB' %}">British Bulldog</a></li>
                     <li class="first-row"><a href="#">Idioms & Collocations</a>
                         <ul class="menu_second_row">
-                            <li><a href="{% url 'play_video' %}">Watch & learn</a></li>
+                            <li><a href="{% url 'watch_and_learn' %}">Watch & learn</a></li>
                             <li><a href="{% url 'read_and_learn' %}">Read & learn</a></li>
                         </ul>
                     </li>
@@ -45,14 +45,7 @@
                         <ul class="menu_second_row">
                             <li><a href="{% url 'black_hole' %}">Cinema</a></li>
                             <li><a href="{% url 'quiz_preview' %}">Quiz</a></li>
-                            <li><a href="{% url 'cross_choice' %}">Crosswords</a>
-                                <ul class="menu_third_row">
-                                    <li><a href="{% url 'cross' 1 %}" target="_blank">Painting</a></li>
-                                    <li><a href="{% url 'cross' 2 %}" target="_blank">St.Patricks</a></li>
-                                    <li><a href="{% url 'cross' 3 %}" target="_blank">Spring</a></li>
-                                    <li><a href="{% url 'cross' 4 %}" target="_blank">Easter</a></li>
-                                </ul>
-                            </li>
+                            <li><a href="{% url 'cross_choice' %}">Crosswords</a></li>
                         </ul>
                     </li>
                 {% endif %}
@@ -74,12 +67,12 @@
                                     <li><a href="{% url 'show_assessments_for_teacher' %}">Assessments</a></li>
                                     <li><a href="{% url 'show_groups' %}">Groups</a></li>
                                     {% if students_to_confirm %}
-                                    <li><a href="{% url 'show_students' %}">Students(!)</a></li>
+                                    <li><a href="{% url 'show_students' %}">Students</a><div class="notification"></div></li>
                                     {% else %}
                                     <li><a href="{% url 'show_students' %}">Students</a></li>
                                     {% endif %}
                                     {% if tests_to_check %}
-                                    <li><a href="{% url 'show_tests_to_check' %}">Tests to check(!)</a></li>
+                                    <li><a href="{% url 'show_tests_to_check' %}">Tests to check</a><div class="notification"></div></li>
                                     {% else %}
                                     <li><a href="{% url 'show_tests_to_check' %}">Tests to check</a></li>
                                     {% endif %}
@@ -97,7 +90,7 @@
                                     <li><a href="{{ user.get_absolute_url }}">Account</a></li>
                                     <li><a href="{% url 'show_student_results' %}">My results</a></li>
                                     {% if current_assessments_notification %}
-                                    <li><a href="{% url 'show_assessments_for_student' %}">Assessments(!)</a></li>
+                                    <li><a href="{% url 'show_assessments_for_student' %}">Assessments</a><div class="notification"></div></li>
                                     {% else %}
                                     <li><a href="{% url 'show_assessments_for_student' %}">Assessments</a></li>
                                     {% endif %}

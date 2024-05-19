@@ -1,0 +1,26 @@
+{% extends 'galaxy/base.html' %}
+{% load embed_video_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/watch_and_learn.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+
+    {% if fl > 0 %}
+    <div class="outer">
+        <div class="video_block">
+            {% for item in videos %}
+                <h2> Lesson №{{forloop.counter}}</h2>
+                <div class="video">
+                    {% video item.url '640x360' %}
+                </div>
+            {% endfor %}
+            {% else %}
+            <h1>Sorry, nothing here</h1>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

@@ -32,7 +32,7 @@ div.parent {
 }
 
 div.table {
-  width: 60%;
+  width: 70%;
 }
 .table{
   font-size: 20px;
@@ -94,11 +94,11 @@ div.table {
   display: none;
 }
 td:nth-child(2) {
-    width: 35%;
+    width: 45%;
 }
 
 td:nth-child(3) {
-    width: 20%;
+    width: 10%;
 }
 
 select{
@@ -112,4 +112,19 @@ option{
     background-color:black;
     border: 2px solid #ffffff;
     font-size: 18px;
+}
+
+.little_btn{
+    background-color: var(--blue-transparent);
+    color: white;
+    border: 1px solid white;
+}
+
+.little_btn:hover{
+    color: grey;
+    border: 1px solid grey;
+}
+
+.confirmation-dialog{
+    height: auto;
 }

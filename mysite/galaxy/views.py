@@ -45,7 +45,7 @@ class Index(TemplateView, LoginRequiredMixin):
 class SignUp(NotLoggedIn, CreateView):
     form_class = SignUpForm
     template_name = 'galaxy/sign_up.html'
-    success_url = reverse_lazy('personal_acc')
+    success_url = reverse_lazy('profile')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -148,7 +148,6 @@ class LoginUser(NotLoggedIn, LoginView):
             logout(self.request)
             return reverse_lazy('email_check_page')
 
-        # return reverse_lazy('personal_acc', kwargs={'acc_slug': self.request.user.slug})
         return reverse_lazy('home')
 
 
@@ -168,18 +167,56 @@ class ResetPassView(PasswordResetView):
     success_url = reverse_lazy('login')
 
 
-class PersonalAcc(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
+class Profile(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = CustomUser
-    template_name = "galaxy/personal_acc.html"
+    template_name = "galaxy/profile.html"
     slug_url_kwarg = 'acc_slug'
-
-    # context_object_name = 'acc'
+    context_object_name = 'student'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Personal Account'
+        user = CustomUser.objects.get(id=context['student'].pk)
+        # counting results data
+        user_results = Results.objects.filter(student_id=user.id, test_id__is_assessment=False)
+        test_points = {'GSEListening': 15,
+                       'GSEReading': 13,
+                       'GSEGrammar and Vocabulary': 15,
+                       'GSEWriting': 10,
+                       'GSESpeaking': 15,
+                       'USEListening': 12,
+                       'USEReading': 12,
+                       'USEGrammar and Vocabulary': 18,
+                       'USEWriting': 20,
+                       'USESpeaking': 20,
+                       }
+
+        avg_dict = [round(100 * (int(r.points) / test_points[r.test_id.type + r.test_id.part])) for r in user_results]
+        avg_result = int(sum(avg_dict) / len(avg_dict)) if len(avg_dict) > 0 else 0
+        context['avg_result'] = avg_result
+        # counting assessments data
+        user_assessment_dates = Assessments.objects \
+            .filter(group=user.group).order_by('date').distinct('date')
+        assessment_dict = {x: Assessments.objects.filter(date=x.date) for x in user_assessment_dates}
+        content_dict = {x: [Results.objects.get(test_id=y.test, student_id=user)
+                            if Results.objects.filter(student_id=user, test_id=y.test).exists()
+                            else "no result" for y in assessment_dict[x]]
+                        for x in assessment_dict.keys()}
+
+        # counting %
+        avg_list = []
+        for results in content_dict.values():
+            cleared_list = [i for i in results if i != 'no result']
+            sum_of_points = sum([int(result.points) for result in cleared_list])
+            avg_list.append(round(sum_of_points / 0.82))
+        avg_assessment = int(sum(avg_list) / len(avg_list)) if len(avg_list) else 0
+
+        context['avg_assessment'] = avg_assessment
+
+        context['results'] = user_results
+        context['assessments'] = user_assessment_dates
+        context['title'] = 'Profile'
         return context
 
 
@@ -309,6 +346,7 @@ class ResultPreview(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
 
         context['tasks_to_check'] = tasks_to_check
         context['test'] = test
+        context['result'] = result_obj
         chapters_for_test = Chapters.objects.filter(test_id__id=test.id).order_by('chapter_number')
         content_dict = {}
         for chapter in chapters_for_test:
@@ -583,6 +621,16 @@ class TestDetails(LoginRequiredMixin, ConfirmStudentMixin, DetailView):
     pk_url_kwarg = 'test_pk'
     context_object_name = 'test'
 
+    def dispatch(self, request, *args, **kwargs):
+        test = Tests.objects.get(id=self.kwargs.get('test_pk'))
+
+        if test.is_assessment:
+            assessment_obj = Assessments.objects.get(test=test)
+            if assessment_obj.is_passed:
+                return render(request, 'galaxy/julik.html')
+
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         test = context['test']
@@ -607,6 +655,11 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         user = request.user
         if not user.is_confirmed and not test.trial_test:
             return render(request, 'galaxy/julik.html')
+
+        if test.is_assessment:
+            assessment_obj = Assessments.objects.get(test=test)
+            if assessment_obj.is_passed:
+                return render(request, 'galaxy/julik.html')
 
         template = 'galaxy/pass_speaking_test.html' if test.part == 'Speaking' else 'galaxy/pass_test.html'
 
@@ -705,12 +758,13 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
 
         if test.part == 'Writing' and len(request.FILES) == 0:
             request.session['no_attached_files'] = 1
-            return HttpResponseRedirect('/test_result_wo_points/')
+            #request.session['assessment_flag'] = 1 if test.is_assessment else 0
+
 
         if test.part == 'Speaking' and len(request.FILES) == 0:
             request.session['no_attached_files'] = 1
+            request.session['assessment_flag'] = 1 if test.is_assessment else 0
             return HttpResponseRedirect('/test_result_wo_points/')
-            # return JsonResponse({'empty_flag': 1})
 
         '''Creating test_to_check object and result object for it'''
         if test.part in ['Writing', 'Speaking']:
@@ -725,7 +779,6 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
             result_obj.time = str(timedelta(seconds=test_time))
             result_obj.save()
 
-        '''Подсчитываем баллы за тест для 3х категорий'''
         total_test_points = 0
         detailed_test_points = ''
         record_test_answers = ''
@@ -837,7 +890,6 @@ class PassTest(LoginRequiredMixin, ConfirmStudentMixin, View):
         result.record_answers = record_test_answers
         result.time = str(timedelta(seconds=test_time))
         result.save()
-
 
         request.session['assessment_flag'] = 1 if test.is_assessment else 0
         return HttpResponseRedirect('/test_result_with_points/' + str(result.pk) + '/')
@@ -1762,7 +1814,17 @@ def close_assessment(request):
         assessment.is_passed = True
         assessment.save()
 
-    return redirect('show_assessments_for_teacher')
+    return JsonResponse({'success': True})
+
+
+@user_passes_test(teacher_check, login_url='home')
+def force_open_assessment(request):
+    assessment_object = Assessments.objects.get(id=request.POST.get('assessment_id'))
+    assessments_to_open = Assessments.objects.filter(group=assessment_object.group, date=assessment_object.date)
+    for assessment in assessments_to_open:
+        assessment.is_opened = True
+        assessment.save()
+    return JsonResponse({'success': True})
 
 
 @user_passes_test(teacher_check, login_url='home')
@@ -1770,9 +1832,11 @@ def deny_assessment(request):
     assessment_object = Assessments.objects.get(id=request.POST.get('assessment_id'))
     assessments_to_deny = Assessments.objects.filter(group=assessment_object.group, date=assessment_object.date)
     for assessment in assessments_to_deny:
+        used_test_to_group_obj = UsedTestsToGroups.objects.get(group=assessment.group, test=assessment.test)
+        used_test_to_group_obj.delete()
         assessment.delete()
     #todo add email notification
-    return redirect('show_assessments_for_teacher')
+    return JsonResponse({'success': True})
 
 
 class OpenCurrentAssessment(LoginRequiredMixin, TeacherUserMixin, ListView):
@@ -1787,6 +1851,7 @@ class OpenCurrentAssessment(LoginRequiredMixin, TeacherUserMixin, ListView):
         assessment_obj = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
         context['title'] = str(assessment_obj.group) + 'assessment'
         context['assessment'] = assessment_obj
+        context['max_points'] = get_max_points_dict()
         return context
 
     def get_queryset(self):
@@ -1800,14 +1865,8 @@ class OpenCurrentAssessment(LoginRequiredMixin, TeacherUserMixin, ListView):
         assessments = Assessments.objects.filter(group=group, date=assessment.date).annotate(
             custom_order=Case(*whens, output_field=CharField())
         ).order_by('custom_order')
-        #tests = [assessment.test for assessment in assessments]  # 5 appointed tests
-        #temp_dict = {user: [Results.objects.get(student_id=user, test_id=test)
-        #                    if Results.objects.filter(student_id=user, test_id=test).exists()
-        #                    else 'no result'
-        #                    for test in tests]
-        #             for user in users}
 
-        temp_dict = {user: ['Passed'
+        temp_dict = {user: [Results.objects.get(student_id=user, test_id=assessment_obj.test)
                             if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists()
                             else 'Nope'
                             for assessment_obj in assessments]
@@ -1827,11 +1886,7 @@ class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
         assessment_obj = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
         context['title'] = str(assessment_obj.group) + 'assessment'
         context['assessment'] = assessment_obj
-        context['max_points'] = {'USEListening': '12',
-                                 'USEReading': '12',
-                                 'USEGrammar and Vocabulary': '18',
-                                 'USEWriting': '20',
-                                 'USESpeaking': '20'}
+        context['max_points'] = get_max_points_dict()
         return context
 
     def get_queryset(self):
@@ -1898,6 +1953,7 @@ def filter_assessments_for_student(request):
         context = {'assessments': assessments}
 
     context['current_category'] = filter_flag
+    context['max_points'] = get_max_points_dict()
     data['my_content'] = render_to_string('galaxy/render_assessments_for_student.html',
                                           context, request=request)
     return JsonResponse(data)
@@ -1909,6 +1965,18 @@ class ShowAssessmentTests(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     model = Assessments
     context_object_name = 'assessments'
     template_name = "galaxy/show_assessment_tests.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        assessment_id = self.kwargs.get('assessment_id')
+        try:
+            assessment_object = Assessments.objects.get(id=assessment_id)
+        except Assessments.DoesNotExist:
+            raise Http404("Assessment does not exist")
+
+        if assessment_object.is_passed:
+            return render(request, 'galaxy/julik.html')
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)

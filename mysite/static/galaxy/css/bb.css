@@ -1,0 +1,14 @@
+:root {
+  --dark-transparent: #000000e3;
+  --gray-hover: #54514f;
+}
+
+
+.two_link_shell {
+  display: inline-flex;
+  width: 90%;
+}   
+
+.button_shell {
+  margin: auto;
+}

@@ -45,10 +45,12 @@
                     <td scope="row">{{ forloop.counter }}</td>
                     <td><a href="{% url 'user_profile' contestant.id %}">{{ contestant.last_name }} {{contestant.first_name}}</a></td>
                     {% for result in results %}
-                        {% if result == 'Passed' %}
-                            <td class="passed">{{ result }}</td>
-                        {% else %}
+                        {% if result == 'Nope' %}
                             <td class="notpassed">{{ result }}</td>
+                        {% else %}
+                            {% with key=result.test_id.type|add:result.test_id.part %}
+                            <td class="passed">{{ result.points }} / {{ max_points|get_item:key }} </td>
+                            {% endwith %}
                         {% endif %}
                     {% endfor %}
                 </tr>

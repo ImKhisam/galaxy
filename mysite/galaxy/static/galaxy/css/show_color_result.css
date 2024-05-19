@@ -107,3 +107,8 @@
     font-size: 17px;
     background-color: var(--red);
 }
+
+.result_preview_points{
+    text-align: center;
+    font-size: 22px;
+}

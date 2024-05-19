@@ -145,14 +145,14 @@ class Playaudio(DetailView):
         return context
 
 
-def play_video(request):
+def watch_and_learn(request):
     videos = Video.objects.all()
     context = {
         'title': 'Videos',
         'videos': videos,
         'fl': Video.objects.count()
     }
-    return render(request, 'content_for_evrbd/play_video.html', context=context)
+    return render(request, 'content_for_evrbd/watch_and_learn.html', context=context)
 
 
 def cross_choice(request):

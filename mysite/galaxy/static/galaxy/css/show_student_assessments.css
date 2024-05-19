@@ -87,10 +87,3 @@
     color: var(--white-transparent);
 }
 
-td:nth-child(2) {
-    width: 45%;
-}
-
-td:nth-child(3) {
-    width: 45%;
-}

@@ -36,7 +36,7 @@ class CustomUser(AbstractUser):
         return self.first_name + ' ' + self.last_name            # self.username
 
     def get_absolute_url(self):
-        return reverse('personal_acc', kwargs={'acc_slug': self.slug})
+        return reverse('profile', kwargs={'acc_slug': self.slug})
 
 
 def content_file_name_olymp(instance, filename):

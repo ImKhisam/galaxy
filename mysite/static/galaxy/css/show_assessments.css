@@ -11,7 +11,7 @@
 
 
 .outer_type_choice{
-    width: 60%;
+    width: 70%;
     display: flex;
     border-top: 2px solid;
 }
@@ -125,4 +125,10 @@ td:nth-child(3) {
 
 .ui-datepicker-prev{
     padding-right: 200px;
+}
+
+
+.two_buttons_div{
+    display: inline-flex;
+    width: 80%;
 }

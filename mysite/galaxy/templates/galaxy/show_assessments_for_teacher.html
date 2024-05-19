@@ -52,11 +52,16 @@
                     <td>
                         <div class="two_buttons_div">
                             <a class="btn btn5" href="{% url 'open_current_assessment' assessment.id %}"><span>Open</span></a>
-                            <a class="btn btn5" href="#" data-id="{{ assessment.id }}" id="close-assessment-btn"><span>Close</span></a>
+                            <a class="btn btn5" href="#" data-assessment-id="{{ assessment.id }}" id="close-assessment-btn"><span>Close</span></a>
                         </div>
                     </td>
                 {% else %}
-                    <td><a class="btn btn5 deny" data-assessment-id="{{ assessment.id }}" href="#"><span>Deny</span></a></td>
+                    <td>
+                        <div class="two_buttons_div">
+                            <a class="btn btn5 forceopen" data-assessment-id="{{ assessment.id }}" href="#"><span>Open</span></a>
+                            <a class="btn btn5 deny" data-assessment-id="{{ assessment.id }}" href="#"><span>Deny</span></a>
+                        </div>
+                    </td>
                 {% endif %}
             </tr>
         {% endfor %}
@@ -116,36 +121,154 @@
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
 <script>
-// Function to initialize datepicker
-function initializeDatepicker() {
-    $( "#datepicker" ).datepicker();
-}
-
 $(document).ready(function() {
+    // Function to initialize datepicker
+    function initializeDatepicker() {
+        $("#datepicker").datepicker();
+    }
+
     initializeDatepicker(); // Initialize datepicker on page load
 
-    // Delegate the click event for adding assessments
+    function showConfirmationDialog(question, onConfirm) {
+        $('.confirmation-question').text(question);
+        $('.confirmation-dialog').show();
+
+        // Bind the confirmation button click event
+        $('.btn-yes').off('click').on('click', function() {
+            onConfirm();
+            $('.confirmation-dialog').hide();
+        });
+
+        // Bind the cancel button click event
+        $('.btn-no').off('click').on('click', function() {
+            $('.confirmation-dialog').hide();
+        });
+    }
+
+    function denyAssessment(assessmentId) {
+        $.ajax({
+            url: "{% url 'deny_assessment' %}",
+            type: 'POST',
+            data: {
+                'assessment_id': assessmentId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Assessment denied successfully');
+                var filter_flag = $('input[name="cat"]:checked').val();
+                filterAssessmentsForTeacher(filter_flag);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error denying assessment:', error);
+            }
+        });
+    }
+
+    function closeAssessment(assessmentId) {
+        $.ajax({
+            url: "{% url 'close_assessment' %}",
+            type: 'POST',
+            data: {
+                'assessment_id': assessmentId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Assessment closed successfully');
+                var filter_flag = $('input[name="cat"]:checked').val();
+                filterAssessmentsForTeacher(filter_flag);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error closing assessment:', error);
+            }
+        });
+    }
+
+    function forceOpenAssessment(assessmentId) {
+        $.ajax({
+            url: "{% url 'force_open_assessment'%}",
+            type: 'POST',
+            data: {
+                'assessment_id': assessmentId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Assessment opened successfully');
+                var filter_flag = $('input[name="cat"]:checked').val();
+                filterAssessmentsForTeacher(filter_flag);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error opening assessment:', error);
+            }
+        });
+    }
+
+    function filterAssessmentsForTeacher(filter_flag) {
+        $.ajax({
+            url: "{% url 'filter_assessments_for_teacher' %}",
+            type: 'GET',
+            data: {
+                filter_flag: filter_flag
+            },
+            success: function(data) {
+                // Update the table with the filtered data
+                $('.table tbody').html(data.my_content);
+                // Update the pagination links
+                $('.pagination').html(data.pagination_html);
+
+                // Reinitialize datepicker after content is reloaded
+                initializeDatepicker();
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+
+    // Event handlers
     $(document).on('click', '#add-assessment-btn', function() {
         $('#new-assessment-row').removeClass('hidden');
         $('#add-assessment-row').addClass('hidden');
     });
 
-    // Delegate the click event for canceling adding assessments
     $(document).on('click', '#cancel-adding-btn', function() {
         $('#new-assessment-row').addClass('hidden');
         $('#add-assessment-row').removeClass('hidden');
     });
 
-    // Delegate the click event for saving assessments
     $(document).on('click', '#save-assessment-btn', function() {
         var group = $('#group').val();
         var date = $('#datepicker').val();
         $.ajax({
             url: "{% url 'save_an_assessment' %}",
-            data: {group: group, date: date},
+            data: { group: group, date: date },
             success: function() {
-                location.reload();
+                var filter_flag = $('input[name="cat"]:checked').val();
+                filterAssessmentsForTeacher(filter_flag);
             }
+        });
+    });
+
+    $(document).on('click', '.deny', function(e) {
+        e.preventDefault();
+        var assessmentId = $(this).data('assessment-id');
+        showConfirmationDialog('Do you really want to deny assessment?', function() {
+            denyAssessment(assessmentId);
+        });
+    });
+
+    $(document).on('click', '#close-assessment-btn', function(e) {
+        e.preventDefault();
+        var assessmentId = $(this).data('assessment-id');
+        showConfirmationDialog('Do you really want to close assessment?', function() {
+            closeAssessment(assessmentId);
+        });
+    });
+
+    $(document).on('click', '.forceopen', function(e) {
+        e.preventDefault();
+        var assessmentId = $(this).data('assessment-id');
+        showConfirmationDialog('Do you really want to open assessment right now?', function() {
+            forceOpenAssessment(assessmentId);
         });
     });
 
@@ -170,29 +293,6 @@ $(document).ready(function() {
         return stateJSON ? JSON.parse(stateJSON) : null;
     }
 
-    // Function to filter assessments based on category
-    function filterAssessmentsForTeacher(filter_flag) {
-        $.ajax({
-            url: "{% url 'filter_assessments_for_teacher' %}",
-            type: 'GET',
-            data: {
-                filter_flag: filter_flag
-            },
-            success: function(data) {
-                // Update the table with the filtered data
-                $('.table tbody').html(data.my_content);
-                // Update the pagination links
-                $('.pagination').html(data.pagination_html);
-
-                // Reinitialize datepicker after content is reloaded
-                initializeDatepicker();
-            },
-            error: function(xhr, status, error) {
-                console.error(error);
-            }
-        });
-    }
-
     // Apply stored state when page is loaded
     var storedState = retrieveStateFromSessionStorage();
     if (storedState) {
@@ -205,82 +305,4 @@ $(document).ready(function() {
     }
 });
 </script>
-
-
-<script>
-$(document).ready(function() {
-
-    function showConfirmationDialog(question, onConfirm) {
-        $('.confirmation-question').text(question);
-        $('.confirmation-dialog').show();
-
-        // Bind the confirmation button click event
-        $('.btn-yes').off('click').on('click', function() {
-            onConfirm();
-            $('.confirmation-dialog').hide();
-        });
-
-        // Bind the cancel button click event
-        $('.btn-no').off('click').on('click', function() {
-            $('.confirmation-dialog').hide();
-        });
-    }
-
-    $(document).on('click', '.deny', function(e) {
-        e.preventDefault();
-        var assessmentId = $(this).data('assessment-id');
-        showConfirmationDialog('Do you really want to deny assessment?', function() {
-            denyAssessment(assessmentId);
-        });
-    });
-
-
-    function denyAssessment(assessmentId) {
-        $.ajax({
-            url: "{% url 'deny_assessment'%}",
-            type: 'POST',
-            data: {
-                'assessment_id': assessmentId,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
-            success: function(response) {
-                console.log('Assessment denied successfully');
-                location.reload();
-            },
-            error: function(xhr, status, error) {
-                console.error('Error denying assessment:', error);
-            }
-        });
-    }
-
-    $(document).on('click', '#close-assessment-btn', function(e) {
-        e.preventDefault();
-        var assessmentId = $(this).data('id');
-        showConfirmationDialog('Do you really want to close assessment?', function() {
-            closeAssessment(assessmentId);
-        });
-    });
-
-    // Function to close an assessment
-    function closeAssessment(assessmentId) {
-        $.ajax({
-            url: "{% url 'close_assessment' %}",
-            type: 'POST',
-            data: {
-                'assessment_id': assessmentId,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
-            success: function(response) {
-                console.log('Assessment closed successfully');
-                location.reload();
-            },
-            error: function(xhr, status, error) {
-                console.error('Error closing assessment:', error);
-            }
-        });
-    }
-});
-
-</script>
-
 {% endblock javascript %}
