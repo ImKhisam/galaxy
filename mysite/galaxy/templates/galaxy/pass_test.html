@@ -102,7 +102,7 @@
                                     <div class="select-wrapper listening-select">
                                         <label>{{answer.match}}</label>
                                         <select class="special-select" name="{{answer.pk}}">
-                                            <option>Выберите ответ</option>
+                                            <option>&nbsp;&nbsp;&#11167;&nbsp;&nbsp;</option>
                                             <option value="1">1</option>
                                             <option value="2">2</option>
                                             <option value="3">3</option>
@@ -122,7 +122,7 @@
                                         <div class="outer-select">
                                             <div class="select-wrapper">
                                                 <select class="reading-select" name="{{answer.pk}}">
-                                                    <option>Выберите ответ</option>
+                                                    <option>&nbsp;&nbsp;&#11167;&nbsp;&nbsp;</option>
                                                     {% for item in answer_list %}
                                                         <option value="{{item}}">{{ forloop.counter }}</option>
                                                     {% endfor %}
@@ -137,7 +137,7 @@
                                         <div class="select-wrapper listening-select-element">   <!-- Listening match -->
                                             <label>{{answer.match}}</label>
                                             <select class="listening-select" name="{{answer.pk}}">
-                                                <option>Выберите ответ</option>
+                                                <option>&nbsp;&nbsp;&#11167;&nbsp;&nbsp;</option>
                                                 {% for item in answer_list %}
                                                     <option value="{{item}}">{{ forloop.counter }}</option>
                                                 {% endfor %}
@@ -264,7 +264,7 @@
                                 </div>
                             </div>
                         </div>
-                    {% else %}      <!-- File adding type question -->
+                    {% else %}      <!-- File adding type question  WRITING -->
                         {% if question.writing_fl == 'letter'%}     <!-- letter -->
                             <div class="question">
                                 <p class="question-number">{{question.question_number}}</p>
@@ -281,57 +281,19 @@
                             <div>
                                 <p class="question_writing_text">{{question.writing_after}}</p>
                             </div>
-                        {% else %}
-                            {% if test.part == 'Speaking' %}    <!-- Speaking file adding question -->
-                                <div class="question">
-                                    <p class="question-number">{{question.question_number}}</p>
-	                                <p class="question-text" style="white-space: break-spaces;">{{question.question}}</p>
-                                </div>
-                                {% if question.media %}
-                                    <div class="audio">
-                                        <audio controls style="margin: auto;" id="audio{{ question.pk }}">
-                                            <source src="{{question.media.url}}">
-                                        </audio>
-                                    </div>
+                        {% else %}      <!-- essay -->
+                            <div class="question">
+                                {% if question.question_number > 1 %}
+                                <p class="question-number">2.{{question.question_number|adding:-1}}</p>
+                                {% else %}
+                                <p class="question-number">{{question.question_number}}</p>
                                 {% endif %}
-                                {% if question.picture %}
-                                    <p style="text-align: center; font-weight: 600; font-size: 27px;">{{question.text_name}}</p>
-                                    <div class="picture">
-                                        <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
-                                    </div>
-                                {% endif %}
-                                {% if question.text %}
-                                        {% if question.question_number == 1 %}
-                                        <div class="speaking-gse-1-text">
-                                        <span class="chapter-text">{{ question.text }}</span>
-                                        </div>
-                                        {% else %}
-                                        <div style="margin-left: 60px;">
-                                        <span class="speaking-gse-3-text">{{ question.text }}</span>
-                                        </div>
-                                        {% endif %}
-                                {% endif %}
-                                <div class="record-answer">
-                                    <p style="text-align:center;">
-                                        REMEMBER! You have time limit for this task:
-                                        {{ question.time_limit|divide_integral:60 }} minute(s)
-                                        {{ question.time_limit|modulus:60 }} seconds
-                                    </p>
-                                </div>
-                            {% else %}  <!-- essay -->
-                                <div class="question">
-                                    {% if question.question_number > 1 %}
-                                    <p class="question-number">2.{{question.question_number|adding:-1}}</p>
-                                    {% else %}
-                                    <p class="question-number">{{question.question_number}}</p>
-                                    {% endif %}
-	                                <p class="question-text">{{question.question}}</p>
-                                </div>
-                                <div class="picture">
-                                    <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
-                                </div>
-                                <p class="question_writing_text">{{question.writing_after}}</p>
-                            {% endif %}
+	                            <p class="question-text">{{question.question}}</p>
+                            </div>
+                            <div class="picture">
+                                <img style="width: 80%; margin: auto;" src="{{question.picture.url}}">
+                            </div>
+                            <p class="question_writing_text">{{question.writing_after}}</p>
                         {% endif %}
                         <div class="add-files">
                             <div class="file">
@@ -340,10 +302,12 @@
                                     <span>Choose a file...</span>
                                 </label>
                             </div>
-                            {% if test.type == 'USE' and test.part == 'Writing' and question.number > 1 %}
+                            {% if test.type == 'USE' and test.part == 'Writing' and question.question_number > 1 %}
                             <div class="file">
-                                <label for="{{question.pk}}_media2">Additional:</label>
-                                <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                                <label class="input-file">
+                                    <input type="file" name="{{question.pk}}_media2" id="{{question.pk}}_media2">
+                                    <span>Additional</span>
+                                </label>
                             </div>
                             {% endif %}
                         </div>

@@ -201,3 +201,14 @@ input:focus::placeholder {
 input:hover::placeholder {
   color: grey;
 }
+
+.poster_wrapper{
+    display: flex;
+    justify-content: center;
+}
+
+.hello_poster{
+    background-color: var(--blue-transparent);
+    padding: 10px;
+    border-radius: 20px;
+}

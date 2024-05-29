@@ -21,7 +21,7 @@
 }
 
 .table_string{
-    width: 70%;
+    width: 80%;
     display: flex;
     border-top: 2px solid var(--white-transparent);
     border-bottom: 2px solid var(--white-transparent);
@@ -42,7 +42,7 @@
 
 
 .outer_type_choice{
-    width: 70%;
+    width: 80%;
     display: flex;
     border-top: 2px solid;
 }

@@ -32,7 +32,7 @@ div.parent {
 }
 
 div.table {
-  width: 70%;
+  width: 80%;
 }
 .table{
   font-size: 20px;
@@ -94,7 +94,7 @@ div.table {
   display: none;
 }
 td:nth-child(2) {
-    width: 45%;
+    width: 30%;
 }
 
 td:nth-child(3) {

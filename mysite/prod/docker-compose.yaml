@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+    db:
+        image: postgres
+        container_name: postgres
+        environment:
+          POSTGRES_USER: ${DB_USER}
+          POSTGRES_PASSWORD: ${DB_PASSWORD}
+          POSTGRES_DB: ${DB_NAME}
+        ports:
+          - "5444:5432"
+        volumes:
+          - pgdata:/var/lib/postgresql/data
+
+    mysite:
+        build: .
+        ports:
+          - "8001:8000"
+        depends_on:
+          - db
+        volumes:
+          - static_volume:/app/static
+          - media_volume:/app/media
+          - code_volume:/app/galaxy
+
+    nginx:
+        image: nginx:latest
+        container_name: nginx
+        volumes:
+          - static_volume:/static
+          - media_volume:/media
+          - ./docker/nginx/prod/:/etc/nginx/conf.d:ro
+          - ./docker/certbot/conf:/etc/letsencrypt
+          - ./docker/certbot/www:/var/www/certbot
+        ports:
+          - "80:80"
+          - "443:443"
+        depends_on:
+          - mysite
+
+    redis:
+        image: redis:latest
+        ports:
+          - "6379:6379"
+
+    celery:
+        build: .
+        command: celery -A mysite worker --loglevel=info
+        depends_on:
+          - redis
+          - db
+          - mysite
+        volumes:
+          - media_volume:/app/media
+
+    celery-beat:
+        build: .
+        command: celery -A mysite beat --loglevel=info
+        depends_on:
+          - redis
+          - db
+          - celery
+        volumes:
+          - media_volume:/app/media
+
+    certbot:
+        image: certbot/certbot
+        container_name: certbot
+        volumes:
+            - ./docker/certbot/conf:/etc/letsencrypt
+            - ./docker/certbot/www:/var/www/certbot
+
+volumes:
+  static_volume:
+  media_volume:
+  code_volume:
+  pgdata:

@@ -1,4 +1,11 @@
 {% extends 'galaxy/base.html' %}
+{% load galaxy_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/auth.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
 
 {% block content %}
 {% if request.user.is_authenticated %}
@@ -10,7 +17,9 @@
         -->
     {% endif %}
 {% else %}
-    <h1>Hi unknown star</h1>
+    <div class="poster_wrapper">
+        <h1 class="hello_poster">Hi unknown star</h1>
+    </div>
 {% endif %}
 
 {% endblock %}

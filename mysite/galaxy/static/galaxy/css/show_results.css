@@ -32,7 +32,7 @@ div.parent {
 }
 
 div.table {
-  width: 70%;
+  width: 80%;
 }
 .table{
   font-size: 20px;
@@ -75,7 +75,7 @@ div.table {
     color: #c9b4b4;
 }
 .outer_table_head{
-    width: 70%;
+    width: 80%;
     display: flex;
     border-top: 2px solid;
 }

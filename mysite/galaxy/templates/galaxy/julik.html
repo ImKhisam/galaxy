@@ -1,7 +1,12 @@
 {% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/julik.css' %}" rel="stylesheet"/>
+{% endblock %}
 
 {% block content %}
-
-<h1> Тебе сюда нельзя, жулик</h1>
-
+<div class="wrapper">
+    <h1> You are not allowed to be here.</h1>
+</div>
 {% endblock %}

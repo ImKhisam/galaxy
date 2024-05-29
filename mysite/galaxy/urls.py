@@ -74,6 +74,7 @@ urlpatterns = [
     path('add_q_and_a/<int:chapter_id>/', AddQandAView.as_view(), name='add_q_and_a'),
     path('edit_test_data/<int:test_id>/', EditTestData.as_view(), name='edit_test_data'),
     path('edit_chapter_data/<int:chapter_id>/', EditChapterData.as_view(), name='edit_chapter_data'),
+    path('delete_chapter/<int:chapter_id>/', delete_chapter, name='delete_chapter'),
     path('edit_q_and_a/<int:question_id>/', EditQandAView.as_view(), name='edit_q_and_a'),
     path('delete_question/<int:question_id>/', delete_question, name='delete_question'),
     path('test/<slug:show_type>/<int:test_pk>/', ShowOrEditTest.as_view(), name='test'),
@@ -94,3 +95,5 @@ urlpatterns = [
     path('read_and_learn/', ReadAndLearn.as_view(), name='read_and_learn'),
     path('pass_read_and_learn_test/<int:test_pk>/', PassReadAndLearnTest.as_view(), name='pass_read_and_learn_test'),
     ]
+
+

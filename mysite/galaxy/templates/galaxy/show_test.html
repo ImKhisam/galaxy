@@ -101,7 +101,7 @@
                                     <div class="select-wrapper listening-select">
                                         <label>{{answer.match}}</label>
                                         <select class="special-select" name="{{answer.pk}}">
-                                            <option>Выберите ответ</option>
+                                            <option>&nbsp;&nbsp;&#11167;&nbsp;&nbsp;</option>
                                             <option value="1">1</option>
                                             <option value="2">2</option>
                                             <option value="3">3</option>
@@ -122,7 +122,7 @@
                                         <div class="outer-select">
                                             <div class="select-wrapper">
                                                 <select class="reading-select" name="{{answer.pk}}">
-                                                    <option>Выберите ответ</option>
+                                                    <option>&nbsp;&nbsp;&#11167;&nbsp;&nbsp;</option>
                                                     {% for item in answer_list %}
                                                         <option value="{{item}}">{{ forloop.counter }}</option>
                                                     {% endfor %}
@@ -137,7 +137,7 @@
                                         <div class="select-wrapper listening-select-element">   <!-- Listening match -->
                                             <label>{{answer.match}}</label>
                                             <select class="listening-select" name="{{answer.pk}}">
-                                                <option>Выберите ответ</option>
+                                                <option>&nbsp;&nbsp;&#11167;&nbsp;&nbsp;</option>
                                                 {% for item in answer_list %}
                                                     <option value="{{item}}">{{ forloop.counter }}</option>
                                                 {% endfor %}

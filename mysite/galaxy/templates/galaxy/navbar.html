@@ -16,22 +16,8 @@
                     <img src="../../static/galaxy/images/logo(3).png">
                 </a>
                 {% if request.user.is_authenticated %}
-                    {% if request.user.is_confirmed %}
-                        <li class="first-row"><a href="{% url 'show_tests_by_part' 'GSE' %}">GSE</a></li>
-                        <li class="first-row"><a href="{% url 'show_tests_by_part' 'USE' %}">USE</a></li>
-                    {% else %}
-                        <li class="first-row"><a href="#">GSE</a>
-                            <ul>
-                                {% drop_menu_trial_test 'GSE' %}
-                            </ul>
-                        </li>
-                        <li  class="first-row"><a href="#">USE</a>
-                            <ul>
-                                {% drop_menu_trial_test 'USE' %}
-                            </ul>
-                        </li>
-                    {% endif %}
-
+                    <li class="first-row"><a href="{% url 'show_tests_by_part' 'GSE' %}">GSE</a></li>
+                    <li class="first-row"><a href="{% url 'show_tests_by_part' 'USE' %}">USE</a></li>
                     <li class="first-row"><a target=”_blank” href="https://learnenglish.britishcouncil.org/skills">Develop your skills</a></li>
                     <li class="first-row"><a href="{% url 'olymp' %}">Olymp Way</a></li>
                     <li class="first-row"><a href="{% url 'BB' %}">British Bulldog</a></li>
@@ -99,7 +85,12 @@
                             <li class="first-row"><a href="{% url 'logout' %}">Log out</a></li>
                         {% endif %}
                     {% else %} <!-- Not confirmed person -->
-                        <li class="first-row"><a class="user_name_menu" href="{{ user.get_absolute_url }}">{{user.username}}</a></li>
+                        <li class="first-row"><a class="user_name_menu" href="#">{{user.username}}</a>
+                            <ul class="menu_second_row">
+                                <li><a href="{{ user.get_absolute_url }}">Account</a></li>
+                                <li><a href="{% url 'show_student_results' %}">My results</a></li>
+                            </ul>
+                        </li>
                         <li class="first-row"><a href="{% url 'logout' %}">Log out</a></li>
                     {% endif %}
                 {% else %} <!-- Not authenticated guest -->

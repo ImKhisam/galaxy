@@ -3,6 +3,13 @@
   --gray-hover: #54514f;
 }
 
+.table{
+  width: 90%;
+}
+
+.outer_table_head{
+  width: 90%;
+}
 
 .two_link_shell {
   display: inline-flex;

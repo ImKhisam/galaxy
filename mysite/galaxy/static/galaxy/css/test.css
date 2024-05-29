@@ -410,9 +410,10 @@ h2{
     margin-top: 40px;
 }
 .file{
-    margin: auto;
     font-size: 27px;
-    display: inline-block;
+    display: flex;
+    width: 50%;
+    margin: auto;
 }
 .file input{
     font-size: 20px;
@@ -420,7 +421,9 @@ h2{
 
 .input-file {
     position: relative;
-    display: inline-block;
+    display: flex;
+    margin: auto;
+    width: 70%;
 }
 .input-file span {
     font-size: 25px;
@@ -431,6 +434,12 @@ h2{
     padding: 10px 20px;
     border: 1px solid black;
     cursor: pointer;
+    min-width: 100%;
+    max-width: 100%; 
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: auto;
 }
 .input-file input[type=file] {
     position: absolute;
@@ -508,7 +517,7 @@ h2{
 .question_controls{
     display: flex;
     justify-content: space-evenly;
-    width: 30%;
+    width: 50%;
 }
 
 .single_btn{

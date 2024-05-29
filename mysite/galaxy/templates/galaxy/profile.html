@@ -9,11 +9,24 @@
 {% block content %}
 
 {% if not user.is_confirmed %}
-    <p>You're not confirmed, please contact the administrator</p>
-    <div class="modal">
-        <a class="btn btn5" href="#" id="delete-account-button">
-            <span>Delete your acc? </span>
-        </a>
+    <div class="parent">
+        <div class="outer_table_head">
+            <div class="empty"></div>
+            <div class="table_head">
+                <h1>You don't have a ticket for this spaceship, please contact the administrator</h1>
+            </div>
+            <div class="empty"></div>
+        </div>
+    </div>
+
+    <div class="parent">
+        <div class="outer_table_tail">
+            <div class="empty"></div>
+            <div class="table_tail">
+                <a class="btn btn5" href="#" id="delete-account-button"><span>Delete your account? </span></a>
+            </div>
+            <div class="empty"></div>
+        </div>
     </div>
 {% else %}
     <div class="parent">

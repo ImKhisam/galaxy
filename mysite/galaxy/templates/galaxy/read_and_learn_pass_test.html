@@ -104,7 +104,7 @@
                                     <div class="select-wrapper listening-select-element">   <!-- Listening match -->
                                         <label>{{answer.match}}</label>
                                         <select class="listening-select" name="{{answer.pk}}">
-                                            <option>&nbsp;&nbsp;&nbsp;∇&nbsp;&nbsp;&nbsp;</option>
+                                            <option>&nbsp;&nbsp;&#11167;&nbsp;&nbsp;</option>
                                             {% for item in answer_list %}
                                                 <option value="{{item}}">{{ forloop.counter }}</option>
                                             {% endfor %}
@@ -196,3 +196,58 @@
 </div>
 {% endblock %}
 
+{% block javascript %}
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+// Avoiding duplicating select options
+$(document).ready(function() {
+    // Handle change event for all select elements
+    $('select:not(.special-select)').change(function() {
+        var selectedValue = $(this).val();  // Get the selected value
+
+        // Check if the selected value already exists in other selects
+        $('select:not(.special-select)').not(this).find('option').filter(function() {
+            return $(this).val() === selectedValue;
+        }).prop('selected', false);  // Remove selection
+    });
+});
+</script>
+
+<script>
+// Highlighting already selected options
+$(document).ready(function() {
+    var chosenValues = [];  // Initialize the list of chosen values
+
+    // Handle change event for all select elements
+    $('select:not(.special-select)').change(function() {
+        var selectedValue = $(this).val();  // Get the selected value
+
+        // Update the list of chosen values
+        if ($(this).prop('selectedIndex') !== 0) {  // Ignore the default option
+            chosenValues.push(selectedValue);
+        }
+
+        // Remove value from the list of chosen values if not selected in any select
+        chosenValues = chosenValues.filter(function(value) {
+            return $('select:not(.special-select)').find('option[value="' + value + '"]:selected').length > 0;
+        });
+
+        // Update all select elements
+        $('select:not(.special-select)').each(function() {
+            // Update option lists and color based on the list of chosen values
+            $(this).find('option').each(function() {
+                var optionValue = $(this).val();
+                if (chosenValues.includes(optionValue)) {
+                    $(this).css('background-color', '#80aceb');  // Change the color as needed
+                } else {
+                    $(this).css('background-color', '');  // Reset the color
+                }
+            });
+        });
+    });
+});
+</script>
+
+{% endblock javascript %}

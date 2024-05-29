@@ -2,54 +2,14 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView, ListView, DetailView
 from django.http import FileResponse, Http404
 from django.conf import settings
-
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from .models import *
 
 
-#class BB_years(ListView):
-#    model = BrittishBulldog
-#    template_name = "content_for_evrbd/BB_years.html"
-#    context_object_name = 'years'
-#
-#    def get_context_data(self, *, object_list=None, **kwargs):
-#        context = super().get_context_data(**kwargs)
-#        context['title'] = 'BB'
-#        return context
-#
-#    def get_queryset(self):
-#        #print(BrittishBulldog.objects.values('year').distinct('year'))
-#        #BrittishBulldog.objects.values('year').distinct('year')   # return <QuerySet [{'year': '2021-2022'}, {'year': '2022-2023'}]>
-#        return BrittishBulldog.objects.distinct('year')
-
-
-#class BB_year(ListView):
-#    model = BrittishBulldog
-#    template_name = "content_for_evrbd/BB_year.html"
-#    context_object_name = 'classes'
-#
-#    def get_context_data(self, *, object_list=None, **kwargs):
-#        context = super().get_context_data(**kwargs)
-#        context['title'] = 'BB_' + self.kwargs['bb_slug']
-#        return context
-#
-#    def get_queryset(self):
-#        return BrittishBulldog.objects.filter(year=self.kwargs['bb_slug'])
-
-
-#class Show_doc(DetailView):
-#    model = BrittishBulldog
-#    template_name = "content_for_evrbd/show_doc.html"
-#    #slug_url_kwarg = 'bb_slug'
-#    pk_url_kwarg = 'classes_id'
-#    context_object_name = 'file'
-#
-#    def get_context_data(self, *, object_list=None, **kwargs):
-#        context = super().get_context_data(**kwargs)
-#        context['title'] = '_'.join(('BB', context['file'].year, context['file'].classes)) # 'BB', context['file'].year, context['file'].classes
-#        return context
-
-
-class BB(ListView):
+class BB(LoginRequiredMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = BritishBulldog
     template_name = 'content_for_evrbd/BB.html'
     context_object_name = 'bb_tasks'
@@ -69,7 +29,9 @@ class BB(ListView):
         return context
 
 
-class Olymp(ListView):
+class Olymp(LoginRequiredMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = OlympWay
     template_name = 'content_for_evrbd/olymp.html'
     context_object_name = 'olymp_tasks'
@@ -96,6 +58,7 @@ class Olymp(ListView):
         return context
 
 
+@login_required(login_url='/login/')
 def showdoc(request, classes_id, source, doc_type):
     media = settings.MEDIA_ROOT                                     # importing from settings
     model = OlympWay if source == 'Olymp' else BritishBulldog
@@ -116,8 +79,9 @@ def showdoc(request, classes_id, source, doc_type):
         raise Http404()
 
 
-# todo add LoginRequiredMixin
-class Playaudio(DetailView):
+class Playaudio(LoginRequiredMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     template_name = 'content_for_evrbd/play_audio.html'
     context_object_name = 'file'
 
@@ -145,6 +109,7 @@ class Playaudio(DetailView):
         return context
 
 
+@login_required(login_url='/login/')
 def watch_and_learn(request):
     videos = Video.objects.all()
     context = {
@@ -155,6 +120,7 @@ def watch_and_learn(request):
     return render(request, 'content_for_evrbd/watch_and_learn.html', context=context)
 
 
+@login_required(login_url='/login/')
 def cross_choice(request):
     context = {
         'title': 'Crosswords',
@@ -162,16 +128,20 @@ def cross_choice(request):
     return render(request, 'content_for_evrbd/crossword_choice.html', context=context)
 
 
+@login_required(login_url='/login/')
 def cross(request, cross_num):
     crossword_template = "".join(('content_for_evrbd/crossword_', str(cross_num), '.html'))
     return render(request, crossword_template)
 
 
+@login_required(login_url='/login/')
 def quizpreview(request):
     return render(request, 'content_for_evrbd/quiz_preview.html')   # delete?
 
 
-class QuizPreview(ListView):
+class QuizPreview(LoginRequiredMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     paginate_by = 5
     model = Quizzes
     template_name = 'content_for_evrbd/quiz_preview.html'
@@ -181,7 +151,9 @@ class QuizPreview(ListView):
         return Quizzes.objects.all()
 
 
-class ShowQuiz(DetailView):
+class ShowQuiz(LoginRequiredMixin, DetailView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
     model = Quizzes
     template_name = 'content_for_evrbd/show_quiz.html'
     pk_url_kwarg = 'quiz_id'

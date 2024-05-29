@@ -26,6 +26,9 @@ urlpatterns = [
     path('', include('content_for_evrbd.urls')),
 ]
 
+handler404 = 'galaxy.views.error_404_page'
+handler500 = 'galaxy.views.error_500_page'
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

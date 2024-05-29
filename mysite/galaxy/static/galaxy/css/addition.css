@@ -121,3 +121,11 @@ form{
 .dark-frame p {
     font-size: 20px;
 }
+
+.form-error ul{
+    color: #db6b6b;
+}
+
+.errorlist{
+    color: #db6b6b;  
+}

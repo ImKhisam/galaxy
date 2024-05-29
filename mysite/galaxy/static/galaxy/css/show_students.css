@@ -45,7 +45,7 @@ option{
 
 
 .outer_student_status_choice{
-    width: 70%;
+    width: 80%;
     display: flex;
     border-top: 2px solid var(--white-transparent);
 }

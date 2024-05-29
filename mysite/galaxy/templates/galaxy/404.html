@@ -1,0 +1,17 @@
+{% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/black_hole.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+<div class="wrapper">
+    <div class="dark-frame">
+        <h1> Warning! </h1>
+        <h2>You have reached the edge of galaxy and encountered a black hole.</h2>
+        <h2>Turn back immediately!</h2>
+    </div>
+</div>
+
+{% endblock %}

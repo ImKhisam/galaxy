@@ -82,7 +82,7 @@ class CustomUserChangeForm(UserChangeForm):
 class TestAddForm(forms.ModelForm):
     class Meta:
         model = Tests
-        fields = ['type', 'part', 'media', 'is_assessment']
+        fields = ['type', 'part', 'media', 'is_assessment', 'trial_test']
 
 
 class ChapterAddForm(forms.ModelForm):

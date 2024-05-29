@@ -36,7 +36,7 @@ div.parent {
 }
 
 div.table {
-  width: 70%;
+  width: 80%;
 }
 
 .pagination {
@@ -147,7 +147,7 @@ td:last-child {
 }
 
 .outer_type_choice{
-    width: 70%;
+    width: 80%;
     display: flex;
     border-top: 2px solid;
 }
@@ -185,7 +185,7 @@ td:last-child {
 
 
 .outer_part_choice{
-    width: 70%;
+    width: 80%;
     display: flex;
     border-top: 2px solid;
 }
@@ -223,7 +223,7 @@ td:last-child {
 
 
 .outer_not_passed{
-    width: 70%;
+    width: 80%;
     display: flex;
 }
 .not_passed_checkbox{

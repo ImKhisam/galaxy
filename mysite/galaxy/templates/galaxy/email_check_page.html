@@ -1,9 +1,14 @@
 {% extends 'galaxy/base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/auth.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
 
 {% block content %}
-    <div class="outer">
-        <div class="dark-frame">
-            <h2>Please check your email and verify your account by link</h2>
+    <div class="wrapper">
+        <div class="auth_window">
+            <h2 style="text-align: center;">Please check your email and verify your account by link</h2>
         </div>
     </div>
 {% endblock %}

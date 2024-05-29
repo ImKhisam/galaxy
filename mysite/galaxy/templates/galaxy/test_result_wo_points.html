@@ -6,20 +6,24 @@
 {% endblock %}
 {% block content %}
 <div class="outer">
-<div class="frame">
-    {% if request.session.no_attached_files %}
-    <p>You didn't attach any files. Be attentive next time.</p>
-    {% else %}
-    <p>Teacher will check your answers. Then the result will appear in "My results"</p>
-    {% endif %}
-    <br><br>
-    {% if assessment_flag == 1 %}
-    <a class="btn btn5" href="{% url 'show_assessments_for_student'%}">
-    {% else %}
-    <a class="btn btn5" href="{% url 'home'%}">
-    {% endif %}
-        <span>Got it!</span>
-    </a>
-</div>
+    <div class="frame">
+        {% if request.session.free_test_flag %}
+            <p>You don't have a ticket for this spaceship, please contact the administrator.</p>
+        {% else %}
+            {% if request.session.no_attached_files %}
+            <p>You didn't attach any files. Be attentive next time.</p>
+            {% else %}
+            <p>Teacher will check your answers. Then the result will appear in "My results"</p>
+            {% endif %}
+            <br><br>
+            {% if assessment_flag == 1 %}
+            <a class="btn btn5" href="{% url 'show_assessments_for_student'%}">
+            {% else %}
+            <a class="btn btn5" href="{% url 'home'%}">
+            {% endif %}
+                <span>Got it!</span>
+            </a>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

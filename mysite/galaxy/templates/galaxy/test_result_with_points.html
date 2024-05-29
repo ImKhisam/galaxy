@@ -7,16 +7,16 @@
 {% endblock %}
 {% block content %}
 <div class="outer">
-<div class="frame">
-    <p>Your result in {{result.test_id}}: {{result.points}}/{{max_points}}. You've made it in {{test_time}}</p>
-    <br><br>
-    {% if assessment_flag == 1 %}
-    <a class="btn btn5" href="{% url 'show_assessments_for_student'%}">
-    {% else %}
-    <a class="btn btn5" href="{% url 'show_results'%}">
-    {% endif %}
-        <span>Nice</span>
-    </a>
-</div>
+    <div class="frame">
+        <p>Your result in {{result.test_id}}: {{result.points}}/{{max_points}}. You've made it in {{test_time}}</p>
+        <br><br>
+        {% if assessment_flag == 1 %}
+        <a class="btn btn5" href="{% url 'show_assessments_for_student'%}">
+        {% else %}
+        <a class="btn btn5" href="{% url 'show_results'%}">
+        {% endif %}
+            <span>Nice</span>
+        </a>
+    </div>
 </div>
 {% endblock %}
