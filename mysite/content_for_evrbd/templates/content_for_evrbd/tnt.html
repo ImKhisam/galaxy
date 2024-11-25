@@ -1,0 +1,47 @@
+{% extends 'galaxy/base.html' %}
+{% load embed_video_tags %}
+{% load static %}
+
+{% block custom_styles %}
+    <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/show_groups.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/tests_and_assessments.css' %}" rel="stylesheet"/>
+{% endblock custom_styles %}
+
+{% block content %}
+
+<div class="parent">
+    <div class="outer_table_head">
+        <div class="empty"></div>
+        <div class="table_head">
+            <h1>Teaching aNd Tutoring</h1>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+<div class="parent">
+    <div class="outer_type_choice">
+        <div class="empty"></div>
+        <div class="type_choices">
+            <div class="type_choice_shell">
+                <div class="type_choice">
+                    <input style="display: none;" type="radio" id="Publications" name="cat" value="Publications">
+                    <label for="Publications"><span>Publications</span></label>
+                </div>
+                <div class="empty"></div>
+            </div>
+            <div class="type_choice_shell">
+                <div class="type_choice">
+                    <input style="display: none;" type="radio" id="Master" name="cat" value="Master">
+                    <label for="Master"><span>Master Your Language Skills</span></label>
+                </div>
+            </div>
+        </div>
+        <div class="empty"></div>
+    </div>
+</div>
+
+
+
+{% endblock %}

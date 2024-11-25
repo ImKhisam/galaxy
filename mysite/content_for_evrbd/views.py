@@ -59,6 +59,22 @@ class Olymp(LoginRequiredMixin, ListView):
 
 
 @login_required(login_url='/login/')
+def publications(request):
+    context = {
+        'title': 'Publications',
+    }
+    return render(request, 'content_for_evrbd/publications.html', context=context)
+
+
+@login_required(login_url='/login/')
+def master_yls(request):
+    context = {
+        'title': 'Master Your Language Skills',
+    }
+    return render(request, 'content_for_evrbd/master_yls.html', context=context)
+
+
+@login_required(login_url='/login/')
 def showdoc(request, classes_id, source, doc_type):
     media = settings.MEDIA_ROOT                                     # importing from settings
     model = OlympWay if source == 'Olymp' else BritishBulldog

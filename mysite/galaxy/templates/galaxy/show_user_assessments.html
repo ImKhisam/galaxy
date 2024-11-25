@@ -44,8 +44,20 @@
                         {% if result == 'no result' %}
                             <td>No result</td>
                         {% else %}
-                            <td><a href="{% url 'result_preview' result.id %}">{{ result.points }}</a></td>
-                        {% endif %}
+                            {% if forloop.counter < 4 %}
+                                <td>
+                                    {% with key=result.test_id.type|add:result.test_id.part %}
+                                    <a href="{% url 'show_colour_result' result.id %}">{{ result.points }} / {{ max_points|get_item:key }}</a>
+                                    {% endwith %}
+                                </td>
+                            {% else %}
+                                <td>
+                                    {% with key=result.test_id.type|add:result.test_id.part %}
+                                    <a href="{% url 'result_preview' result.id %}">{{ result.points }} / {{ max_points|get_item:key }}</a>
+                                    {% endwith %}
+                                </td>
+                            {% endif %}
+                    {% endif %}
                     {% else %}
                             <td>{{ result }}</td>
                     {% endif %}

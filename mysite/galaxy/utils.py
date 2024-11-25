@@ -320,9 +320,13 @@ def confirm_student_check(user):
 
 def form_assessment_dict(user_id):
     user = CustomUser.objects.get(id=user_id)
-    user_assessment_dates = Assessments.objects \
-        .filter(group=user.group, is_passed=True).order_by('date').distinct('date')
-    assessment_dict = {x: Assessments.objects.filter(date=x.date) for x in user_assessment_dates}
+    #user_assessment_dates = Assessments.objects \
+    #    .filter(group=user.group, is_passed=True).order_by('date').distinct('date')
+    user_assessment_dates = Assessments.objects.filter(
+        Q(usertoassessment__user=user) &  # Ensure the user is linked to the assessment
+        Q(is_passed=True)  # Ensure the assessment is marked as passed
+    ).order_by('date').distinct('date')
+    assessment_dict = {x: Assessments.objects.filter(date=x.date, group=user.group) for x in user_assessment_dates}
     ordered_dict = {}
     right_order = ['Listening', 'Reading', 'Grammar and Vocabulary', 'Writing', 'Speaking']
     for key in assessment_dict:
@@ -342,10 +346,9 @@ def form_assessment_dict(user_id):
         while len(results) < 5:
             results.append('no result')
         cleared_list = [i for i in results if i != 'no result']
-        sum_of_points = sum([int(result.points) for result in cleared_list])
+        sum_of_points = sum([int(result.points) for result in cleared_list if result.points != ''])
         results.append(str(sum_of_points) + '(' + str(max_points) + ')')
         results.append(str(round(sum_of_points / (max_points / 100))) + '%')
-
     return content_dict
 
 

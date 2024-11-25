@@ -197,8 +197,10 @@ class Profile(LoginRequiredMixin, DetailView):
         avg_result = int(sum(avg_dict) / len(avg_dict)) if len(avg_dict) > 0 else 0
         context['avg_result'] = avg_result
         # counting assessments data
-        user_assessment_dates = Assessments.objects \
-            .filter(group=user.group).order_by('date').distinct('date')
+        user_assessment_dates = Assessments.objects.filter(
+            Q(usertoassessment__user=user) &
+            Q(is_passed=True)
+        ).order_by('date').distinct('date')
         assessment_dict = {x: Assessments.objects.filter(date=x.date) for x in user_assessment_dates}
         content_dict = {x: [Results.objects.get(test_id=y.test, student_id=user)
                             if Results.objects.filter(student_id=user, test_id=y.test).exists()
@@ -207,9 +209,10 @@ class Profile(LoginRequiredMixin, DetailView):
 
         # counting %
         avg_list = []
+        print(content_dict.values())
         for results in content_dict.values():
             cleared_list = [i for i in results if i != 'no result']
-            sum_of_points = sum([int(result.points) for result in cleared_list])
+            sum_of_points = sum([int(result.points) for result in cleared_list if result.points != ''])
             avg_list.append(round(sum_of_points / 0.82))
         avg_assessment = int(sum(avg_list) / len(avg_list)) if len(avg_list) else 0
 
@@ -327,6 +330,8 @@ class ResultSummary(LoginRequiredMixin, DetailView):
         result_id = self.kwargs['result_id']
         result_obj = Results.objects.get(id=result_id)
         result_commentary = str(result_obj.record_answers)
+        result_commentary = result_commentary.replace('//', '-')
+        #result_commentary = result_commentary.replace('⮟', 'No answer')
         context['commentary'] = [x for x in result_commentary.split(';')]
         return context
 
@@ -342,7 +347,7 @@ class ResultPreview(LoginRequiredMixin, DetailView):
     def dispatch(self, request, *args, **kwargs):
         result = Results.objects.get(id=self.kwargs.get('result_id'))
 
-        if result.student_id == self.request.user:
+        if result.student_id == self.request.user or self.request.user.role == 'Teacher':
             return super().dispatch(request, *args, **kwargs)
 
         return render(request, 'galaxy/julik.html')
@@ -380,15 +385,14 @@ class ShowColouredResult(LoginRequiredMixin, TeacherUserMixin, View):
         # forming student_answers_dict
         result_record_answers = str(result_object.record_answers)
         temp_list = [x.lstrip(' ') for x in result_record_answers.split(';')]
-        student_answers_dict = {int(x.split(') ')[0]): {y.split('-')[0]: y.split('-')[1]
-                                                        if '-' in y
+        student_answers_dict = {int(x.split(') ')[0]): {y.split('//')[0]: y.split('//')[1]
+                                                        if '//' in y
                                                         else y
                                                         for y in x.split(') ')[1].split(', ')}
-                                if '-' in x.split(') ')[1]
+                                if '//' in x.split(') ')[1]
                                 else x.split(') ')[1]
                                 for x in temp_list[:-1]
                                 }
-
         right_answers_dict = {}
         content_dict = {}
 
@@ -536,7 +540,7 @@ class UserProfile(LoginRequiredMixin, TeacherUserMixin, DetailView):
         return context
 
 
-class ShowUserResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
+class ShowUserResults(LoginRequiredMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     paginate_by = 10
@@ -547,7 +551,7 @@ class ShowUserResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     def dispatch(self, request, *args, **kwargs):
         user = CustomUser.objects.get(id=self.kwargs['user_pk'])
 
-        if user == self.request.user or user.role == 'Teacher':
+        if user == self.request.user or self.request.user.role == 'Teacher':
             return super().dispatch(request, *args, **kwargs)
 
         return render(request, 'galaxy/julik.html')
@@ -570,18 +574,29 @@ class ShowUserResults(LoginRequiredMixin, ConfirmStudentMixin, ListView):
         return Results.objects.filter(student_id=user.id, test_id__is_assessment=False).order_by('-date')
 
 
-class ShowUserAssessments(LoginRequiredMixin, TeacherUserMixin, ListView):
+class ShowUserAssessments(LoginRequiredMixin, ConfirmStudentMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = CustomUser
     template_name = "galaxy/show_user_assessments.html"
     context_object_name = 'assessments'
 
+
+    def dispatch(self, request, *args, **kwargs):
+        user = CustomUser.objects.get(id=self.kwargs['user_pk'])
+
+        if user == self.request.user or self.request.user.role == 'Teacher':
+            return super().dispatch(request, *args, **kwargs)
+
+        return render(request, 'galaxy/julik.html')
+
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         user_id = self.kwargs['user_pk']
         user = CustomUser.objects.get(id=user_id)
         context['student'] = user
+        context['max_points'] = get_max_points_dict()
         # user_results = Results.objects.filter(student_id=user.id)
         # context['results'] = user_results
         context['title'] = user.first_name + user.last_name
@@ -627,11 +642,11 @@ class TestDetails(LoginRequiredMixin, DetailView):
     context_object_name = 'test'
 
     def dispatch(self, request, *args, **kwargs):
+        user = request.user
         test = Tests.objects.get(id=self.kwargs.get('test_pk'))
-
         if test.is_assessment:
             try:
-                assessment_obj = Assessments.objects.get(test=test)
+                assessment_obj = Assessments.objects.get(test=test, group=user.group)
                 if assessment_obj.is_passed:
                     return render(request, 'galaxy/julik.html')
             except:
@@ -670,7 +685,7 @@ class PassTest(LoginRequiredMixin, View):
 
         if test.is_assessment:
             try:
-                assessment_obj = Assessments.objects.get(test=test)
+                assessment_obj = Assessments.objects.get(test=test, group=user.group)
                 if assessment_obj.is_passed:
                     return render(request, 'galaxy/julik.html')
             except:
@@ -680,7 +695,8 @@ class PassTest(LoginRequiredMixin, View):
 
         if test.is_assessment:
             assessment_obj = Assessments.objects.get(test=test, group=user.group)
-            if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists():
+            #if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists():
+            if Results.objects.filter(student_id=user, test_id=assessment_obj.test).exists():
                 return render(request, 'galaxy/julik.html')
 
         try:
@@ -743,13 +759,12 @@ class PassTest(LoginRequiredMixin, View):
     def add_answer_to_record(record_to_add_in, answer_match, answer_to_add, separation_item):
         if len(record_to_add_in) > 0:
             record_to_add_in += separation_item
-        if answer_to_add == 'Выберите ответ':
+        if answer_to_add == '⮟':
             answer_to_add = 'No answer'
-        record_to_add_in += (str(answer_match) + '-' + answer_to_add)
+        record_to_add_in += (str(answer_match) + '//' + answer_to_add)
         return record_to_add_in
 
     def post(self, request, test_pk):
-        print('WE ARE IN POST ', datetime.now)
         test = get_object_or_404(Tests, id=test_pk)
         user = request.user
 
@@ -769,11 +784,12 @@ class PassTest(LoginRequiredMixin, View):
             except:
                 return render(request, 'galaxy/julik.html')
 
-            if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists():
+            #if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists():
+            if Results.objects.filter(student_id=user, test_id=assessment_obj.test).exists():
                 return render(request, 'galaxy/julik.html')
 
-            user_to_assessment_obj = UserToAssessment(user=user, assessment=assessment_obj)
-            user_to_assessment_obj.save()
+            #user_to_assessment_obj = UserToAssessment(user=user, assessment=assessment_obj)
+            #user_to_assessment_obj.save()
 
         request.session['assessment_flag'] = 1 if test.is_assessment else 0  # for right redirecting after test_result_with/wo_points
 
@@ -1732,9 +1748,9 @@ def filter_assessments_for_teacher(request):
 @user_passes_test(teacher_check, login_url='home')
 def save_an_assessment(request):
     group = Groups.objects.get(id=request.GET.get('group'))
+    students = CustomUser.objects.filter(group=group)
     assessment_date = request.GET.get('date')
     assessment_date = datetime.strptime(assessment_date, "%m/%d/%Y").date()
-
     '''Собираем свободные тесты для ассессмента по типам '''
     assessment_tests_by_part = []
     for part in ['Grammar and Vocabulary', 'Listening', 'Reading', 'Speaking', 'Writing']:
@@ -1745,7 +1761,6 @@ def save_an_assessment(request):
                 UsedTestsToGroups.objects.filter(group=group).values('test_id'))
             )
         )
-
     '''Проверяем на каждый ли тип теста есть свободный тест для назначения'''
     if len(assessment_tests_by_part) != 5:
         print('НЕ ХВАТАЕТ ТИПОВ АССЕССМЕНТА:', len(assessment_tests_by_part))
@@ -1764,6 +1779,10 @@ def save_an_assessment(request):
             test_to_group_obj.save()
             assessment = Assessments(test=random_test, group=group, date=assessment_date)
             assessment.save()
+            # add user_to_assessment objects
+            for student in students:
+                user_to_assessment_obj = UserToAssessment(user=student, assessment=assessment)
+                user_to_assessment_obj.save()
 
     email_subject = 'New Assessment!'
     message = 'Your group will have assessment on ' + assessment_date.strftime('%d %B %Y')
@@ -1778,6 +1797,7 @@ def close_assessment(request):
     assessment_object = Assessments.objects.get(id=request.POST.get('assessment_id'))
     assessments_to_close = Assessments.objects.filter(group=assessment_object.group, date=assessment_object.date)
     for assessment in assessments_to_close:
+        assessment.is_opened = False
         assessment.is_passed = True
         assessment.save()
 
@@ -1839,7 +1859,8 @@ class OpenCurrentAssessment(LoginRequiredMixin, TeacherUserMixin, ListView):
         ).order_by('custom_order')
 
         temp_dict = {user: [Results.objects.get(student_id=user, test_id=assessment_obj.test)
-                            if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists()
+                            if Results.objects.filter(student_id=user, test_id=assessment_obj.test).exists()
+                            #if UserToAssessment.objects.filter(user=user, assessment=assessment_obj).exists()
                             else 'Nope'
                             for assessment_obj in assessments]
                      for user in users}
@@ -1866,7 +1887,12 @@ class ShowAssessmentResults(LoginRequiredMixin, TeacherUserMixin, ListView):
         assessment = Assessments.objects.get(id=self.kwargs.get('assessment_pk'))
         group = assessment.group
         # users = [x if assessment.pk in x.assessment_passed for x in CustomUser.objects.filter(group=group)]
-        users = CustomUser.objects.filter(group=group)
+        #users = CustomUser.objects.filter(group=group)
+        users = CustomUser.objects.filter(
+            group=group,  # The user must belong to the specified group
+            usertoassessment__assessment=assessment,  # The user must have a link to the specific assessment
+            usertoassessment__assessment__is_passed=True  # The assessment must be marked as passed
+        ).distinct()
         right_order = ['Listening', 'Reading', 'Grammar and Vocabulary', 'Writing', 'Speaking']
         whens = [When(test__part=part, then=Value(i)) for i, part in enumerate(right_order)]
         assessments = Assessments.objects.filter(group=group, date=assessment.date).annotate(
