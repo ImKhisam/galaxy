@@ -47,19 +47,7 @@
                             {% if forloop.counter < 4 %}
                                 <td>
                                     {% with key=result.test_id.type|add:result.test_id.part %}
-                                    {% if request.user.role == 'Teacher' or request.user.is_staff %}
-                                        <td>
-                                            <div class="button_shell">
-                                                <a class="btn btn5" href="{% url 'show_colour_result' result.id %}">{{ result.points }} / {{ max_points|get_item:key }}</a>
-                                            </div>
-                                        </td>
-                                    {% else %}
-                                        <td>
-                                            <div class="button_shell">
-                                                <a class="btn btn5" href="{% url 'result_summary' result.id %}">{{ result.points }} / {{ max_points|get_item:key }}</a>
-                                            </div>
-                                        </td>
-                                    {% endif %}
+                                    <a href="{% url 'show_colour_result' result.id %}">{{ result.points }} / {{ max_points|get_item:key }}</a>
                                     {% endwith %}
                                 </td>
                             {% else %}

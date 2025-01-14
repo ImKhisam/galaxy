@@ -1,9 +1,14 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
+from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, JsonResponse
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+
+from galaxy.utils import TeacherUserMixin
+from .forms import TutorialFileAddForm
 from .models import *
 
 
@@ -64,6 +69,74 @@ def publications(request):
         'title': 'Publications',
     }
     return render(request, 'content_for_evrbd/publications.html', context=context)
+
+
+class Publications(LoginRequiredMixin, TeacherUserMixin, ListView):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+    model = TutorialFile
+    template_name = 'content_for_evrbd/publications.html'
+    context_object_name = 'files'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Publications'
+        context['current_category'] = 'Articles'
+        return context
+
+    def get_queryset(self):
+        return TutorialFile.objects.filter(category='Articles')
+
+
+#@user_passes_test(teacher_check, login_url='home')
+def filter_publications(request):
+    data = dict()
+    # Get parameters from AJAX request
+    filter_flag = request.GET.get('filter_flag')
+
+    files = TutorialFile.objects.filter(category=filter_flag)
+
+    context = dict()
+    context['files'] = files
+    context['current_category'] = filter_flag
+    data['my_content'] = render_to_string('content_for_evrbd/render_publications_table.html',
+                                          context, request=request)
+
+    return JsonResponse(data)
+
+
+class AddTutorialFileView(LoginRequiredMixin, TeacherUserMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'login'
+
+    def get(self, request, *args, **kwargs):
+        file_form = TutorialFileAddForm()
+        context = {
+            'file_form': file_form,
+        }
+        return render(request, 'content_for_evrbd/add_tutorial_file.html', context)
+
+    def post(self, request, *args, **kwargs):
+        file_form = TutorialFileAddForm(request.POST, request.FILES)
+        if file_form.is_valid():
+            file_obj = file_form.save(commit=False)
+            file_obj.title = file_obj.file.name
+            file_obj.save()  # Save the Test
+
+            return redirect('publications')
+
+        context = {
+            'file_form': file_form,
+        }
+        return render(request, 'content_for_evrbd/add_tutorial_file.html', context)
+
+
+def download_file(request, pk):
+    try:
+        file_obj = TutorialFile.objects.get(pk=pk)
+        return FileResponse(file_obj.file.open(), as_attachment=True, filename=file_obj.file.name.split('/')[-1])
+    except TutorialFile.DoesNotExist:
+        raise Http404("File does not exist")
 
 
 @login_required(login_url='/login/')

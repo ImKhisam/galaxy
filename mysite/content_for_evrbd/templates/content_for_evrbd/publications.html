@@ -5,7 +5,7 @@
 {% block custom_styles %}
     <link type="text/css" href="{% static 'galaxy/css/tables_general.css' %}" rel="stylesheet"/>
     <link type="text/css" href="{% static 'galaxy/css/show_groups.css' %}" rel="stylesheet"/>
-    <link type="text/css" href="{% static 'galaxy/css/tests_and_assessments.css' %}" rel="stylesheet"/>
+    <link type="text/css" href="{% static 'galaxy/css/publications.css' %}" rel="stylesheet"/>
 {% endblock custom_styles %}
 
 {% block content %}
@@ -40,22 +40,22 @@
             </div>
             <div class="part_choice_shell">
                 <div class="part_choice">
-                    <input style="display: none;" type="radio" id="Method" name="cat" value="Method">
-                    <label for="Method"><span>Methodological guidelines</span></label>
+                    <input style="display: none;" type="radio" id="Methodological guidelines" name="cat" value="Methodological guidelines">
+                    <label for="Methodological guidelines"><span>Methodological guidelines</span></label>
                 </div>
                 <div class="empty"></div>
             </div>
             <div class="part_choice_shell">
                 <div class="part_choice">
-                    <input style="display: none;" type="radio" id="Presentations" name="cat" value="Presentations">
-                    <label for="Presentations"><span>Classroom presentations</span></label>
+                    <input style="display: none;" type="radio" id="Classroom presentations" name="cat" value="Classroom presentations">
+                    <label for="Classroom presentations"><span>Classroom presentations</span></label>
                 </div>
                 <div class="empty"></div>
             </div>
             <div class="part_choice_shell">
                 <div class="part_choice">
-                    <input style="display: none;" type="radio" id="Materials" name="cat" value="Materials">
-                    <label for="Materials"><span>Teaching materials</span></label>
+                    <input style="display: none;" type="radio" id="Teaching materials" name="cat" value="Teaching materials">
+                    <label for="Teaching materials"><span>Teaching materials</span></label>
                 </div>
             </div>
         </div>
@@ -63,6 +63,137 @@
     </div>
 </div>
 
+<div class="parent">
+    <div class="table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for file in files %}
+                <tr>
+                    <td scope="row">{{ forloop.counter }}</td>
+                    <td>{{file.title}}</td>
+                    <td><a class="single_btn" href="{% url 'download_file' file.id %}"><span>Download</span></a></td>
+                </tr>
+            {% endfor %}
+                <tr>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"><a class="btn btn5" href="{% url 'add_tutorial_file' %}"><span>Add file</span></a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
+{% endblock %}
+
+{% block javascript %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+// Define filterTestsAndAssessments function outside of jQuery document ready
+function filterTestsAndAssessments(filter_flag) {
+    $.ajax({
+        url: "{% url 'filter_publications' %}",
+        type: 'GET',
+        data: {
+            filter_flag: filter_flag,
+        },
+        success: function(data) {
+            $('.table tbody').html(data.my_content);
+        },
+        error: function(xhr, status, error) {
+            console.error(error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    // Pre-coloring chosen category
+    var currentCat = "{{current_category}}";
+    $('#' + currentCat).prop('checked', true);
+
+    // Listening for clicks on type radio buttons
+    $('input[name="cat"]').change(function() {
+        var filter_flag = $('input[name="cat"]:checked').val();
+        updateFilters(filter_flag);
+    });
+
+    // Listening for clicks on type checkboxes
+    $('input[type="checkbox"]').change(function() {
+        // If "Show all" checkbox is clicked, uncheck all other checkboxes
+        if ($(this).attr('id') === 'ALL') {
+            $('input[type="checkbox"]').not(this).prop('checked', false);
+        } else {
+            // If any other checkbox is clicked, uncheck the "Show all" checkbox
+            $('#ALL').prop('checked', false);
+        }
+        var filter_flag = $('input[name="cat"]:checked').val();
+        updateFilters(filter_flag);
+    });
+
+    // Function to update filters and trigger filtering
+    function updateFilters(filter_flag) {
+        var checkedCheckboxes = getCheckedCheckboxes();
+        storeStateInSessionStorage(filter_flag, checkedCheckboxes);
+        filterTestsAndAssessments(filter_flag, checkedCheckboxes);
+    }
+
+    // Function to get checked checkboxes
+    function getCheckedCheckboxes() {
+        var checkedCheckboxes = [];
+        // If "Show all" checkbox is checked, add its value to the array
+        if ($('#ALL').is(':checked')) {
+            checkedCheckboxes.push($('#ALL').val());
+        } else {
+            // Loop through each checked checkbox and add its value to the array
+            $('input[type="checkbox"]:checked').not('#ALL').each(function() {
+                checkedCheckboxes.push($(this).val());
+            });
+        }
+        return checkedCheckboxes;
+    }
+
+    // Function to store state in session storage
+    function storeStateInSessionStorage(filter_flag, checkedCheckboxes) {
+        var state = {
+            filter_flag: filter_flag,
+            checkedCheckboxes: checkedCheckboxes
+        };
+        sessionStorage.setItem('TestsAndAssessments', JSON.stringify(state));
+    }
+
+    // Function to retrieve stored state from session storage
+    function retrieveStateFromSessionStorage() {
+        var stateJSON = sessionStorage.getItem('TestsAndAssessments');
+        return stateJSON ? JSON.parse(stateJSON) : null;
+    }
+
+    // Function to apply stored state to the page
+    function applyStoredState(state) {
+        if (state) {
+            $('input[name="cat"][value="' + state.filter_flag + '"]').prop('checked', true);
+            state.checkedCheckboxes.forEach(function(checkbox) {
+                $('#' + checkbox).prop('checked', true);
+            });
+
+            filterTestsAndAssessments(state.filter_flag, state.checkedCheckboxes);
+        } else{
+            // By default, check the "Show all" checkbox
+            $('#ALL').prop('checked', true);
+        }
+    }
+
+    // Apply stored state when page is loaded or navigated back to
+    var storedState = retrieveStateFromSessionStorage();
+    applyStoredState(storedState);
+});
+</script>
 
 {% endblock %}

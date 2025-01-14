@@ -593,8 +593,8 @@ class ShowUserAssessments(LoginRequiredMixin, ConfirmStudentMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        user_id = self.kwargs['user_pk']
-        user = CustomUser.objects.get(id=user_id)
+        #user_id = self.kwargs['user_pk']
+        user = CustomUser.objects.get(id=self.kwargs['user_pk'])
         context['student'] = user
         context['max_points'] = get_max_points_dict()
         # user_results = Results.objects.filter(student_id=user.id)

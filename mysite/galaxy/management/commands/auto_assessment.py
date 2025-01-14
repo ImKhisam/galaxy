@@ -10,6 +10,7 @@ class Command(BaseCommand):
         current_date = timezone.now().date()
 
         print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        print(current_date)
 
         # Auto close opened assessments
         opened_assessments = Assessments.objects.filter(is_opened=True, is_passed=False)

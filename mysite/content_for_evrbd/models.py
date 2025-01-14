@@ -71,3 +71,25 @@ class Quizzes(models.Model):
     title = models.CharField(max_length=100)
     quiz = models.FileField(upload_to=content_quiz_name)
     answer = models.FileField(upload_to=content_quiz_name)
+
+
+def content_tutorial_name(instance, filename):
+    return '/'.join(['tutorial', filename])
+
+
+class TutorialFile(models.Model):
+    Articles = 'Articles'
+    Lessons = 'Lessons'
+    Methodological = 'Methodological guidelines'
+    Presentations = 'Classroom presentations'
+    Materials = 'Teaching materials'
+    choices_in_category = [
+        (Articles, 'Articles'),
+        (Lessons, 'Lessons'),
+        (Methodological, 'Methodological guidelines'),
+        (Presentations, 'Classroom presentations'),
+        (Materials, 'Teaching materials'),
+    ]
+    title = models.CharField(max_length=100)
+    file = models.FileField(upload_to=content_tutorial_name)
+    category = models.CharField(max_length=255, verbose_name='Category', choices=choices_in_category)

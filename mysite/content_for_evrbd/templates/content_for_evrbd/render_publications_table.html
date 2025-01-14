@@ -1,0 +1,14 @@
+{% load galaxy_tags %}
+
+{% for file in files %}
+    <tr>
+        <td scope="row">{{ forloop.counter }}</td>
+        <td>{{file.title}}</td>
+        <td><a class="single_btn" href="{% url 'download_file' file.id %}"><span>Download</span></a></td>
+    </tr>
+{% endfor %}
+    <tr>
+        <td style="border: none;"></td>
+        <td style="border: none;"></td>
+        <td style="border: none;"><a class="btn btn5" href="{% url 'add_tutorial_file' %}"><span>Add file</span></a></td>
+    </tr>
