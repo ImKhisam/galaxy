@@ -5,9 +5,9 @@ from django.views.generic import TemplateView, ListView, DetailView
 from django.http import FileResponse, Http404, JsonResponse
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
-from galaxy.utils import TeacherUserMixin
+from galaxy.utils import TeacherUserMixin, teacher_check
 from .forms import TutorialFileAddForm
 from .models import *
 
@@ -71,7 +71,7 @@ def publications(request):
     return render(request, 'content_for_evrbd/publications.html', context=context)
 
 
-class Publications(LoginRequiredMixin, TeacherUserMixin, ListView):
+class Publications(LoginRequiredMixin, ListView):
     login_url = '/login/'
     redirect_field_name = 'login'
     model = TutorialFile
@@ -110,7 +110,13 @@ class AddTutorialFileView(LoginRequiredMixin, TeacherUserMixin, View):
     redirect_field_name = 'login'
 
     def get(self, request, *args, **kwargs):
-        file_form = TutorialFileAddForm()
+        # Get the category from the query parameter
+        selected_category = request.GET.get('category', None)
+
+        # Initialize the form with the selected category if provided
+        initial_data = {'category': selected_category} if selected_category else {}
+        file_form = TutorialFileAddForm(initial=initial_data)
+
         context = {
             'file_form': file_form,
         }
@@ -121,7 +127,7 @@ class AddTutorialFileView(LoginRequiredMixin, TeacherUserMixin, View):
         if file_form.is_valid():
             file_obj = file_form.save(commit=False)
             file_obj.title = file_obj.file.name
-            file_obj.save()  # Save the Test
+            file_obj.save()  # Save the file
 
             return redirect('publications')
 
@@ -137,6 +143,17 @@ def download_file(request, pk):
         return FileResponse(file_obj.file.open(), as_attachment=True, filename=file_obj.file.name.split('/')[-1])
     except TutorialFile.DoesNotExist:
         raise Http404("File does not exist")
+
+
+@user_passes_test(teacher_check, login_url='home')
+def delete_file(request):
+    if request.method == 'POST':
+        file_id = request.POST.get('file_id')
+        file_obj = get_object_or_404(TutorialFile, id=file_id)
+        file_obj.delete()
+        return JsonResponse({'message': 'Test deleted successfully'}, status=200)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 @login_required(login_url='/login/')

@@ -10,6 +10,7 @@ urlpatterns = [
     path('filter_publications/', filter_publications, name='filter_publications'),
     path('add_tutorial_file/', AddTutorialFileView.as_view(), name='add_tutorial_file'),
     path('download_file/<int:pk>/', download_file, name='download_file'),
+    path('delete_file/', delete_file, name='delete_file'),
     path('master_yls/', master_yls, name='master_yls'),
     path('watch_and_learn/', watch_and_learn, name='watch_and_learn'),
     path('show_doc/<int:classes_id>/<slug:source>/<doc_type>/', showdoc, name='show_doc'),

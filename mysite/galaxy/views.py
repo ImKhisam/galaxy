@@ -620,7 +620,7 @@ def ajx_delete_group(request):
         group_id = request.POST.get('group_id')
         group = get_object_or_404(Groups, id=group_id)
         group.delete()
-        return JsonResponse({'message': 'Test deleted successfully'}, status=200)
+        return JsonResponse({'message': 'Group deleted successfully'}, status=200)
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
 
@@ -850,6 +850,7 @@ class PassTest(LoginRequiredMixin, View):
                     answers = str(answer.answer)
                     right_answers = [x.strip() for x in list(answers.split(','))]
                     student_answer = str(request.POST.get(str(answer.id)))
+                    student_answer = student_answer.lstrip().rstrip()
                     if student_answer in right_answers:
                         total_test_points += question.points
                         detailed_test_points = self.add_detail_points(question, detailed_test_points, question.points)
